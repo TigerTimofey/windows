@@ -40,6 +40,7 @@ function App() {
       if (isIconDroppedOnTarget(compRef, binRef)) {
         setCompVisible(false)
         setBinFullState(true)
+  setBinItems(prev => prev.some(i => i.id === 'mycomputer') ? prev : [...prev, { id: 'mycomputer', name: 'My Computer', icon: myComputerIcon }])
       }
     }
     if (compDragging) {
@@ -170,10 +171,6 @@ function App() {
           ref={compRef}
           style={compStyle}
           onMouseDown={handleCompMouseDown}
-          draggable
-          onDragStart={e => {
-            e.dataTransfer.setData('icon', 'mycomputer')
-          }}
         >
           <img
             src={myComputerIcon}
@@ -193,15 +190,6 @@ function App() {
         style={binStyle}
         onMouseDown={handleBinMouseDown}
         onDoubleClick={handleBinDoubleClick}
-        onDragOver={e => e.preventDefault()}
-        onDrop={e => {
-          const iconType = e.dataTransfer.getData('icon')
-          if (iconType === 'mycomputer' && compVisible) {
-            setCompVisible(false)
-            setBinFullState(true)
-            setBinItems([...binItems, { id: 'mycomputer', name: 'My Computer', icon: myComputerIcon }])
-          }
-        }}
       >
         <img
           src={binFullState ? binFull : binEmpty}

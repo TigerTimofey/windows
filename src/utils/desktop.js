@@ -50,3 +50,4 @@ export function getClampedBinPosition(e, dragOffset, binRef, margin = 10) {
   y = clamp(y, margin, desktopHeight - taskbarHeight - binHeight - margin);
   return { x, y };
 }
+ 
