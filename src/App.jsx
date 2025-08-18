@@ -4,6 +4,7 @@ import binEmpty from './assets/win7/bin-emty.svg'
 import binFull from './assets/win7/bin-full.svg'
 import myComputerIcon from './assets/win7/mycomputer.svg'
 import './windows2000.css'
+import './App.css'
 import ModalWindow from './components/modal/ModalWindow.jsx'
 import { getClampedBinPosition, isIconDroppedOnTarget } from './utils/desktop.js'
 
@@ -160,10 +161,15 @@ function App() {
   }, [compModalOpen])
 
   function handleCompClick() {
+    // Single tap open only for touch / coarse pointers
+    if (!isTouchOrCoarse) return
     if (!compVisible) return
-    if (!compMovedRef.current) {
-      setCompModalOpen(true)
-    }
+    if (!compMovedRef.current) setCompModalOpen(true)
+  }
+  function handleCompDoubleClick() {
+    if (isTouchOrCoarse) return // mobile already handled by single tap
+    if (!compVisible) return
+    if (!compMovedRef.current) setCompModalOpen(true)
   }
   const [menuOpen, setMenuOpen] = useState(false)
   const [clock, setClock] = useState(getTimeString())
@@ -210,6 +216,10 @@ function App() {
   const [dragging, setDragging] = useState(false)
   const binRef = useRef(null)
   const dragOffset = useRef({ x: 0, y: 0 })
+  // Bin context menu
+  const [binContext, setBinContext] = useState({ open: false, x: 0, y: 0 })
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false)
+  const longPressTimer = useRef(null)
 
   // Mouse events for dragging
   useEffect(() => {
@@ -242,6 +252,96 @@ function App() {
     }
   }
 
+  function openBinContextAt(x, y) {
+    // Clamp to viewport so it doesn't overflow
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    const menuWidth = 180
+    const menuHeight = 68 // approx two items
+    const px = Math.min(x, vw - menuWidth - 4)
+    const py = Math.min(y, vh - menuHeight - 4)
+    setBinContext({ open: true, x: px, y: py })
+  }
+
+  function handleBinContextMenu(e) {
+    e.preventDefault()
+    if (dragging) return
+    openBinContextAt(e.clientX, e.clientY)
+  }
+
+  // Touch long-press (600ms) for context menu
+  function handleBinTouchStart(e) {
+    if (e.touches.length !== 1) return
+    const touch = e.touches[0]
+    longPressTimer.current = setTimeout(() => {
+      openBinContextAt(touch.clientX, touch.clientY)
+    }, 600)
+  }
+  function handleBinTouchMove() { // cancel if moved
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }
+  function handleBinTouchEnd() {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }
+
+  function closeBinContext() {
+    setBinContext(c => ({ ...c, open: false }))
+  }
+
+  useEffect(() => {
+    if (!binContext.open) return
+    function onDoc(e) {
+      // Close if click outside menu
+      if (!(e.target.closest && e.target.closest('.context-menu'))) {
+        closeBinContext()
+      }
+    }
+    function onKey(e) { if (e.key === 'Escape') closeBinContext() }
+    document.addEventListener('mousedown', onDoc, true)
+    document.addEventListener('keydown', onKey)
+    window.addEventListener('resize', closeBinContext)
+    return () => {
+      document.removeEventListener('mousedown', onDoc, true)
+      document.removeEventListener('keydown', onKey)
+      window.removeEventListener('resize', closeBinContext)
+    }
+  }, [binContext.open])
+
+  // Safety: global contextmenu handler to ensure we suppress native when targeting bin label/icon
+  useEffect(() => {
+    function globalCtx(e) {
+      if (!binRef.current) return
+      if (e.target === binRef.current || binRef.current.contains(e.target)) {
+        // If our menu already open let bin handler position; else open here
+        if (!binContext.open) {
+          e.preventDefault()
+          openBinContextAt(e.clientX, e.clientY)
+        }
+      }
+    }
+    document.addEventListener('contextmenu', globalCtx)
+    return () => document.removeEventListener('contextmenu', globalCtx)
+  }, [binContext.open])
+
+  function handleEmptyRequest() {
+    if (binItems.length === 0) return
+    setConfirmClearOpen(true)
+  }
+
+  function handleConfirmEmpty() {
+    setBinItems([])
+    setBinFullState(false)
+    setConfirmClearOpen(false)
+  }
+
+  function handleCancelEmpty() { setConfirmClearOpen(false) }
+
   // Default position: bottom right
   const binStyle = binPos.x !== null && binPos.y !== null
     ? { left: binPos.x, top: binPos.y, position: 'fixed', zIndex: 50 }
@@ -271,6 +371,7 @@ function App() {
           style={compStyle}
           onMouseDown={handleCompMouseDown}
           onClick={handleCompClick}
+          onDoubleClick={handleCompDoubleClick}
         >
           <img
             src={myComputerIcon}
@@ -291,6 +392,10 @@ function App() {
         onMouseDown={handleBinMouseDown}
   onDoubleClick={handleBinDoubleClick}
   onClick={handleBinClick}
+        onContextMenu={handleBinContextMenu}
+  onTouchStart={handleBinTouchStart}
+  onTouchMove={handleBinTouchMove}
+  onTouchEnd={handleBinTouchEnd}
       >
         <img
           src={binFullState ? binFull : binEmpty}
@@ -301,6 +406,24 @@ function App() {
         />
         <div className="bin-label">Recycle Bin</div>
       </div>
+
+      {/* Bin Context Menu */}
+      {binContext.open && (
+        <ul
+          className="context-menu"
+          style={{ left: binContext.x, top: binContext.y }}
+          onClick={e => e.stopPropagation()}
+        >
+          <li
+            className="context-menu-item"
+            onClick={() => { setBinModalOpen(true); closeBinContext() }}
+          >Open</li>
+          <li
+            className={`context-menu-item${binItems.length === 0 ? ' disabled' : ''}`}
+            onClick={() => { closeBinContext(); handleEmptyRequest() }}
+          >Empty Recycle Bin</li>
+        </ul>
+      )}
 
       {/* Bin Modal Window */}
       {binModalOpen && (
@@ -319,6 +442,19 @@ function App() {
               ))}
             </div>
           )}
+        </ModalWindow>
+      )}
+
+      {/* Confirm Empty Bin Modal */}
+      {confirmClearOpen && (
+        <ModalWindow title="Confirm Empty" onClose={handleCancelEmpty}>
+          <div style={{ textAlign: 'center', width: '100%' }}>
+            <p style={{ marginBottom: 18 }}>Permanently delete all items in the Recycle Bin?</p>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+              <button className="modal-btn" onClick={handleConfirmEmpty}>Yes</button>
+              <button className="modal-btn" onClick={handleCancelEmpty}>No</button>
+            </div>
+          </div>
         </ModalWindow>
       )}
 
