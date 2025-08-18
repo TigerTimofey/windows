@@ -17,6 +17,17 @@ function App() {
   function handleBinModalClose() {
     setBinModalOpen(false)
   }
+  // Single tap support (mobile) for opening bin
+  const isTouchOrCoarse = typeof window !== 'undefined' && (
+    'ontouchstart' in window ||
+    (navigator && navigator.maxTouchPoints > 0) ||
+    (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+  )
+  function handleBinClick() {
+    if (isTouchOrCoarse) {
+      setBinModalOpen(true)
+    }
+  }
   // My Computer drag state
   const [compPos, setCompPos] = useState({ x: null, y: null })
   const [compDragging, setCompDragging] = useState(false)
@@ -189,7 +200,8 @@ function App() {
         ref={binRef}
         style={binStyle}
         onMouseDown={handleBinMouseDown}
-        onDoubleClick={handleBinDoubleClick}
+  onDoubleClick={handleBinDoubleClick}
+  onClick={handleBinClick}
       >
         <img
           src={binFullState ? binFull : binEmpty}
