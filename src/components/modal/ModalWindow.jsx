@@ -52,7 +52,7 @@ export default function ModalWindow({ title, children, onClose }) {
   return (
     <div className="windows2000-modal" ref={modalRef} style={style}>
       <div className="modal-title-bar" onMouseDown={handleMouseDown} style={{ cursor: 'move', userSelect: 'none' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', height: '28px' }}>
           <span className="modal-title">{title}</span>
           <div className="modal-buttons">
             <button className="modal-btn close" title="Close" onClick={onClose}>×</button>

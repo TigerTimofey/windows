@@ -32,8 +32,10 @@ function App() {
   const [compPos, setCompPos] = useState({ x: null, y: null })
   const [compDragging, setCompDragging] = useState(false)
   const [compVisible, setCompVisible] = useState(true)
+  const [compModalOpen, setCompModalOpen] = useState(false)
   const compRef = useRef(null)
   const compDragOffset = useRef({ x: 0, y: 0 })
+  const compMovedRef = useRef(false)
 
   // Bin state
   const [binFullState, setBinFullState] = useState(false)
@@ -43,6 +45,7 @@ function App() {
   useEffect(() => {
     function onCompMouseMove(e) {
       if (!compDragging) return
+      compMovedRef.current = true
       setCompPos(getClampedBinPosition(e, compDragOffset, compRef, 10))
     }
     function onCompMouseUp() {
@@ -51,7 +54,8 @@ function App() {
       if (isIconDroppedOnTarget(compRef, binRef)) {
         setCompVisible(false)
         setBinFullState(true)
-  setBinItems(prev => prev.some(i => i.id === 'mycomputer') ? prev : [...prev, { id: 'mycomputer', name: 'My Computer', icon: myComputerIcon }])
+        setCompModalOpen(false)
+        setBinItems(prev => prev.some(i => i.id === 'mycomputer') ? prev : [...prev, { id: 'mycomputer', name: 'My Computer', icon: myComputerIcon }])
       }
     }
     if (compDragging) {
@@ -67,6 +71,7 @@ function App() {
   function handleCompMouseDown(e) {
     if (e.button !== 0) return
     setCompDragging(true)
+  compMovedRef.current = false
     const rect = compRef.current.getBoundingClientRect()
     compDragOffset.current = {
       x: e.clientX - rect.left,
@@ -77,6 +82,89 @@ function App() {
   const compStyle = compPos.x !== null && compPos.y !== null
     ? { left: compPos.x, top: compPos.y, position: 'fixed', zIndex: 51 }
     : { left: 18, top: 18, position: 'fixed', zIndex: 51 }
+
+  // System info for My Computer modal
+  const computerInfo = React.useMemo(() => {
+    if (!compModalOpen) return null
+    if (typeof window === 'undefined') return null
+    const nav = navigator || {}
+    return {
+      platform: nav.platform,
+      userAgent: nav.userAgent,
+      cores: nav.hardwareConcurrency || 'N/A',
+      memory: nav.deviceMemory ? nav.deviceMemory + ' GB' : 'N/A',
+      online: nav.onLine ? 'Online' : 'Offline'
+    }
+  }, [compModalOpen])
+
+  // Removed console logging per request
+
+  // Extra async/system APIs
+  const [compExtra, setCompExtra] = useState(null)
+  useEffect(() => {
+    if (!compModalOpen) {
+      setCompExtra(null)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      const extra = {}
+      try {
+        extra.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+        extra.localTime = new Date().toLocaleString()
+        extra.colorDepth = window.screen.colorDepth
+  // Removed pixelRatio & cookiesEnabled per request
+        if (navigator.storage && navigator.storage.estimate) {
+          const { quota, usage } = await navigator.storage.estimate()
+          if (!cancelled) {
+            extra.storage = {
+              quota: quota ? Math.round(quota / (1024*1024)) + ' MB' : 'N/A',
+              usage: usage ? Math.round(usage / (1024*1024)) + ' MB' : 'N/A'
+            }
+          }
+        }
+        if (navigator.getBattery) {
+          try {
+            const batt = await navigator.getBattery()
+            if (!cancelled) {
+              extra.battery = {
+                level: Math.round(batt.level * 100) + '%',
+                charging: batt.charging ? 'Charging' : 'Not Charging'
+              }
+            }
+          } catch { /* battery API not available */ }
+        }
+        const conn = navigator.connection || navigator.webkitConnection || navigator.mozConnection
+        if (conn) {
+          extra.connection = {
+            downlink: conn.downlink + ' Mbps',
+            rtt: conn.rtt + ' ms',
+            type: conn.effectiveType
+          }
+        }
+        if (performance && performance.memory) {
+          const m = performance.memory
+          extra.jsHeap = {
+            used: Math.round(m.usedJSHeapSize / (1024*1024)) + ' MB',
+            total: Math.round(m.totalJSHeapSize / (1024*1024)) + ' MB'
+          }
+        }
+      } catch (e) {
+        console.warn('Extra system info error', e)
+      }
+      if (!cancelled) {
+  setCompExtra(extra)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [compModalOpen])
+
+  function handleCompClick() {
+    if (!compVisible) return
+    if (!compMovedRef.current) {
+      setCompModalOpen(true)
+    }
+  }
   const [menuOpen, setMenuOpen] = useState(false)
   const [clock, setClock] = useState(getTimeString())
   const menuRef = useRef(null)
@@ -182,6 +270,7 @@ function App() {
           ref={compRef}
           style={compStyle}
           onMouseDown={handleCompMouseDown}
+          onClick={handleCompClick}
         >
           <img
             src={myComputerIcon}
@@ -230,6 +319,26 @@ function App() {
               ))}
             </div>
           )}
+        </ModalWindow>
+      )}
+
+      {compModalOpen && computerInfo && (
+        <ModalWindow title="My Computer" onClose={() => setCompModalOpen(false)}>
+          <div style={{ fontSize: 14, lineHeight: 1.45, width: '100%' }}>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              <li><strong>Platform:</strong> {computerInfo.platform}</li>
+              <li><strong>User Agent:</strong> {computerInfo.userAgent}</li>
+              <li><strong>CPU Cores:</strong> {computerInfo.cores}</li>
+              <li><strong>Memory:</strong> {computerInfo.memory}</li>
+              <li><strong>Network:</strong> {computerInfo.online}</li>
+              {compExtra?.timezone && <li><strong>Timezone:</strong> {compExtra.timezone}</li>}
+              {compExtra?.localTime && <li><strong>Local Time:</strong> {compExtra.localTime}</li>}
+              {compExtra?.colorDepth !== undefined && <li><strong>Color Depth:</strong> {compExtra.colorDepth}</li>}
+              {compExtra?.storage && <li><strong>Storage:</strong> {compExtra.storage.usage} / {compExtra.storage.quota}</li>}
+              {compExtra?.connection && <li><strong>Connection:</strong> {compExtra.connection.downlink}, {compExtra.connection.rtt}, {compExtra.connection.type}</li>}
+              {compExtra?.jsHeap && <li><strong>JS Heap:</strong> {compExtra.jsHeap.used} / {compExtra.jsHeap.total}</li>}
+            </ul>
+          </div>
         </ModalWindow>
       )}
 
