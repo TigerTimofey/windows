@@ -1,0 +1,251 @@
+/* Windows 2000 Modal Window Styles */
+.windows2000-modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 420px;
+  background: #e3e3e3;
+  border: 2px solid #b5b5b5;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  z-index: 100;
+  font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
+}
+.modal-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, #1e4e8c 80%, #1e4e8c 100%);
+  color: #fff;
+  padding: 4px 8px;
+  font-size: 14px;
+  border-bottom: 1px solid #b5b5b5;
+}
+.modal-title {
+  font-weight: 500;
+}
+.modal-btn {
+  width: 24px;
+  height: 22px;
+  background: #e3e3e3;
+  border: 1px solid #b5b5b5;
+  color: #333;
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+
+}
+.modal-btn:hover {
+  border: 2px inset #fff;
+  background: #dcdcdc;
+}
+
+.windows-icon {
+  position: fixed;
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 51;
+  user-select: none;
+  cursor: default;
+}
+.icon-img {
+  padding: 5px;
+  width: 50px;
+  height: 50px;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.windows-icon:hover .icon-img {
+  background: rgba(126,195,247,0.15);
+  border-radius: 6px;
+}
+.icon-label {
+  font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
+  font-size: 13px;
+  color: #e3e1e1;
+  text-align: center;
+  border-radius: 2px;
+  width: 84px;
+}
+.windows-bin {
+  position: fixed;
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 50;
+  user-select: none;
+  cursor: default;
+}
+.bin-icon {
+  padding:  5px 5px 5px 5px;
+  width: 50px;
+  height: 50px;
+  margin-bottom: 2px;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.windows-bin:hover .bin-icon {
+  background: rgba(126,195,247,0.15);
+  border-radius: 6px;
+}
+.bin-label {
+  font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
+  font-size: 13px;
+  color: #e3e1e1;
+  text-align: center;
+  border-radius: 2px;
+  width: 84px;
+  padding: 1px 2px;
+}
+.windows-separator {
+  width: 3px;
+  height: 30px;
+  background: linear-gradient(to right, #fff 0%, #808080 100%);
+  margin: 0 3px;
+  border-radius: 1px;
+  align-self: center;
+}
+.windows-clock {
+  margin-left: auto;
+  margin-right: 12px;
+  padding: 1.5px 10px;
+  border: 2.5px inset #fff;
+  background: #dcdcdc;
+  border-radius: 1px;
+  font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+  height: 28px;
+  display: flex;
+  align-items: center;
+}
+.windows-start.active {
+  border: 2px inset #fff;
+  background: #dcdcdc;
+}
+.windows-start {
+  height: 18px;
+  padding: 2px 8px;
+  border: 1px solid #F3F3F3;
+  box-shadow: 0 0 0 1px #707070;
+  border-radius: 1px;
+  background: linear-gradient(to bottom, #F2F2F2 0%, #EBEBEB 50%, #DDDDDD 51%, #CFCFCF 100%);
+  font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  color: black;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  min-width: 70px;
+  margin-right: 8px;
+  box-sizing: border-box;
+}
+body, .windows-bg {
+  font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
+}
+.windows-start:active {
+  border: 1px solid #73A7C4;
+  border-bottom: 0;
+  box-shadow: 0 0 0 1px #2C628B;
+  background: linear-gradient(to bottom, #E5F4FC 0%, #C4E5F6 50%, #98D1EF 51%, #68B3DB 100%);
+}
+/* Background */
+body, .windows-bg {
+  background: linear-gradient(135deg, #008080 0%, #3a6ea5 100%);
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  font-family: Tahoma, Verdana, sans-serif;
+}
+
+/* Taskbar */
+.windows-taskbar {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 40px;
+  background: #c0c0c0;
+  border-top: 2px solid #fff;
+  border-bottom: 2px solid #808080;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  z-index: 100;
+}
+
+/* Start Button */
+.windows-start {
+  display: flex;
+  align-items: center;
+  background: #c0c0c0;
+  color: black;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 2px 12px;
+  border: 2px outset #fff;
+  margin-right: 8px;
+  min-width: 75px;
+  height: 35px;
+  border-bottom-left-radius: 2px;
+  cursor: pointer;
+}
+
+.windows-start:active {
+  border: 2px inset #fff;
+  background: #dcdcdc;
+}
+
+/* Windows Logo */
+.windows-logo {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+
+  background-size: contain;
+}
+
+/* Start Menu */
+.start-menu {
+  position: fixed;
+  bottom: 40px;
+  left: 8px;
+  width: 200px;
+  background: #c0c0c0;
+  border: 2px solid #808080;
+  border-top: none;
+  box-shadow: 4px 4px 8px rgba(0,0,0,0.4);
+  z-index: 200;
+}
+
+.start-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.start-menu li {
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  border-left: 2px solid transparent;
+  border-right: 2px solid transparent;
+}
+
+.start-menu li:hover {
+  background: #000080;
+  color: white;
+}
+
+.start-menu .shutdown {
+  border-top: 1px solid #808080;
+  margin-top: 4px;
+  padding-top: 6px;
+}
