@@ -1,4 +1,5 @@
 import React from 'react'
+import './BinContextMenu.css'
 
 export function BinContextMenu({ x, y, open, hasItems, onOpen, onEmpty }) {
   if (!open) return null

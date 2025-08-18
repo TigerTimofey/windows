@@ -11,6 +11,7 @@ import { useClock } from './hooks/useClock.js'
 import { useStartMenu } from './hooks/useStartMenu.js'
 import { useRecycleBin } from './hooks/useRecycleBin.js'
 import { useMyComputer } from './hooks/useMyComputer.js'
+import trashSound from './assets/win7/sounds/trash.mp3'
 
 function App() {
   const [binModalOpen, setBinModalOpen] = useState(false)
@@ -19,6 +20,25 @@ function App() {
   const clock = useClock()
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
   const recycle = useRecycleBin()
+
+  function playTrashSound() {
+    try {
+      const audio = new Audio(trashSound)
+      audio.currentTime = 0
+      // Fire and forget; user interaction already occurred
+      audio.play().catch(() => {})
+    } catch { /* audio failed */ }
+  }
+
+  function addItemToBin(item) {
+    let added = false
+    recycle.setItems(prev => {
+      if (prev.some(i => i.id === item.id)) return prev
+      added = true
+      return [...prev, item]
+    })
+    if (added) playTrashSound()
+  }
   const {
     ref: compRef,
     visible: compVisible,
@@ -30,9 +50,7 @@ function App() {
     style: compStyle,
     systemInfo: computerInfo,
     extra: compExtra,
-  } = useMyComputer(recycle.binRef, (item) => {
-    recycle.setItems(prev => prev.some(i => i.id === item.id) ? prev : [...prev, item])
-  })
+  } = useMyComputer(recycle.binRef, addItemToBin)
 
   const binFullState = recycle.items.length > 0
   const binStyle = recycle.binPos.x !== null && recycle.binPos.y !== null
@@ -49,7 +67,7 @@ function App() {
   function handleBinClick() { if (isTouchOrCoarse) setBinModalOpen(true) }
 
   function handleEmptyRequest() { if (recycle.items.length !== 0) setConfirmClearOpen(true) }
-  function handleConfirmEmpty() { recycle.setItems([]); setConfirmClearOpen(false) }
+  function handleConfirmEmpty() { if (recycle.items.length) playTrashSound(); recycle.setItems([]); setConfirmClearOpen(false) }
   function handleCancelEmpty() { setConfirmClearOpen(false) }
 
   return (
@@ -114,11 +132,11 @@ function App() {
 
       {confirmClearOpen && (
         <ModalWindow title="Confirm Empty" onClose={handleCancelEmpty}>
-          <div style={{ textAlign: 'center', width: '100%' }}>
-            <p style={{ marginBottom: 18 }}>Permanently delete all items in the Recycle Bin?</p>
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-              <button className="modal-btn" onClick={handleConfirmEmpty}>Yes</button>
-              <button className="modal-btn" onClick={handleCancelEmpty}>No</button>
+          <div className="modal-confirm">
+            <p className="modal-confirm-message">Permanently delete all items in the Recycle Bin?</p>
+            <div className="modal-btn-row">
+              <button className="modal-btn-text" onClick={handleConfirmEmpty}>Yes</button>
+              <button className="modal-btn-text" onClick={handleCancelEmpty}>No</button>
             </div>
           </div>
         </ModalWindow>
@@ -126,8 +144,8 @@ function App() {
 
       {compModalOpen && computerInfo && (
         <ModalWindow title="My Computer" onClose={() => setCompModalOpen(false)}>
-          <div style={{ fontSize: 14, lineHeight: 1.45, width: '100%' }}>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          <div className="computer-info">
+            <ul className="computer-info-list">
               <li><strong>Platform:</strong> {computerInfo.platform}</li>
               <li><strong>User Agent:</strong> {computerInfo.userAgent}</li>
               <li><strong>CPU Cores:</strong> {computerInfo.cores}</li>

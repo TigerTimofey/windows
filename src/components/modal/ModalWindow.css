@@ -117,8 +117,9 @@
   font-size: 1.9rem;
 }
 .modal-btn:hover {
-  border: 2px inset #fff;
+ border: 2px inset #fff; background: #dcdcdc;
   background: #dcdcdc;
+  
 }
 .modal-content {
   padding: 18px 16px;

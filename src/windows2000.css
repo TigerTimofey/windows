@@ -38,6 +38,7 @@
 .modal-btn:hover {
   border: 2px inset #fff;
   background: #dcdcdc;
+  
 }
 
 .windows-icon {
@@ -249,3 +250,25 @@ body, .windows-bg {
   margin-top: 4px;
   padding-top: 6px;
 }
+
+/* Modal content & lists */
+.computer-info { font-size: 14px; line-height: 1.45; width: 100%; }
+.computer-info-list { list-style: none; padding: 0; margin: 0; }
+
+/* Confirm empty dialog */
+.modal-confirm { text-align: center; width: 100%; }
+.modal-confirm-message { margin-bottom: 30px; font-size: 15px; }
+.modal-btn-row { display: flex; gap: 12px; justify-content: center; }
+
+/* Text buttons inside confirm dialog */
+.modal-btn-text {
+  
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  border: 1px solid #b5b5b5;
+  background: #e3e3e3;
+  cursor: pointer;
+  border: 2px solid #33333376
+}
+.modal-btn-text:hover { border: 2px inset #fff; background: #dcdcdc; }
