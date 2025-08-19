@@ -1,0 +1,10 @@
+.win-dropdown-wrapper { position: relative; width: 100%;  }
+.win-dropdown-label { display: flex; flex-direction: column; font-size: 13px; margin-bottom: 4px; }
+.win-dropdown { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; background: #f2f2f2; border: 1px solid #b5b5b5; cursor: pointer; font-size: 14px; user-select: none; }
+.win-dropdown:focus-within, .win-dropdown.open { outline: 2px solid #1e4e8c; }
+.win-dropdown-placeholder { color: #666; }
+.win-dropdown-arrow { margin-left: 8px; font-size: 10px; }
+.win-dropdown-menu { position: absolute; left: 0; top: calc(100% + 2px); min-width: 100%; background: #c0c0c0; border: 2px solid #808080; box-shadow: 4px 4px 8px rgba(0,0,0,0.4); list-style: none; padding: 4px 0; margin: 0; z-index: 500; font-family: Tahoma, "MS Sans Serif", Arial, sans-serif; font-size: 14px; }
+.win-dropdown-item { padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+.win-dropdown-item:hover { background: #000080; color: #fff; }
+

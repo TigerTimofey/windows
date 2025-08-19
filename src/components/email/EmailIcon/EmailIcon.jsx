@@ -2,7 +2,7 @@ import React from 'react'
 import emailIcon from '../../../assets/win7/icons/email.ico'
 import './EmailIcon.css'
 
-export function EmailIcon({ iconRef, style, onMouseDown, onContextMenu }) {
+export function EmailIcon({ iconRef, style, onMouseDown, onContextMenu, onClick, onDoubleClick }) {
   return (
     <div
       className="windows-icon email-icon-wrapper"
@@ -10,6 +10,8 @@ export function EmailIcon({ iconRef, style, onMouseDown, onContextMenu }) {
       style={style}
       onMouseDown={onMouseDown}
       onContextMenu={onContextMenu}
+  onClick={onClick}
+  onDoubleClick={onDoubleClick}
       draggable={false}
     >
       <img

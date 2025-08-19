@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import emailIcon from '../assets/win7/icons/email.ico'
-import { getClampedBinPosition, isIconDroppedOnTarget } from '../utils/desktop.js'
+import { getClampedBinPosition, isIconDroppedOnTarget } from '../hooks/useDesktop.js'
 
 export function useEmailIcon(binRef, onDroppedIntoBin) {
   const [pos, setPos] = useState({ x: null, y: null })
@@ -10,6 +10,12 @@ export function useEmailIcon(binRef, onDroppedIntoBin) {
   const dragOffset = useRef({ x: 0, y: 0 })
   const movedRef = useRef(false)
   const [context, setContext] = useState({ open: false, x: 0, y: 0 })
+  const [modalOpen, setModalOpen] = useState(false)
+  const isTouchOrCoarse = typeof window !== 'undefined' && (
+    'ontouchstart' in window ||
+    (navigator && navigator.maxTouchPoints > 0) ||
+    (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+  )
 
   const handleMouseDown = useCallback((e) => {
     if (e.button !== 0) return
@@ -55,6 +61,18 @@ export function useEmailIcon(binRef, onDroppedIntoBin) {
   const closeContext = useCallback(() => { setContext(c => ({ ...c, open: false })) }, [])
   const handleContextMenu = useCallback((e) => { e.preventDefault(); if (!visible) return; openContextAt(e.clientX, e.clientY) }, [openContextAt, visible])
 
+  const handleClick = useCallback(() => {
+    if (!isTouchOrCoarse) return
+    if (!visible) return
+    if (!movedRef.current) setModalOpen(true)
+  }, [isTouchOrCoarse, visible])
+
+  const handleDoubleClick = useCallback(() => {
+    if (isTouchOrCoarse) return
+    if (!visible) return
+    if (!movedRef.current) setModalOpen(true)
+  }, [isTouchOrCoarse, visible])
+
   useEffect(() => {
     if (!context.open) return
     function onDoc(e) { if (!(e.target.closest && e.target.closest('.context-menu'))) closeContext() }
@@ -78,10 +96,14 @@ export function useEmailIcon(binRef, onDroppedIntoBin) {
     visible,
     style,
     handleMouseDown,
+  handleClick,
+  handleDoubleClick,
     handleContextMenu,
     context,
     closeContext,
     deleteSelf: () => { if (!visible) return; setVisible(false); closeContext(); onDroppedIntoBin && onDroppedIntoBin({ id: 'email', name: 'Email', icon: emailIcon }) },
-    restore: () => { setVisible(true); setPos({ x: null, y: null }); closeContext() }
+  restore: () => { setVisible(true); setPos({ x: null, y: null }); closeContext() },
+  modalOpen,
+  setModalOpen
   }
 }

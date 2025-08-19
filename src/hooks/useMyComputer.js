@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { getClampedBinPosition, isIconDroppedOnTarget } from '../utils/desktop.js'
+import { getClampedBinPosition, isIconDroppedOnTarget } from '../hooks/useDesktop.js'
 import myComputerIcon from '../assets/win7/mycomputer.svg'
 
 export function useMyComputer(binRef, onDroppedIntoBin) {

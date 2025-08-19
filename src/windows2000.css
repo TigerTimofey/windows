@@ -272,3 +272,5 @@ body, .windows-bg {
   border: 2px solid #33333376
 }
 .modal-btn-text:hover { border: 2px inset #fff; background: #dcdcdc; }
+
+/* Email assistant styles moved to components/email/EmailAssistant/EmailAssistant.css */

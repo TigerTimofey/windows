@@ -15,6 +15,7 @@ import { useStartMenu } from './hooks/useStartMenu.js'
 import { useRecycleBin } from './hooks/useRecycleBin.js'
 import { useMyComputer } from './hooks/useMyComputer.js'
 import { useEmailIcon } from './hooks/useEmailIcon.js'
+import { EmailAssistant } from './components/email/EmailAssistant/EmailAssistant.jsx'
 import trashSound from './assets/win7/sounds/trash.mp3'
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
   const recycle = useRecycleBin()
   const email = useEmailIcon(recycle.binRef, addItemToBin)
+  // Email assistant modal isolated in its own component
 
   function playTrashSound() {
     try {
@@ -110,12 +112,14 @@ function App() {
           onContextMenu={handleCompContextMenu}
         />
       )}
-      {email.visible && (
+  {email.visible && (
         <EmailIcon
           iconRef={email.ref}
           style={email.style}
           onMouseDown={email.handleMouseDown}
           onContextMenu={email.handleContextMenu}
+          onClick={email.handleClick}
+          onDoubleClick={email.handleDoubleClick}
         />
       )}
 
@@ -123,7 +127,7 @@ function App() {
         x={email.context?.x}
         y={email.context?.y}
         open={email.context?.open}
-        onOpen={() => { /* could open future email modal */ email.closeContext() }}
+        onOpen={() => { email.setModalOpen(true); email.closeContext() }}
         onDelete={() => { email.deleteSelf(); email.closeContext() }}
       />
 
@@ -209,6 +213,8 @@ function App() {
           </div>
         </ModalWindow>
       )}
+
+  <EmailAssistant open={email.modalOpen} onClose={() => email.setModalOpen(false)} />
 
       {menuOpen && <StartMenu menuRef={menuRef} />}
     </div>

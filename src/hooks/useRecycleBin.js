@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { getClampedBinPosition } from '../utils/desktop.js'
+import { getClampedBinPosition } from '../hooks/useDesktop.js'
 
 export function useRecycleBin() {
   const [binPos, setBinPos] = useState({ x: null, y: null })
