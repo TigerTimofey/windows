@@ -18,27 +18,11 @@
   background: linear-gradient(90deg, #1e4e8c 80%, #1e4e8c 100%);
   color: #fff;
   padding: 4px 8px;
-  font-size: 14px;
   border-bottom: 1px solid #b5b5b5;
 }
 .modal-title {
   font-weight: 500;
-}
-.modal-btn {
-  width: 24px;
-  height: 22px;
-  background: #e3e3e3;
-  border: 1px solid #b5b5b5;
-  color: #333;
-  font-size: 18px;
-  cursor: pointer;
-  line-height: 1;
-
-}
-.modal-btn:hover {
-  border: 2px inset #fff;
-  background: #dcdcdc;
-  
+  font-size: 14px;
 }
 
 .windows-icon {
@@ -262,7 +246,7 @@ body, .windows-bg {
 
 /* Text buttons inside confirm dialog */
 .modal-btn-text {
-  
+
   padding: 6px 14px;
   font-family: inherit;
   font-size: 14px;

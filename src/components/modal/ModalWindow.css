@@ -23,7 +23,7 @@
   align-items: center;
   justify-content: center;
   height: 120px;
-  font-size: 16px;
+  font-size: 15px;
   color: #333;
 }
 
@@ -121,8 +121,8 @@
   gap: 2px;
 }
 .modal-btn {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   font-size: 16px;
   font-weight: bold;
@@ -130,10 +130,9 @@
   line-height: 1;
   cursor: pointer;
   background: #c0c0c0;
-  border: 1px solid #808080; /* dark edge */
-  border-left-color: #ffffff; /* light top/left for raised effect */
+  border-left-color: #ffffff;
   border-top-color: #ffffff;
-  border-right-color: #404040; /* deeper right/bottom */
+  border-right-color: #404040; 
   border-bottom-color: #404040;
   display: flex;
   align-items: center;
@@ -141,6 +140,9 @@
   box-sizing: border-box;
 }
 .modal-btn:hover {
+  border-top-color: #404040;
+  border-right-color: #ffffff;   border-right-color: #404040; 
+  border-bottom-color: #ffffff;
   background: #d4d4d4;
 }
 .modal-btn:active {
@@ -153,6 +155,8 @@
 }
 .modal-btn:focus { outline: 1px dotted #000; outline-offset: 0; }
 .modal-content {
+  background-color: rgb(211, 211, 211);
+  border: 1px solid #b5b5b5; 
   padding: 18px 16px;
   color: #222;
   min-height: 80px;
