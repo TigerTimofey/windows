@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { getClampedBinPosition, isIconDroppedOnTarget } from '../hooks/useDesktop.js'
 import myComputerIcon from '../assets/win7/mycomputer.svg'
 
-export function useMyComputer(binRef, onDroppedIntoBin) {
+export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder) {
   const [pos, setPos] = useState({ x: null, y: null })
   const [dragging, setDragging] = useState(false)
   const [visible, setVisible] = useState(true)
@@ -82,6 +82,13 @@ export function useMyComputer(binRef, onDroppedIntoBin) {
         setVisible(false)
         setModalOpen(false)
         onDroppedIntoBin && onDroppedIntoBin({ id: 'mycomputer', name: 'My Computer', icon: myComputerIcon })
+        return
+      }
+      if (folderRef && isIconDroppedOnTarget(ref, folderRef)) {
+        setVisible(false)
+        setModalOpen(false)
+        onDroppedIntoFolder && onDroppedIntoFolder({ id: 'mycomputer', name: 'My Computer', icon: myComputerIcon })
+        return
       }
     }
     if (dragging) {
@@ -92,7 +99,7 @@ export function useMyComputer(binRef, onDroppedIntoBin) {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
     }
-  }, [dragging, binRef, onDroppedIntoBin])
+  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder])
 
   const handleClick = useCallback(() => {
     if (!isTouchOrCoarse) return
@@ -106,9 +113,12 @@ export function useMyComputer(binRef, onDroppedIntoBin) {
     if (!movedRef.current) setModalOpen(true)
   }, [isTouchOrCoarse, visible])
 
+  // My Computer: base zIndex 50; elevate while dragging so it floats above folder (55)
+  const baseZ = 50
+  const dragZ = 70
   const style = pos.x !== null && pos.y !== null
-    ? { left: pos.x, top: pos.y, position: 'fixed', zIndex: 51 }
-    : { left: 18, top: 18, position: 'fixed', zIndex: 51 }
+    ? { left: pos.x, top: pos.y, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
+    : { left: 18, top: 18, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
 
   const systemInfo = useMemo(() => {
     if (!modalOpen) return null
@@ -199,6 +209,7 @@ export function useMyComputer(binRef, onDroppedIntoBin) {
       setModalOpen(false)
       closeContext()
       onDroppedIntoBin && onDroppedIntoBin({ id: 'mycomputer', name: 'My Computer', icon: myComputerIcon })
-    }
+  },
+  setPosition: (x, y) => setPos({ x, y })
   }
 }

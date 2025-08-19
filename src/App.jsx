@@ -28,8 +28,9 @@ function App() {
   const clock = useClock()
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
   const recycle = useRecycleBin()
-  const email = useEmailIcon(recycle.binRef, addItemToBin)
   const folder = useFolderIcon(recycle.binRef, addItemToBin)
+  function addItemToFolder(item) { folder.addItem(item) }
+  const email = useEmailIcon(recycle.binRef, folder.ref, addItemToBin, addItemToFolder)
   // Email assistant modal isolated in its own component
 
   function playTrashSound() {
@@ -66,12 +67,13 @@ function App() {
   handleContextMenu: handleCompContextMenu,
   closeContext: closeCompContext,
   deleteSelf: deleteComputer,
-  } = useMyComputer(recycle.binRef, addItemToBin)
+  } = useMyComputer(recycle.binRef, folder.ref, addItemToBin, addItemToFolder)
 
   const binFullState = recycle.items.length > 0
+  // Bin: highest z-index to allow easy dropping; folder (55) above other icons (50)
   const binStyle = recycle.binPos.x !== null && recycle.binPos.y !== null
-    ? { left: recycle.binPos.x, top: recycle.binPos.y, position: 'fixed', zIndex: 50 }
-    : { right: 18, bottom: 54, position: 'fixed', zIndex: 50 }
+    ? { left: recycle.binPos.x, top: recycle.binPos.y, position: 'fixed', zIndex: 60 }
+    : { right: 18, bottom: 54, position: 'fixed', zIndex: 60 }
 
   function handleBinDoubleClick() { setBinModalOpen(true) }
   function handleBinModalClose() { setBinModalOpen(false) }
@@ -139,7 +141,7 @@ function App() {
         />
       )}
 
-      <EmailContextMenu
+  <EmailContextMenu
         x={email.context?.x}
         y={email.context?.y}
         open={email.context?.open}
@@ -239,6 +241,25 @@ function App() {
       )}
 
   <EmailAssistant open={email.modalOpen} onClose={() => email.setModalOpen(false)} />
+
+      {folder.modalOpen && (
+        <ModalWindow title="ghost-writer" onClose={() => folder.setModalOpen(false)}>
+          <div style={{ width: '100%', minHeight: 120, display: 'flex', flexWrap: 'wrap', gap: 24, padding: '8px 4px' }}>
+            {folder.items.length === 0 && (
+              <div className="modal-empty-message">The ghost-writer folder is empty.</div>
+            )}
+            {folder.items.map(item => (
+              <div key={item.id} style={{ width: 82, textAlign: 'center', userSelect: 'none', cursor: 'default' }} onDoubleClick={() => {
+                if (item.id === 'email') email.setModalOpen(true)
+                if (item.id === 'mycomputer') setCompModalOpen(true)
+              }}>
+                <img src={item.icon} alt={item.name} style={{ width: 40, height: 40 }} draggable={false} />
+                <div style={{ fontSize: 13, marginTop: 4 }}>{item.name}</div>
+              </div>
+            ))}
+          </div>
+        </ModalWindow>
+      )}
 
       {menuOpen && <StartMenu menuRef={menuRef} />}
     </div>

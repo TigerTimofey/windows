@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import emailIcon from '../assets/win7/icons/email.ico'
 import { getClampedBinPosition, isIconDroppedOnTarget } from '../hooks/useDesktop.js'
 
-export function useEmailIcon(binRef, onDroppedIntoBin) {
+export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder) {
   const [pos, setPos] = useState({ x: null, y: null })
   const [dragging, setDragging] = useState(false)
   const [visible, setVisible] = useState(true)
@@ -37,6 +37,12 @@ export function useEmailIcon(binRef, onDroppedIntoBin) {
       if (isIconDroppedOnTarget(ref, binRef)) {
         setVisible(false)
         onDroppedIntoBin && onDroppedIntoBin({ id: 'email', name: 'Email', icon: emailIcon })
+        return
+      }
+      if (folderRef && isIconDroppedOnTarget(ref, folderRef)) {
+        setVisible(false)
+        onDroppedIntoFolder && onDroppedIntoFolder({ id: 'email', name: 'Email', icon: emailIcon })
+        return
       }
     }
     if (dragging) {
@@ -47,7 +53,7 @@ export function useEmailIcon(binRef, onDroppedIntoBin) {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
     }
-  }, [dragging, binRef, onDroppedIntoBin])
+  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder])
 
   const clampMenu = useCallback((x, y) => {
     const vw = window.innerWidth
@@ -87,9 +93,12 @@ export function useEmailIcon(binRef, onDroppedIntoBin) {
     }
   }, [context.open, closeContext])
 
+  // Email icon: base zIndex 50; elevate while dragging above folder (55)
+  const baseZ = 50
+  const dragZ = 70
   const style = pos.x !== null && pos.y !== null
-    ? { left: pos.x, top: pos.y, position: 'fixed', zIndex: 51 }
-    : { left: 18, top: 120, position: 'fixed', zIndex: 51 }
+    ? { left: pos.x, top: pos.y, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
+    : { left: 18, top: 120, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
 
   return {
     ref,
@@ -104,6 +113,7 @@ export function useEmailIcon(binRef, onDroppedIntoBin) {
     deleteSelf: () => { if (!visible) return; setVisible(false); closeContext(); onDroppedIntoBin && onDroppedIntoBin({ id: 'email', name: 'Email', icon: emailIcon }) },
   restore: () => { setVisible(true); setPos({ x: null, y: null }); closeContext() },
   modalOpen,
-  setModalOpen
+  setModalOpen,
+  setPosition: (x, y) => setPos({ x, y })
   }
 }

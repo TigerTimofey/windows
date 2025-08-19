@@ -6,6 +6,7 @@ export function useFolderIcon(binRef, onDroppedIntoBin) {
   const [pos, setPos] = useState({ x: null, y: null })
   const [dragging, setDragging] = useState(false)
   const [visible, setVisible] = useState(true)
+  const [items, setItems] = useState([]) // items currently inside folder
   const ref = useRef(null)
   const dragOffset = useRef({ x: 0, y: 0 })
   const movedRef = useRef(false)
@@ -87,9 +88,10 @@ export function useFolderIcon(binRef, onDroppedIntoBin) {
     }
   }, [context.open, closeContext])
 
+  // Folder should sit between bin (highest) and other icons (lowest)
   const style = pos.x !== null && pos.y !== null
-    ? { left: pos.x, top: pos.y, position: 'fixed', zIndex: 51 }
-    : { left: 18, top: 210, position: 'fixed', zIndex: 51 }
+    ? { left: pos.x, top: pos.y, position: 'fixed', zIndex: 55 }
+    : { left: 18, top: 210, position: 'fixed', zIndex: 55 }
 
   return {
     ref,
@@ -104,6 +106,10 @@ export function useFolderIcon(binRef, onDroppedIntoBin) {
     deleteSelf: () => { if (!visible) return; setVisible(false); closeContext(); onDroppedIntoBin && onDroppedIntoBin({ id: 'ghost-folder', name: 'ghost-writer', icon: folderIcon }) },
     restore: () => { setVisible(true); setPos({ x: null, y: null }); closeContext() },
     modalOpen,
-    setModalOpen
+  setModalOpen,
+  items,
+  addItem: (item) => setItems(prev => prev.some(i => i.id === item.id) ? prev : [...prev, item]),
+  removeItem: (id) => setItems(prev => prev.filter(i => i.id !== id)),
+  hasItem: (id) => items.some(i => i.id === id)
   }
 }
