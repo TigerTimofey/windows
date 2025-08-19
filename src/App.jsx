@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './windows2000.css'
 import './App.css'
 import ModalWindow from './components/modal/ModalWindow.jsx'
@@ -20,10 +20,28 @@ import { useEmailIcon } from './hooks/useEmailIcon.js'
 import { useFolderIcon } from './hooks/useFolderIcon.js'
 import { EmailAssistant } from './components/email/EmailAssistant/EmailAssistant.jsx'
 import trashSound from './assets/win7/sounds/trash.mp3'
+import myComputerIconAsset from './assets/win7/mycomputer.svg'
+import emailIconAsset from './assets/win7/icons/email.ico'
 
 function App() {
   const [binModalOpen, setBinModalOpen] = useState(false)
   const [confirmClearOpen, setConfirmClearOpen] = useState(false)
+  // Modal stacking management
+  const zCounterRef = React.useRef(150)
+  const [folderZ, setFolderZ] = useState(110)
+  const [emailZ, setEmailZ] = useState(120)
+  const [compZ, setCompZ] = useState(115)
+  const [binZ, setBinZ] = useState(100)
+  const [confirmZ, setConfirmZ] = useState(105)
+  function bring(which) {
+    const next = ++zCounterRef.current
+    if (which === 'folder') setFolderZ(next)
+    if (which === 'email') setEmailZ(next)
+    if (which === 'comp') setCompZ(next)
+    if (which === 'bin') setBinZ(next)
+    if (which === 'confirm') setConfirmZ(next)
+  }
+
 
   const clock = useClock()
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
@@ -69,6 +87,13 @@ function App() {
   deleteSelf: deleteComputer,
   } = useMyComputer(recycle.binRef, folder.ref, addItemToBin, addItemToFolder)
 
+  // Auto bring-to-front when a modal becomes open (after all hook states exist)
+  useEffect(() => { if (folder.modalOpen) bring('folder') }, [folder.modalOpen])
+  useEffect(() => { if (email.modalOpen) bring('email') }, [email.modalOpen])
+  useEffect(() => { if (compModalOpen) bring('comp') }, [compModalOpen])
+  useEffect(() => { if (binModalOpen) bring('bin') }, [binModalOpen])
+  useEffect(() => { if (confirmClearOpen) bring('confirm') }, [confirmClearOpen])
+
   const binFullState = recycle.items.length > 0
   // Bin: highest z-index to allow easy dropping; folder (55) above other icons (50)
   const binStyle = recycle.binPos.x !== null && recycle.binPos.y !== null
@@ -100,6 +125,31 @@ function App() {
   }
   function handleConfirmEmpty() { if (recycle.items.length) playTrashSound(); recycle.setItems([]); setConfirmClearOpen(false) }
   function handleCancelEmpty() { setConfirmClearOpen(false) }
+
+  function handleFolderItemToDesktop(id) {
+    if (id === 'email') {
+      folder.removeItem('email')
+      email.restore()
+    }
+    if (id === 'mycomputer') {
+      folder.removeItem('mycomputer')
+      restoreComputer()
+    }
+  }
+  function handleFolderItemOpen(id) {
+    if (id === 'email') { email.setModalOpen(true); bring('email') }
+    if (id === 'mycomputer') { setCompModalOpen(true); bring('comp') }
+  }
+  function handleFolderItemDelete(id) {
+    if (id === 'email') {
+      folder.removeItem('email')
+      addItemToBin({ id: 'email', name: 'Email', icon: emailIconAsset })
+    }
+    if (id === 'mycomputer') {
+      folder.removeItem('mycomputer')
+      addItemToBin({ id: 'mycomputer', name: 'My Computer', icon: myComputerIconAsset })
+    }
+  }
 
   return (
     <div className="windows-bg">
@@ -145,7 +195,7 @@ function App() {
         x={email.context?.x}
         y={email.context?.y}
         open={email.context?.open}
-        onOpen={() => { email.setModalOpen(true); email.closeContext() }}
+  onOpen={() => { email.setModalOpen(true); email.closeContext(); bring('email') }}
         onDelete={() => { email.deleteSelf(); email.closeContext() }}
       />
 
@@ -153,7 +203,7 @@ function App() {
         x={folder.context?.x}
         y={folder.context?.y}
         open={folder.context?.open}
-        onOpen={() => { folder.setModalOpen(true); folder.closeContext() }}
+  onOpen={() => { folder.setModalOpen(true); folder.closeContext(); bring('folder') }}
         onDelete={() => { folder.deleteSelf(); folder.closeContext() }}
       />
 
@@ -162,7 +212,7 @@ function App() {
         y={recycle.context.y}
         open={recycle.context.open}
         hasItems={recycle.items.length > 0}
-        onOpen={() => { setBinModalOpen(true); recycle.closeContext() }}
+  onOpen={() => { setBinModalOpen(true); recycle.closeContext(); bring('bin') }}
         onEmpty={() => { recycle.closeContext(); handleEmptyRequest() }}
         onRestoreAll={() => { recycle.closeContext(); handleRestoreAll() }}
       />
@@ -171,7 +221,7 @@ function App() {
         x={compContext?.x}
         y={compContext?.y}
         open={compContext?.open}
-        onOpen={() => { setCompModalOpen(true); closeCompContext() }}
+  onOpen={() => { setCompModalOpen(true); closeCompContext(); bring('comp') }}
         onDelete={() => { deleteComputer(); closeCompContext() }}
       />
 
@@ -189,7 +239,7 @@ function App() {
       />
 
       {binModalOpen && (
-        <ModalWindow title="Recycle Bin" onClose={handleBinModalClose}>
+        <ModalWindow title="Recycle Bin" onClose={handleBinModalClose} zIndex={binZ} onActivate={() => bring('bin')}>
           {recycle.items.length === 0 ? (
             <div className="modal-empty-message">
               The Recycle Bin is empty.
@@ -209,7 +259,7 @@ function App() {
       )}
 
       {confirmClearOpen && (
-        <ModalWindow title="Confirm Empty" onClose={handleCancelEmpty}>
+        <ModalWindow title="Confirm Empty" onClose={handleCancelEmpty} zIndex={confirmZ} onActivate={() => bring('confirm')}>
           <div className="modal-confirm">
             <p className="modal-confirm-message">Permanently delete all items in the Recycle Bin?</p>
             <div className="modal-btn-row">
@@ -221,7 +271,7 @@ function App() {
       )}
 
       {compModalOpen && computerInfo && (
-        <ModalWindow title="My Computer" onClose={() => setCompModalOpen(false)}>
+        <ModalWindow title="My Computer" onClose={() => setCompModalOpen(false)} zIndex={compZ} onActivate={() => bring('comp')}>
           <div className="computer-info">
             <ul className="computer-info-list">
               <li><strong>Platform:</strong> {computerInfo.platform}</li>
@@ -240,24 +290,31 @@ function App() {
         </ModalWindow>
       )}
 
-  <EmailAssistant open={email.modalOpen} onClose={() => email.setModalOpen(false)} />
+  <EmailAssistant open={email.modalOpen} onClose={() => email.setModalOpen(false)} zIndex={emailZ} onActivate={() => bring('email')} />
 
       {folder.modalOpen && (
-        <ModalWindow title="ghost-writer" onClose={() => folder.setModalOpen(false)}>
-          <div style={{ width: '100%', minHeight: 120, display: 'flex', flexWrap: 'wrap', gap: 24, padding: '8px 4px' }}>
-            {folder.items.length === 0 && (
-              <div className="modal-empty-message">The ghost-writer folder is empty.</div>
-            )}
-            {folder.items.map(item => (
-              <div key={item.id} style={{ width: 82, textAlign: 'center', userSelect: 'none', cursor: 'default' }} onDoubleClick={() => {
-                if (item.id === 'email') email.setModalOpen(true)
-                if (item.id === 'mycomputer') setCompModalOpen(true)
-              }}>
-                <img src={item.icon} alt={item.name} style={{ width: 40, height: 40 }} draggable={false} />
-                <div style={{ fontSize: 13, marginTop: 4 }}>{item.name}</div>
-              </div>
-            ))}
-          </div>
+        <ModalWindow title="ghost-writer" onClose={() => folder.setModalOpen(false)} zIndex={folderZ} onActivate={() => bring('folder')}>
+          {folder.items.length === 0 ? (
+            <div className="modal-empty-message">The ghost-writer folder is empty.</div>
+          ) : (
+            <div className="modal-bin-items" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
+              {folder.items.map(item => (
+                <div
+                  key={item.id}
+                  className="modal-bin-item"
+                  style={{ alignItems: 'center', gap: 4 }}
+                >
+                  <img src={item.icon} alt={item.name} className="modal-bin-icon" draggable={false} />
+                  <span className="modal-bin-label" style={{ textAlign: 'center' }}>{item.name}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
+                    <button className="modal-bin-restore-btn" onClick={() => handleFolderItemOpen(item.id)}>Open</button>
+                    <button className="modal-bin-restore-btn" onClick={() => handleFolderItemDelete(item.id)}>Delete</button>
+                    <button className="modal-bin-restore-btn" onClick={() => handleFolderItemToDesktop(item.id)}>To Desktop</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </ModalWindow>
       )}
 

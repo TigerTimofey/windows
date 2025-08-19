@@ -2,7 +2,7 @@
 import React, { useRef, useState } from 'react'
 import './ModalWindow.css'
 
-export default function ModalWindow({ title, children, onClose }) {
+export default function ModalWindow({ title, children, onClose, zIndex = 100, onActivate }) {
   const modalRef = useRef(null)
   const [dragging, setDragging] = useState(false)
   const [pos, setPos] = useState({ x: null, y: null })
@@ -10,6 +10,7 @@ export default function ModalWindow({ title, children, onClose }) {
 
   function handleMouseDown(e) {
     if (e.button !== 0) return
+    if (onActivate) onActivate()
     setDragging(true)
     const rect = modalRef.current.getBoundingClientRect()
     dragOffset.current = {
@@ -46,11 +47,11 @@ export default function ModalWindow({ title, children, onClose }) {
   }, [dragging])
 
   const style = pos.x !== null && pos.y !== null
-    ? { left: pos.x, top: pos.y, position: 'fixed', zIndex: 100, width: 420, transform: 'none' }
-    : undefined
+    ? { left: pos.x, top: pos.y, position: 'fixed', zIndex, width: 420, transform: 'none' }
+    : { zIndex }
 
   return (
-    <div className="windows2000-modal" ref={modalRef} style={style}>
+    <div className="windows2000-modal" ref={modalRef} style={style} onMouseDown={() => onActivate && onActivate()}>
       <div className="modal-title-bar modal-title-bar-move" onMouseDown={handleMouseDown}>
         <div className="modal-title-bar-flex">
           <span className="modal-title">{title}</span>

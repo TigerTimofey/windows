@@ -3,7 +3,7 @@ import ModalWindow from '../../modal/ModalWindow.jsx'
 import { WinDropdown } from '../../../utils/WinDropdown/WinDropdown.jsx'
 import './EmailAssistant.css'
 
-export function EmailAssistant({ open, onClose }) {
+export function EmailAssistant({ open, onClose, zIndex, onActivate }) {
   const [installStep, setInstallStep] = useState(0) // 0 installing, 1 form
   const [form, setForm] = useState({ purpose: '', recipientContext: '', keyPoints: '', tone: '', urgency: '', cta: '' })
 
@@ -22,7 +22,12 @@ export function EmailAssistant({ open, onClose }) {
   if (!open) return null
 
   return (
-    <ModalWindow title={installStep === 0 ? 'Installing Email Client...' : 'Email Assistant'} onClose={onClose}>
+    <ModalWindow
+      title={installStep === 0 ? 'Installing Email Client...' : 'Email Assistant'}
+      onClose={onClose}
+      zIndex={zIndex}
+      onActivate={onActivate}
+    >
       {installStep === 0 ? (
         <div style={{ width: '100%', textAlign: 'center' }}>
           <p style={{ marginBottom: 16 }}>Preparing components...</p>
