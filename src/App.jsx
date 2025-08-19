@@ -7,6 +7,8 @@ import { StartMenu } from './components/StartMenu/StartMenu.jsx'
 import { MyComputerIcon } from './components/MyComputerIcon/MyComputerIcon.jsx'
 import { EmailIcon } from './components/email/EmailIcon/EmailIcon.jsx'
 import { RecycleBin } from './components/RecycleBin/RecycleBin.jsx'
+import { FolderIcon } from './components/folder/FolderIcon/FolderIcon.jsx'
+import { FolderContextMenu } from './components/folder/FolderContextMenu/FolderContextMenu.jsx'
 import { BinContextMenu } from './components/BinContextMenu/BinContextMenu.jsx'
 import { MyComputerContextMenu } from './components/MyComputerContextMenu/MyComputerContextMenu.jsx'
 import { EmailContextMenu } from './components/email/EmailContextMenu/EmailContextMenu.jsx'
@@ -15,6 +17,7 @@ import { useStartMenu } from './hooks/useStartMenu.js'
 import { useRecycleBin } from './hooks/useRecycleBin.js'
 import { useMyComputer } from './hooks/useMyComputer.js'
 import { useEmailIcon } from './hooks/useEmailIcon.js'
+import { useFolderIcon } from './hooks/useFolderIcon.js'
 import { EmailAssistant } from './components/email/EmailAssistant/EmailAssistant.jsx'
 import trashSound from './assets/win7/sounds/trash.mp3'
 
@@ -26,6 +29,7 @@ function App() {
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
   const recycle = useRecycleBin()
   const email = useEmailIcon(recycle.binRef, addItemToBin)
+  const folder = useFolderIcon(recycle.binRef, addItemToBin)
   // Email assistant modal isolated in its own component
 
   function playTrashSound() {
@@ -82,13 +86,15 @@ function App() {
   function handleRestoreAll() {
     if (!recycle.items.length) return
     if (recycle.items.some(i => i.id === 'mycomputer')) restoreComputer()
-  if (recycle.items.some(i => i.id === 'email')) email.restore()
+    if (recycle.items.some(i => i.id === 'email')) email.restore()
+    if (recycle.items.some(i => i.id === 'ghost-folder')) folder.restore()
     recycle.setItems([])
   }
   function handleRestoreItem(id) {
     recycle.setItems(items => items.filter(i => i.id !== id))
     if (id === 'mycomputer') restoreComputer()
-  if (id === 'email') email.restore()
+    if (id === 'email') email.restore()
+    if (id === 'ghost-folder') folder.restore()
   }
   function handleConfirmEmpty() { if (recycle.items.length) playTrashSound(); recycle.setItems([]); setConfirmClearOpen(false) }
   function handleCancelEmpty() { setConfirmClearOpen(false) }
@@ -122,6 +128,16 @@ function App() {
           onDoubleClick={email.handleDoubleClick}
         />
       )}
+      {folder.visible && (
+        <FolderIcon
+          iconRef={folder.ref}
+          style={folder.style}
+          onMouseDown={folder.handleMouseDown}
+          onContextMenu={folder.handleContextMenu}
+          onClick={folder.handleClick}
+          onDoubleClick={folder.handleDoubleClick}
+        />
+      )}
 
       <EmailContextMenu
         x={email.context?.x}
@@ -129,6 +145,14 @@ function App() {
         open={email.context?.open}
         onOpen={() => { email.setModalOpen(true); email.closeContext() }}
         onDelete={() => { email.deleteSelf(); email.closeContext() }}
+      />
+
+      <FolderContextMenu
+        x={folder.context?.x}
+        y={folder.context?.y}
+        open={folder.context?.open}
+        onOpen={() => { folder.setModalOpen(true); folder.closeContext() }}
+        onDelete={() => { folder.deleteSelf(); folder.closeContext() }}
       />
 
       <BinContextMenu
