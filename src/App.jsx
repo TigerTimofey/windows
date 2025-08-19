@@ -7,6 +7,7 @@ import { StartMenu } from './components/StartMenu/StartMenu.jsx'
 import { MyComputerIcon } from './components/MyComputerIcon/MyComputerIcon.jsx'
 import { RecycleBin } from './components/RecycleBin/RecycleBin.jsx'
 import { BinContextMenu } from './components/BinContextMenu/BinContextMenu.jsx'
+import { MyComputerContextMenu } from './components/MyComputerContextMenu/MyComputerContextMenu.jsx'
 import { useClock } from './hooks/useClock.js'
 import { useStartMenu } from './hooks/useStartMenu.js'
 import { useRecycleBin } from './hooks/useRecycleBin.js'
@@ -50,6 +51,11 @@ function App() {
     style: compStyle,
     systemInfo: computerInfo,
     extra: compExtra,
+  restore: restoreComputer,
+  context: compContext,
+  handleContextMenu: handleCompContextMenu,
+  closeContext: closeCompContext,
+  deleteSelf: deleteComputer,
   } = useMyComputer(recycle.binRef, addItemToBin)
 
   const binFullState = recycle.items.length > 0
@@ -67,6 +73,15 @@ function App() {
   function handleBinClick() { if (isTouchOrCoarse) setBinModalOpen(true) }
 
   function handleEmptyRequest() { if (recycle.items.length !== 0) setConfirmClearOpen(true) }
+  function handleRestoreAll() {
+    if (!recycle.items.length) return
+    if (recycle.items.some(i => i.id === 'mycomputer')) restoreComputer()
+    recycle.setItems([])
+  }
+  function handleRestoreItem(id) {
+    recycle.setItems(items => items.filter(i => i.id !== id))
+    if (id === 'mycomputer') restoreComputer()
+  }
   function handleConfirmEmpty() { if (recycle.items.length) playTrashSound(); recycle.setItems([]); setConfirmClearOpen(false) }
   function handleCancelEmpty() { setConfirmClearOpen(false) }
 
@@ -86,6 +101,7 @@ function App() {
           onMouseDown={handleCompMouseDown}
           onClick={handleCompClick}
           onDoubleClick={handleCompDoubleClick}
+          onContextMenu={handleCompContextMenu}
         />
       )}
 
@@ -109,6 +125,15 @@ function App() {
         hasItems={recycle.items.length > 0}
         onOpen={() => { setBinModalOpen(true); recycle.closeContext() }}
         onEmpty={() => { recycle.closeContext(); handleEmptyRequest() }}
+        onRestoreAll={() => { recycle.closeContext(); handleRestoreAll() }}
+      />
+
+      <MyComputerContextMenu
+        x={compContext?.x}
+        y={compContext?.y}
+        open={compContext?.open}
+        onOpen={() => { setCompModalOpen(true); closeCompContext() }}
+        onDelete={() => { deleteComputer(); closeCompContext() }}
       />
 
       {binModalOpen && (
@@ -120,9 +145,10 @@ function App() {
           ) : (
             <div className="modal-bin-items">
               {recycle.items.map(item => (
-                <div key={item.id} className="modal-bin-item">
-                  <img src={item.icon} alt={item.name} className="modal-bin-icon" />
+                <div key={item.id} className="modal-bin-item" onDoubleClick={() => handleRestoreItem(item.id)}>
+                  <img src={item.icon} alt={item.name} className="modal-bin-icon" draggable={false} />
                   <span className="modal-bin-label">{item.name}</span>
+                  <button className="modal-bin-restore-btn" onClick={() => handleRestoreItem(item.id)}>Restore</button>
                 </div>
               ))}
             </div>

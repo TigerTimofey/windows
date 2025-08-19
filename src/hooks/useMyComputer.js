@@ -10,6 +10,7 @@ export function useMyComputer(binRef, onDroppedIntoBin) {
   const dragOffset = useRef({ x: 0, y: 0 })
   const movedRef = useRef(false)
   const ref = useRef(null)
+  const [context, setContext] = useState({ open: false, x: 0, y: 0 })
 
   const isTouchOrCoarse = typeof window !== 'undefined' && (
     'ontouchstart' in window ||
@@ -24,6 +25,49 @@ export function useMyComputer(binRef, onDroppedIntoBin) {
     const rect = ref.current.getBoundingClientRect()
     dragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
   }, [])
+
+  const clampMenu = useCallback((x, y) => {
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    const menuWidth = 140
+    const menuHeight = 52
+    return {
+      x: Math.min(x, vw - menuWidth - 4),
+      y: Math.min(y, vh - menuHeight - 4)
+    }
+  }, [])
+
+  const openContextAt = useCallback((x, y) => {
+    setContext({ open: true, ...clampMenu(x, y) })
+  }, [clampMenu])
+
+  const closeContext = useCallback(() => {
+    setContext(c => ({ ...c, open: false }))
+  }, [])
+
+  const handleContextMenu = useCallback((e) => {
+    e.preventDefault()
+    if (!visible) return
+    openContextAt(e.clientX, e.clientY)
+  }, [openContextAt, visible])
+
+  useEffect(() => {
+    if (!context.open) return
+    function onDoc(e) {
+      if (!(e.target.closest && e.target.closest('.context-menu'))) {
+        closeContext()
+      }
+    }
+    function onKey(e) { if (e.key === 'Escape') closeContext() }
+    document.addEventListener('mousedown', onDoc, true)
+    document.addEventListener('keydown', onKey)
+    window.addEventListener('resize', closeContext)
+    return () => {
+      document.removeEventListener('mousedown', onDoc, true)
+      document.removeEventListener('keydown', onKey)
+      window.removeEventListener('resize', closeContext)
+    }
+  }, [context.open, closeContext])
 
   useEffect(() => {
     function onMove(e) {
@@ -139,5 +183,22 @@ export function useMyComputer(binRef, onDroppedIntoBin) {
     style,
     systemInfo,
     extra,
+    restore: () => {
+      // Restore icon to its original default position
+      setVisible(true)
+      setModalOpen(false)
+      setPos({ x: null, y: null })
+      movedRef.current = false
+    },
+    context,
+    handleContextMenu,
+    closeContext,
+    deleteSelf: () => {
+      if (!visible) return
+      setVisible(false)
+      setModalOpen(false)
+      closeContext()
+      onDroppedIntoBin && onDroppedIntoBin({ id: 'mycomputer', name: 'My Computer', icon: myComputerIcon })
+    }
   }
 }

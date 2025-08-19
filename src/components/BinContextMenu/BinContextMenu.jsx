@@ -1,7 +1,7 @@
 import React from 'react'
 import './BinContextMenu.css'
 
-export function BinContextMenu({ x, y, open, hasItems, onOpen, onEmpty }) {
+export function BinContextMenu({ x, y, open, hasItems, onOpen, onEmpty, onRestoreAll }) {
   if (!open) return null
   return (
     <ul
@@ -14,6 +14,10 @@ export function BinContextMenu({ x, y, open, hasItems, onOpen, onEmpty }) {
         className={`context-menu-item${!hasItems ? ' disabled' : ''}`}
         onClick={() => hasItems && onEmpty()}
       >Empty Recycle Bin</li>
+      <li
+        className={`context-menu-item${!hasItems ? ' disabled' : ''}`}
+        onClick={() => hasItems && onRestoreAll && onRestoreAll()}
+      >Restore All Items</li>
     </ul>
   )
 }

@@ -30,23 +30,44 @@
 /* Bin items list */
 .modal-bin-items {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-  padding-top: 12px;
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 22px 28px;
+  padding: 16px 8px 8px;
+  justify-content: flex-start;
 }
 .modal-bin-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  width: 82px;
+  text-align: center;
+  cursor: default;
+  user-select: none;
 }
 .modal-bin-icon {
   width: 40px;
   height: 40px;
 }
 .modal-bin-label {
-  font-size: 15px;
+  font-size: 13px;
   color: #222;
+  margin-top: 4px;
+  line-height: 1.1;
+  word-break: break-word;
+}
+.modal-bin-restore-btn {
+  margin-top: 6px;
+  font-size: 12px;
+  padding: 2px 8px;
+  border: 1px solid #b5b5b5;
+  background: #e3e3e3;
+  cursor: pointer;
+  box-shadow: 1px 1px 0 #fff inset, -1px -1px 0 #707070 inset;
+}
+.modal-bin-restore-btn:hover {
+  background: #dcdcdc;
 }
 /* Windows 2000 Modal Window Styles */
 .windows2000-modal {
