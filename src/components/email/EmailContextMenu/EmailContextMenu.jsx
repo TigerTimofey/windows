@@ -1,5 +1,5 @@
 import React from 'react'
-import '../BinContextMenu/BinContextMenu.css'
+import '../../BinContextMenu/BinContextMenu.css'
 
 export function EmailContextMenu({ x, y, open, onOpen, onDelete }) {
   if (!open) return null

@@ -1,5 +1,5 @@
 import React from 'react'
-import emailIcon from '../../assets/win7/icons/email.ico'
+import emailIcon from '../../../assets/win7/icons/email.ico'
 import './EmailIcon.css'
 
 export function EmailIcon({ iconRef, style, onMouseDown, onContextMenu }) {
