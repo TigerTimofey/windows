@@ -1,0 +1,9 @@
+.email-icon-wrapper {
+  position: fixed;
+  left: 18px;
+  top: 120px; 
+  z-index: 51;
+}
+.email-icon-wrapper .icon-label {
+  text-align: center;
+}

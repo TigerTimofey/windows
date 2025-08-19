@@ -5,13 +5,16 @@ import ModalWindow from './components/modal/ModalWindow.jsx'
 import { Taskbar } from './components/Taskbar/Taskbar.jsx'
 import { StartMenu } from './components/StartMenu/StartMenu.jsx'
 import { MyComputerIcon } from './components/MyComputerIcon/MyComputerIcon.jsx'
+import { EmailIcon } from './components/EmailIcon/EmailIcon.jsx'
 import { RecycleBin } from './components/RecycleBin/RecycleBin.jsx'
 import { BinContextMenu } from './components/BinContextMenu/BinContextMenu.jsx'
 import { MyComputerContextMenu } from './components/MyComputerContextMenu/MyComputerContextMenu.jsx'
+import { EmailContextMenu } from './components/EmailContextMenu/EmailContextMenu.jsx'
 import { useClock } from './hooks/useClock.js'
 import { useStartMenu } from './hooks/useStartMenu.js'
 import { useRecycleBin } from './hooks/useRecycleBin.js'
 import { useMyComputer } from './hooks/useMyComputer.js'
+import { useEmailIcon } from './hooks/useEmailIcon.js'
 import trashSound from './assets/win7/sounds/trash.mp3'
 
 function App() {
@@ -21,6 +24,7 @@ function App() {
   const clock = useClock()
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
   const recycle = useRecycleBin()
+  const email = useEmailIcon(recycle.binRef, addItemToBin)
 
   function playTrashSound() {
     try {
@@ -76,11 +80,13 @@ function App() {
   function handleRestoreAll() {
     if (!recycle.items.length) return
     if (recycle.items.some(i => i.id === 'mycomputer')) restoreComputer()
+  if (recycle.items.some(i => i.id === 'email')) email.restore()
     recycle.setItems([])
   }
   function handleRestoreItem(id) {
     recycle.setItems(items => items.filter(i => i.id !== id))
     if (id === 'mycomputer') restoreComputer()
+  if (id === 'email') email.restore()
   }
   function handleConfirmEmpty() { if (recycle.items.length) playTrashSound(); recycle.setItems([]); setConfirmClearOpen(false) }
   function handleCancelEmpty() { setConfirmClearOpen(false) }
@@ -104,18 +110,21 @@ function App() {
           onContextMenu={handleCompContextMenu}
         />
       )}
+      {email.visible && (
+        <EmailIcon
+          iconRef={email.ref}
+          style={email.style}
+          onMouseDown={email.handleMouseDown}
+          onContextMenu={email.handleContextMenu}
+        />
+      )}
 
-      <RecycleBin
-        binRef={recycle.binRef}
-        style={binStyle}
-        full={binFullState}
-        onMouseDown={recycle.handleMouseDown}
-        onDoubleClick={handleBinDoubleClick}
-        onClick={handleBinClick}
-        onContextMenu={recycle.handleContextMenu}
-        onTouchStart={recycle.handleTouchStart}
-        onTouchMove={recycle.cancelLongPress}
-        onTouchEnd={recycle.cancelLongPress}
+      <EmailContextMenu
+        x={email.context?.x}
+        y={email.context?.y}
+        open={email.context?.open}
+        onOpen={() => { /* could open future email modal */ email.closeContext() }}
+        onDelete={() => { email.deleteSelf(); email.closeContext() }}
       />
 
       <BinContextMenu
@@ -134,6 +143,19 @@ function App() {
         open={compContext?.open}
         onOpen={() => { setCompModalOpen(true); closeCompContext() }}
         onDelete={() => { deleteComputer(); closeCompContext() }}
+      />
+
+      <RecycleBin
+        binRef={recycle.binRef}
+        style={binStyle}
+        full={binFullState}
+        onMouseDown={recycle.handleMouseDown}
+        onDoubleClick={handleBinDoubleClick}
+        onClick={handleBinClick}
+        onContextMenu={recycle.handleContextMenu}
+        onTouchStart={recycle.handleTouchStart}
+        onTouchMove={recycle.cancelLongPress}
+        onTouchEnd={recycle.cancelLongPress}
       />
 
       {binModalOpen && (
