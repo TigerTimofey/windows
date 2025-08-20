@@ -21,6 +21,7 @@ import { useEmailIcon } from './hooks/useEmailIcon.js'
 import { useFolderIcon } from './hooks/useFolderIcon.js'
 import { EmailAssistant } from './components/email/EmailAssistant/EmailAssistant.jsx'
 import trashSound from './assets/win7/sounds/trash.mp3'
+import clickSound from './assets/win7/sounds/click.mp3'
 import { openItemFromBaseFolder, deleteItemFromBaseFolder, moveItemFromBaseFolderToDesktop } from './utils/folderActions.js'
 import { ExtraFolderModal } from './components/folder/ExtraFolderModal/ExtraFolderModal.jsx'
 import { useExtraFolders } from './hooks/useExtraFolders.js'
@@ -133,17 +134,17 @@ function App() {
   )
 
   // Auto bring-to-front when a modal becomes open (after all hook states exist)
-  useEffect(() => { if (folder.modalOpen) bring('folder') }, [folder.modalOpen])
-  useEffect(() => { if (email.modalOpen) bring('email') }, [email.modalOpen])
-  useEffect(() => { if (compModalOpen) bring('comp') }, [compModalOpen])
-  useEffect(() => { if (binModalOpen) bring('bin') }, [binModalOpen])
-  useEffect(() => { if (confirmClearOpen) bring('confirm') }, [confirmClearOpen])
+  useEffect(() => { if (folder.modalOpen) bring('folder') }, [folder.modalOpen, bring])
+  useEffect(() => { if (email.modalOpen) bring('email') }, [email.modalOpen, bring])
+  useEffect(() => { if (compModalOpen) bring('comp') }, [compModalOpen, bring])
+  useEffect(() => { if (binModalOpen) bring('bin') }, [binModalOpen, bring])
+  useEffect(() => { if (confirmClearOpen) bring('confirm') }, [confirmClearOpen, bring])
 
   const binFullState = recycle.items.length > 0
   // Bin: highest z-index to allow easy dropping; folder (55) above other icons (50)
   const binStyle = recycle.binPos.x !== null && recycle.binPos.y !== null
     ? { left: recycle.binPos.x, top: recycle.binPos.y, position: 'fixed', zIndex: 60 }
-    : { right: 18, bottom: 54, position: 'fixed', zIndex: 60 }
+    : { right: 38, bottom: 184, position: 'fixed', zIndex: 60 }
 
   function handleBinDoubleClick() { setBinModalOpen(true) }
   function handleBinModalClose() { setBinModalOpen(false) }
@@ -176,6 +177,11 @@ function App() {
       if (item) revealOrCloneFromDescriptor(item)
     }
   }
+  function handleDeleteBinItem(id) {
+    // Permanently remove item from recycle bin (no restore)
+    recycle.setItems(items => items.filter(i => i.id !== id))
+    playTrashSound()
+  }
   function handleConfirmEmpty() { if (recycle.items.length) playTrashSound(); recycle.setItems([]); setConfirmClearOpen(false) }
   function handleCancelEmpty() { setConfirmClearOpen(false) }
 
@@ -195,9 +201,28 @@ function App() {
   const handleCopyBin = () => { captureCopy(recycle.copyDescriptor()); navigator.clipboard && navigator.clipboard.writeText(recycle.name).catch(()=>{}); recycle.closeContext() }
   const handleCopyComp = () => { captureCopy({ id: 'mycomputer', name: compName, icon: myComputerIconAsset, type: 'mycomputer' }); navigator.clipboard && navigator.clipboard.writeText(compName).catch(()=>{}); closeCompContext() }
 
+  // Click sound
+  const clickAudioRef = useRef(null)
+  function playClick() {
+    try {
+      if (!clickAudioRef.current) clickAudioRef.current = new Audio(clickSound)
+      const a = clickAudioRef.current
+  // Lower the volume slightly so it isn't too loud compared to trash sound
+  a.volume = 0.35
+      a.currentTime = 0
+      a.play().catch(()=>{})
+    } catch {/* ignore */}
+  }
+  useEffect(() => {
+    function handleGlobalMouseDown(e) { if (e.button === 0 || e.button === 2) playClick() }
+    document.addEventListener('mousedown', handleGlobalMouseDown)
+    return () => document.removeEventListener('mousedown', handleGlobalMouseDown)
+  }, [])
+
   function handleDesktopContextMenu(e) {
-  if (e.target.closest('.windows-icon') || e.target.closest('.windows-bin') || e.target.closest('.context-menu') || e.target.closest('.modal-window')) return
+    if (e.target.closest('.windows-icon') || e.target.closest('.windows-bin') || e.target.closest('.context-menu') || e.target.closest('.modal-window')) return
     e.preventDefault()
+    playClick()
     const vw = window.innerWidth
     const vh = window.innerHeight
     const menuWidth = 180
@@ -239,7 +264,23 @@ function App() {
   }
   function handleNewFolder() { closeDesktopMenu(); createNewFolder() }
   function handleRefresh() { closeDesktopMenu(); setRefreshTick(t => t + 1) }
-  function handleCleanUp() { closeDesktopMenu(); recycle.setBinPos({ x: null, y: null }); folder.restore(); email.restore(); restoreComputer() }
+  function handleCleanUp() {
+    closeDesktopMenu()
+    recycle.setBinPos({ x: null, y: null })
+    folder.restore(); email.restore(); restoreComputer()
+    const startX = 18
+    const startY = 300
+    const gapY = 90
+    setExtraFolders(list => {
+      let idx = 0
+      return list.map(f => {
+        if (!f.visible) return f
+        const pos = { x: startX, y: startY + idx * gapY }
+        idx += 1
+        return { ...f, pos }
+      })
+    })
+  }
   function handlePaste() {
     if (!copiedItem) return
     closeDesktopMenu()
@@ -485,7 +526,10 @@ function App() {
                 <div key={item.id} className="modal-bin-item" onDoubleClick={() => handleRestoreItem(item.id)}>
                   <img src={item.icon} alt={item.name} className="modal-bin-icon" draggable={false} />
                   <span className="modal-bin-label">{item.name}</span>
-                  <button className="modal-bin-restore-btn" onClick={() => handleRestoreItem(item.id)}>Restore</button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
+                    <button className="modal-bin-restore-btn" style={{ width: '100%' }} onClick={() => handleRestoreItem(item.id)}>Restore</button>
+                    <button className="modal-bin-restore-btn" style={{ width: '100%' }} onClick={() => handleDeleteBinItem(item.id)}>Delete</button>
+                  </div>
                 </div>
               ))}
             </div>
