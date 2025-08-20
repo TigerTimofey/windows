@@ -1,5 +1,5 @@
 import React from 'react'
-import windows7Logo from '../../assets/win7/windows7.png'
+import windows7Logo from '../../../assets/win7/windows7.png'
 
 export function Taskbar({ startOpen, onToggleStart, buttonRef, clock }) {
   return (

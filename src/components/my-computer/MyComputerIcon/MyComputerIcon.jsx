@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import myComputerIcon from '../../assets/win7/mycomputer.svg'
+import myComputerIcon from '../../../assets/win7/mycomputer.svg'
 
 export function MyComputerIcon({ iconRef, style, onMouseDown, onClick, onDoubleClick, onContextMenu, name = 'My Computer', renaming = false, onRenameCommit, onRenameCancel }) {
   const inputRef = useRef(null)
