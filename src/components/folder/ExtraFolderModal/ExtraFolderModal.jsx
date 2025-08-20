@@ -15,6 +15,10 @@ export function ExtraFolderModal({ f, zIndex, bring, bringExtraFolder, setExtraF
     if (item.id === 'email') { email.setModalOpen(true); bring('email'); return }
     if (item.id === 'mycomputer') { setCompModalOpen(true); bring('comp'); return }
   if (item.id === 'ghost-folder') { folder.setModalOpen(true); bring('folder'); return }
+  // Support cloned instances stored with clone-* ids
+  if (item.id.startsWith('clone-email')) { email.setModalOpen(true); bring('email'); return }
+  if (item.id.startsWith('clone-mycomputer')) { setCompModalOpen(true); bring('comp'); return }
+  if (item.id.startsWith('clone-ghost')) { folder.setModalOpen(true); bring('folder'); return }
   }
 
   function deleteItem(item) {

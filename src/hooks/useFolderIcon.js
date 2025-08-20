@@ -126,7 +126,7 @@ export function useFolderIcon(binRef, onDroppedIntoBin, getExtraFolderTargets, o
     modalOpen,
   setModalOpen,
   items,
-  addItem: (item) => setItems(prev => prev.some(i => i.id === item.id) ? prev : [...prev, item]),
+  addItem: (item) => setItems(prev => prev.some(i => i.id === item.id) ? prev : [...prev, { ...item }]),
   removeItem: (id) => setItems(prev => prev.filter(i => i.id !== id)),
   hasItem: (id) => items.some(i => i.id === id),
   name,

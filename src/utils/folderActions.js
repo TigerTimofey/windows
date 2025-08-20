@@ -18,6 +18,10 @@ export function openItemFromBaseFolder(id, { email, bring, setCompModalOpen, set
     bring('folder')
     return
   }
+  // Support cloned system icons stored inside the base folder by their clone ids (prefixed 'clone-')
+  if (id.startsWith('clone-email-') || id.startsWith('clone-email')) { email.setModalOpen(true); bring('email'); return }
+  if (id.startsWith('clone-mycomputer-') || id.startsWith('clone-mycomputer')) { setCompModalOpen(true); bring('comp'); return }
+  if (id.startsWith('clone-ghost-') || id.startsWith('clone-ghost')) { folder.setModalOpen(true); bring('folder'); return }
 }
 
 export function deleteItemFromBaseFolder(id, { folder, addItemToBin, email, setExtraFolders, extraFolderIcon }) {

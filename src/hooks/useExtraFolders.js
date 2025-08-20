@@ -64,7 +64,7 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
           if (intersects(rect, baseRect)) {
             const draggedName = extraFoldersRef.current.find(f => f.id === id)?.name || 'Folder'
             setExtraFolders(list => list.map(f => f.id === id ? { ...f, visible: false } : f))
-            baseFolder.addItem({ id, name: draggedName, icon: extraFolderIcon })
+            baseFolder.addItem({ id, name: draggedName, icon: extraFolderIcon, type: 'extra-folder' })
             draggingIdRef.current = null
             return
           }
@@ -78,7 +78,7 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
             const draggedName = extraFoldersRef.current.find(f => f.id === id)?.name || 'Folder'
             setExtraFolders(list => list.map(f => {
               if (f.id === id) return { ...f, visible: false }
-              if (f.id === tid) return { ...f, items: [...(f.items || []), { id, name: draggedName, icon: extraFolderIcon }] }
+              if (f.id === tid) return { ...f, items: [...(f.items || []), { id, name: draggedName, icon: extraFolderIcon, type: 'extra-folder' }] }
               return f
             }))
             draggingIdRef.current = null

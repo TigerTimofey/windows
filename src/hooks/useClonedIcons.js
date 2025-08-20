@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from 'react'
 
 // Manages duplicated (cloned) desktop icons for system items (email, mycomputer, ghost-folder)
 // Each clone: { id, type, name, icon, pos:{x,y}, renaming, context:{open,x,y} }
-export function useClonedIcons({ zCounterRef, recycleBinRef, addItemToBin, openHandlers }) {
+export function useClonedIcons({ zCounterRef, recycleBinRef, addItemToBin, openHandlers, baseFolder, getExtraFolderTargets, addItemToExtraFolder }) {
   const [clones, setClones] = useState([])
   const cloneRefs = useRef({})
   const draggingIdRef = useRef(null)
@@ -62,6 +62,42 @@ export function useClonedIcons({ zCounterRef, recycleBinRef, addItemToBin, openH
             setClones(list => list.filter(c => c.id !== id))
             const clone = clonesRef.current.find(c => c.id === id)
             if (clone) addItemToBin({ id: clone.id, name: clone.name, icon: clone.icon })
+            draggingIdRef.current = null
+            return
+        }
+      }
+      // Drop onto base folder
+      if (el && baseFolder?.visible && baseFolder.ref?.current) {
+        const rect = el.getBoundingClientRect()
+        const baseRect = baseFolder.ref.current.getBoundingClientRect()
+        if (intersects(rect, baseRect)) {
+          const clone = clonesRef.current.find(c => c.id === id)
+          if (clone) {
+            // Remove clone from desktop and add as item (retain type so it can be opened)
+            setClones(list => list.filter(c => c.id !== id))
+            baseFolder.addItem({ id, name: clone.name, icon: clone.icon, type: clone.type })
+          }
+          draggingIdRef.current = null
+          return
+        }
+      }
+      // Drop onto extra folder targets
+      if (el && getExtraFolderTargets) {
+        const rect = el.getBoundingClientRect()
+        const targets = getExtraFolderTargets()
+        for (const t of targets) {
+          const tel = t.el
+            if (!tel) continue
+          const tr = tel.getBoundingClientRect()
+          if (intersects(rect, tr)) {
+            const clone = clonesRef.current.find(c => c.id === id)
+            if (clone) {
+              setClones(list => list.filter(c => c.id !== id))
+              addItemToExtraFolder && addItemToExtraFolder(t.id, { id, name: clone.name, icon: clone.icon, type: clone.type })
+            }
+            draggingIdRef.current = null
+            return
+          }
         }
       }
       draggingIdRef.current = null
@@ -69,7 +105,7 @@ export function useClonedIcons({ zCounterRef, recycleBinRef, addItemToBin, openH
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
     return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
-  }, [addItemToBin, recycleBinRef])
+  }, [addItemToBin, recycleBinRef, baseFolder, getExtraFolderTargets, addItemToExtraFolder])
 
   function openClone(clone){
     const handler = openHandlers[clone.type]
