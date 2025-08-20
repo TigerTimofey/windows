@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
-import binEmpty from '../../assets/win7/bin-emty.svg'
-import binFull from '../../assets/win7/bin-full.svg'
+import binEmpty from '../../../assets/win7/bin-emty.svg'
+import binFull from '../../../assets/win7/bin-full.svg'
 
 export function RecycleBin({
   binRef,

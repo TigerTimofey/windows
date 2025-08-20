@@ -1,5 +1,5 @@
 import React from 'react'
-import '../../BinContextMenu/BinContextMenu.css'
+import '../../recycle-bin/BinContextMenu/BinContextMenu.css'
 
 export function FolderContextMenu({ x, y, open, onOpen, onDelete, onRename, onCopy }) {
   if (!open) return null

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import '../BinContextMenu/BinContextMenu.css'
+import '../../recycle-bin/BinContextMenu/BinContextMenu.css'
 
 // Desktop (background) context menu with New submenu
 export function DesktopContextMenu({ x, y, open, onNewFolder, onRefresh, onCleanUp, onPaste, canPaste }) {
