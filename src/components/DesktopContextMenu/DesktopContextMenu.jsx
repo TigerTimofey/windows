@@ -19,10 +19,8 @@ export function DesktopContextMenu({ x, y, open, onNewFolder, onRefresh, onClean
           className="context-menu-item"
           onMouseEnter={() => setShowNew(true)}
           onClick={() => setShowNew(v => !v)}
-          style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}
         >
-          <span>New</span>
-          <span style={{ fontSize: 10 }}>&gt;</span>
+          New
         </li>
         <li className="context-menu-separator" style={{ height: 2, padding: 0, background: '#999', margin: '2px 4px' }} />
         <li className="context-menu-item" onClick={onRefresh}>Refresh</li>

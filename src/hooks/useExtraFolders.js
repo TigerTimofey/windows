@@ -122,7 +122,8 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
       }
       const id = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
   const z = ++zCounterRef.current
-  return [...list, { id, name: descriptor.name || 'New Folder', renaming: false, visible: true, pos: { x: 18, y: 300 + list.filter(fl => fl.visible).length * 90 }, context: { open: false, x: 0, y: 0 }, modalOpen: false, items: [], z }]
+  const items = descriptor.items ? descriptor.items.map(it => ({ ...it })) : []
+  return [...list, { id, name: descriptor.name || 'New Folder', renaming: false, visible: true, pos: { x: 18, y: 300 + list.filter(fl => fl.visible).length * 90 }, context: { open: false, x: 0, y: 0 }, modalOpen: false, items, z }]
     })
   }
 

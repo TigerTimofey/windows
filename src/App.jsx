@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import './windows2000.css'
 import './App.css'
 import ModalWindow from './components/modal/ModalWindow.jsx'
@@ -26,36 +26,26 @@ import { ExtraFolderModal } from './components/folder/ExtraFolderModal/ExtraFold
 import { useExtraFolders } from './hooks/useExtraFolders.js'
 import myComputerIconAsset from './assets/win7/mycomputer.svg'
 import extraFolderIcon from './assets/win7/icons/folder.ico'
+import { useClonedIcons } from './hooks/useClonedIcons.js'
+import { useZLayers } from './hooks/useZLayers.js'
 
 function App() {
-  const [binModalOpen, setBinModalOpen] = useState(false)
-  const [confirmClearOpen, setConfirmClearOpen] = useState(false)
-  // Modal stacking management
-  const zCounterRef = React.useRef(150)
-  const [folderZ, setFolderZ] = useState(110)
-  const [emailZ, setEmailZ] = useState(120)
-  const [compZ, setCompZ] = useState(115)
-  const [binZ, setBinZ] = useState(100)
-  const [confirmZ, setConfirmZ] = useState(105)
-  function bring(which) {
-    const next = ++zCounterRef.current
-    if (which === 'folder') setFolderZ(next)
-    if (which === 'email') setEmailZ(next)
-    if (which === 'comp') setCompZ(next)
-    if (which === 'bin') setBinZ(next)
-    if (which === 'confirm') setConfirmZ(next)
-  }
-
-
+  // Layering
+  const { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ } = useZLayers(150)
   const clock = useClock()
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
+  // Modal stacking management
+  const [binModalOpen, setBinModalOpen] = useState(false)
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false)
+
+
+
   const recycle = useRecycleBin()
   // Base folder hook will be created after we assemble dependencies; use ref bridge for extra folders hook
-  const baseFolderRef = React.useRef(null)
+  const baseFolderRef = useRef(null)
   const {
     extraFolders,
     setExtraFolders,
-    createNewFolder,
     registerRef: registerExtraFolderRef,
     handleMouseDown: handleExtraFolderMouseDown,
     openContext: openExtraFolderContext,
@@ -81,6 +71,17 @@ function App() {
     getExtraFolderTargets,
     (item, targetId) => addItemToExtraFolder(targetId, item)
   )
+  // Cloned system icons (true duplicates)
+  const cloned = useClonedIcons({
+    zCounterRef,
+    recycleBinRef: recycle.binRef,
+    addItemToBin,
+    openHandlers: {
+      email: () => { email.setModalOpen(true); bring('email') },
+      mycomputer: () => { setCompModalOpen(true); bring('comp') },
+      ghost: () => { folder.setModalOpen(true); bring('folder') }
+    }
+  })
   // Email assistant modal isolated in its own component
 
   function playTrashSound() {
@@ -189,13 +190,13 @@ function App() {
 
   function captureCopy(descriptor) { setCopiedItem(descriptor) }
 
-  const handleCopyEmail = () => { captureCopy(email.copyDescriptor()); navigator.clipboard && navigator.clipboard.writeText(email.name).catch(()=>{}); email.closeContext() }
-  const handleCopyFolder = () => { captureCopy(folder.copyDescriptor()); navigator.clipboard && navigator.clipboard.writeText(folder.name).catch(()=>{}); folder.closeContext() }
+  const handleCopyEmail = () => { captureCopy({ id: 'email', name: email.name, icon: email.copyDescriptor().icon, type: 'email' }); navigator.clipboard && navigator.clipboard.writeText(email.name).catch(()=>{}); email.closeContext() }
+  const handleCopyFolder = () => { captureCopy({ id: 'ghost-folder', name: folder.name, icon: folder.copyDescriptor().icon, type: 'ghost', items: folder.items.map(it => ({ ...it })) }); navigator.clipboard && navigator.clipboard.writeText(folder.name).catch(()=>{}); folder.closeContext() }
   const handleCopyBin = () => { captureCopy(recycle.copyDescriptor()); navigator.clipboard && navigator.clipboard.writeText(recycle.name).catch(()=>{}); recycle.closeContext() }
-  const handleCopyComp = () => { captureCopy({ id: 'mycomputer', name: compName, icon: myComputerIconAsset }); navigator.clipboard && navigator.clipboard.writeText(compName).catch(()=>{}); closeCompContext() }
+  const handleCopyComp = () => { captureCopy({ id: 'mycomputer', name: compName, icon: myComputerIconAsset, type: 'mycomputer' }); navigator.clipboard && navigator.clipboard.writeText(compName).catch(()=>{}); closeCompContext() }
 
   function handleDesktopContextMenu(e) {
-    if (e.target.closest('.windows-icon') || e.target.closest('.context-menu') || e.target.closest('.modal-window')) return
+  if (e.target.closest('.windows-icon') || e.target.closest('.windows-bin') || e.target.closest('.context-menu') || e.target.closest('.modal-window')) return
     e.preventDefault()
     const vw = window.innerWidth
     const vh = window.innerHeight
@@ -217,16 +218,63 @@ function App() {
     return () => { document.removeEventListener('mousedown', onDoc, true); document.removeEventListener('keydown', onKey); window.removeEventListener('resize', closeDesktopMenu) }
   }, [deskMenu.open])
 
+  function createNewFolder() {
+    const id = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
+    const name = `New Folder`
+    setExtraFolders(list => [
+      ...list,
+      {
+        id,
+        name,
+        icon: extraFolderIcon,
+        items: [],
+        visible: true,
+        modalOpen: false,
+        renaming: false,
+        context: { open: false, x: 0, y: 0 },
+        pos: { x: 100 + list.length * 40, y: 100 + list.length * 40 },
+        z: folderZ
+      }
+    ])
+  }
   function handleNewFolder() { closeDesktopMenu(); createNewFolder() }
   function handleRefresh() { closeDesktopMenu(); setRefreshTick(t => t + 1) }
   function handleCleanUp() { closeDesktopMenu(); recycle.setBinPos({ x: null, y: null }); folder.restore(); email.restore(); restoreComputer() }
   function handlePaste() {
     if (!copiedItem) return
     closeDesktopMenu()
-    if (copiedItem.id === 'email') { email.restore(); if (copiedItem.name) email.commitRename(copiedItem.name) }
-    else if (copiedItem.id === 'mycomputer') { restoreComputer(); if (copiedItem.name) compCommitRename(copiedItem.name) }
-    else if (copiedItem.id === 'ghost-folder') { folder.restore(); if (copiedItem.name) folder.commitRename(copiedItem.name) }
-  else if (copiedItem.id.startsWith && copiedItem.id.startsWith('new-folder-')) { revealOrCloneFromDescriptor(copiedItem) }
+    // Helper to produce a unique name with (n) suffix
+    const makeUnique = (baseName) => {
+      const existingNames = new Set([
+        folder.name,
+        email.name,
+        compName,
+        recycle.name,
+        ...extraFolders.map(f => f.name)
+      ])
+      if (!existingNames.has(baseName)) return baseName
+      const match = baseName.match(/^(.*) copy\((\d+)\)$/)
+      let stem = baseName
+      if (match) stem = match[1]
+      let idx = 1
+      let candidate = `${stem} copy(${idx})`
+      while (existingNames.has(candidate)) { idx += 1; candidate = `${stem} copy(${idx})` }
+      return candidate
+    }
+
+    const baseNames = [folder.name, email.name, compName, recycle.name]
+    if (copiedItem.type === 'email') {
+      cloned.addClone({ type: 'email', name: copiedItem.name, icon: copiedItem.icon, baseNames })
+    } else if (copiedItem.type === 'mycomputer') {
+      cloned.addClone({ type: 'mycomputer', name: copiedItem.name, icon: copiedItem.icon, baseNames })
+    } else if (copiedItem.type === 'ghost') {
+      cloned.addClone({ type: 'ghost', name: copiedItem.name, icon: copiedItem.icon, baseNames })
+    } else if (copiedItem.id.startsWith && copiedItem.id.startsWith('new-folder-')) {
+      // Create a new cloned folder with unique name regardless of original existence
+      const clone = { ...copiedItem, id: `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}` }
+      clone.name = makeUnique(clone.name || 'New Folder')
+      revealOrCloneFromDescriptor(clone)
+    }
   }
 
   return (
@@ -280,7 +328,7 @@ function App() {
           onRenameCancel={folder.cancelRename}
         />
       )}
-    {extraFolders.filter(f => f.visible).map(f => (
+      {extraFolders.filter(f => f.visible).map(f => (
         <div
           key={f.id}
           className="windows-icon"
@@ -289,6 +337,12 @@ function App() {
           onMouseDown={(e) => handleExtraFolderMouseDown(f.id, e)}
           onDoubleClick={() => setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, modalOpen: true } : fl))}
           onContextMenu={(e) => openExtraFolderContext(f.id, e)}
+          onClick={() => {
+            if (!isTouchOrCoarse) return
+            // Open on single tap for touch / coarse pointer devices
+            setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, modalOpen: true } : fl))
+            bringExtraFolder(f.id)
+          }}
         >
           <img src={extraFolderIcon} alt={f.name} className="icon-img" draggable={false} />
           {f.renaming ? (
@@ -309,6 +363,34 @@ function App() {
             />
           ) : (
             <div className="icon-label">{f.name}</div>
+          )}
+        </div>
+      ))}
+      {cloned.clones.map(c => (
+        <div
+          key={c.id}
+          className="windows-icon"
+          style={{ left: c.pos.x, top: c.pos.y, position: 'fixed', zIndex: c.z || 56 }}
+          ref={el => { if (el) cloned.cloneRefs.current[c.id] = el }}
+          onMouseDown={(e) => cloned.handleMouseDown(c.id, e)}
+          onDoubleClick={() => cloned.openClone(c)}
+          onContextMenu={(e) => cloned.contextMenu(c.id, e)}
+        >
+          <img src={c.icon} alt={c.name} className="icon-img" draggable={false} />
+          {c.renaming ? (
+            <input
+              className="icon-label"
+              style={{ width: '100%', boxSizing: 'border-box', color: '#333' }}
+              defaultValue={c.name}
+              autoFocus
+              onBlur={(e) => cloned.rename(c.id, e.target.value || c.name)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') cloned.rename(c.id, e.target.value || c.name)
+                if (e.key === 'Escape') cloned.rename(c.id, c.name)
+              }}
+            />
+          ) : (
+            <div className="icon-label">{c.name}</div>
           )}
         </div>
       ))}
@@ -344,7 +426,7 @@ function App() {
           <li className="context-menu-item" onClick={() => {
             const tgt = extraFolders.find(fl => fl.id === f.id)
             if (tgt) {
-              captureCopy({ id: tgt.id, name: tgt.name, icon: extraFolderIcon })
+              captureCopy({ id: tgt.id, name: tgt.name, icon: extraFolderIcon, items: (tgt.items || []).map(it => ({ ...it })) })
               navigator.clipboard && navigator.clipboard.writeText(tgt.name).catch(()=>{})
             }
             setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, context: { ...fl.context, open: false } } : fl))
