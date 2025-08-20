@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react'
+import { useErrorMail } from '../../../utils/ErrorHandler/useErrorMail.jsx'
 import ModalWindow from '../../modal/ModalWindow.jsx'
 import { WinDropdown } from '../../../utils/WinDropdown/WinDropdown.jsx'
 import './EmailAssistant.css'
 
 export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'Email Assistant' }) {
+  const { renderErrorTooltip } = useErrorMail()
+  const [errors, setErrors] = useState({})
   const [installStep, setInstallStep] = useState(0) // 0 installing, 1 form
   const [form, setForm] = useState({ purpose: '', recipientContext: '', keyPoints: '', tone: '', urgency: '', cta: '' })
 
@@ -40,14 +43,26 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
         </div>
       ) : (
   <form className="email-form"
-          onSubmit={e => { e.preventDefault(); /* placeholder for future generation */ }}>
+          onSubmit={e => {
+            e.preventDefault();
+            const newErrors = {};
+            if (!form.purpose.trim()) newErrors.purpose = 'Please provide the purpose.';
+            if (!form.recipientContext.trim()) newErrors.recipientContext = 'Please provide the recipient context.';
+            if (!form.keyPoints.trim()) newErrors.keyPoints = 'Please provide key points.';
+            if (!form.tone.trim()) newErrors.tone = 'Please select a tone.';
+            if (!form.urgency.trim()) newErrors.urgency = 'Please select urgency.';
+            if (!form.cta.trim()) newErrors.cta = 'Please select a CTA.';
+            setErrors(newErrors);
+            if (Object.keys(newErrors).length > 0) return;
+            // ...existing code for submit...
+          }}>
             <label className="email-form-field">Purpose
               <input
                 value={form.purpose}
                 onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))}
-                required
                 placeholder="Describe the purpose of your email"
               />
+              {renderErrorTooltip('purpose', errors)}
             </label>
             <label className="email-form-field">Recipient Context
               <textarea
@@ -56,6 +71,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                 rows={2}
                 placeholder="Who is the recipient? (role, relationship)"
               />
+              {renderErrorTooltip('recipientContext', errors)}
             </label>
             <label className="email-form-field">Key Points / Messages
               <textarea
@@ -64,31 +80,38 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                 rows={3}
                 placeholder="List key points or messages to include"
               />
+              {renderErrorTooltip('keyPoints', errors)}
             </label>
-          <WinDropdown
-            label="Tone"
-            value={form.tone}
-            onChange={v => setForm(f => ({ ...f, tone: v }))}
-            options={toneOptions}
-            placeholder="Select tone"
-            required
-          />
-          <WinDropdown
-            label="Urgency"
-            value={form.urgency}
-            onChange={v => setForm(f => ({ ...f, urgency: v }))}
-            options={urgencyOptions}
-            placeholder="Select urgency"
-            required
-          />
-          <WinDropdown
-            label="CTA"
-            value={form.cta}
-            onChange={v => setForm(f => ({ ...f, cta: v }))}
-            options={ctaOptions}
-            placeholder="Select CTA"
-            required
-          />
+          <div style={{position:'relative'}}>
+            <WinDropdown
+              label="Tone"
+              value={form.tone}
+              onChange={v => setForm(f => ({ ...f, tone: v }))}
+              options={toneOptions}
+              placeholder="Select tone"
+            />
+            {renderErrorTooltip('tone', errors)}
+          </div>
+          <div style={{position:'relative'}}>
+            <WinDropdown
+              label="Urgency"
+              value={form.urgency}
+              onChange={v => setForm(f => ({ ...f, urgency: v }))}
+              options={urgencyOptions}
+              placeholder="Select urgency"
+            />
+            {renderErrorTooltip('urgency', errors)}
+          </div>
+          <div style={{position:'relative'}}>
+            <WinDropdown
+              label="CTA"
+              value={form.cta}
+              onChange={v => setForm(f => ({ ...f, cta: v }))}
+              options={ctaOptions}
+              placeholder="Select CTA"
+            />
+            {renderErrorTooltip('cta', errors)}
+          </div>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 4 }}>
             <button type="button" className="modal-btn-text" onClick={onClose}>Close</button>
             <button type="submit" className="modal-btn-text"
@@ -102,6 +125,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                   urgency: form.urgency,
                   cta: form.cta
                 })
+                  console.log('Provide form data to LLM')
               }}
             >Save</button>
           </div>

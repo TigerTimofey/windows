@@ -13,7 +13,7 @@ import { EmailContextMenu } from '../../email/EmailContextMenu/EmailContextMenu.
 import { DesktopContextMenu } from '../DesktopContextMenu/DesktopContextMenu.jsx'
 import { EmailAssistant } from '../../email/EmailAssistant/EmailAssistant.jsx'
 import trashSound from '../../../assets/win7/sounds/trash.mp3'
-import { openItemFromBaseFolder, deleteItemFromBaseFolder, moveItemFromBaseFolderToDesktop } from '../../../utils/folderActions.js'
+import { openItemFromBaseFolder, deleteItemFromBaseFolder, moveItemFromBaseFolderToDesktop } from '../../../hooks/useFolderActions.js'
 import { ExtraFolderModal } from '../../folder/ExtraFolderModal/ExtraFolderModal.jsx'
 import extraFolderIcon from '../../../assets/win7/icons/folder.ico'
 import { useClock } from '../../../hooks/useClock.js'
