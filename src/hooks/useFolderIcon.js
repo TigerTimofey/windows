@@ -11,6 +11,8 @@ export function useFolderIcon(binRef, onDroppedIntoBin) {
   const dragOffset = useRef({ x: 0, y: 0 })
   const movedRef = useRef(false)
   const [context, setContext] = useState({ open: false, x: 0, y: 0 })
+  const [name, setName] = useState('ghost-writer')
+  const [renaming, setRenaming] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const isTouchOrCoarse = typeof window !== 'undefined' && (
     'ontouchstart' in window ||
@@ -37,7 +39,7 @@ export function useFolderIcon(binRef, onDroppedIntoBin) {
       setDragging(false)
       if (isIconDroppedOnTarget(ref, binRef)) {
         setVisible(false)
-        onDroppedIntoBin && onDroppedIntoBin({ id: 'ghost-folder', name: 'ghost-writer', icon: folderIcon })
+  onDroppedIntoBin && onDroppedIntoBin({ id: 'ghost-folder', name, icon: folderIcon })
       }
     }
     if (dragging) {
@@ -48,13 +50,15 @@ export function useFolderIcon(binRef, onDroppedIntoBin) {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
     }
-  }, [dragging, binRef, onDroppedIntoBin])
+  }, [dragging, binRef, onDroppedIntoBin, name])
 
   const clampMenu = useCallback((x, y) => {
     const vw = window.innerWidth
     const vh = window.innerHeight
     const menuWidth = 140
-    const menuHeight = 52
+    const baseItems = 2 // Open, Delete
+    const extraItems = 2 // Rename, Copy
+    const menuHeight = (baseItems + extraItems) * 26
     return { x: Math.min(x, vw - menuWidth - 4), y: Math.min(y, vh - menuHeight - 4) }
   }, [])
 
@@ -103,13 +107,19 @@ export function useFolderIcon(binRef, onDroppedIntoBin) {
     handleContextMenu,
     context,
     closeContext,
-    deleteSelf: () => { if (!visible) return; setVisible(false); closeContext(); onDroppedIntoBin && onDroppedIntoBin({ id: 'ghost-folder', name: 'ghost-writer', icon: folderIcon }) },
+  deleteSelf: () => { if (!visible) return; setVisible(false); closeContext(); onDroppedIntoBin && onDroppedIntoBin({ id: 'ghost-folder', name, icon: folderIcon }) },
     restore: () => { setVisible(true); setPos({ x: null, y: null }); closeContext() },
     modalOpen,
   setModalOpen,
   items,
   addItem: (item) => setItems(prev => prev.some(i => i.id === item.id) ? prev : [...prev, item]),
   removeItem: (id) => setItems(prev => prev.filter(i => i.id !== id)),
-  hasItem: (id) => items.some(i => i.id === id)
+  hasItem: (id) => items.some(i => i.id === id),
+  name,
+  startRename: () => { setRenaming(true); closeContext() },
+  commitRename: (newName) => { if (newName) setName(newName.slice(0,32)); setRenaming(false) },
+  cancelRename: () => setRenaming(false),
+  renaming,
+  copyDescriptor: () => ({ id: 'ghost-folder', name, icon: folderIcon })
   }
 }

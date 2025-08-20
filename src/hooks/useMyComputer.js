@@ -11,6 +11,8 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
   const movedRef = useRef(false)
   const ref = useRef(null)
   const [context, setContext] = useState({ open: false, x: 0, y: 0 })
+  const [name, setName] = useState('My Computer')
+  const [renaming, setRenaming] = useState(false)
 
   const isTouchOrCoarse = typeof window !== 'undefined' && (
     'ontouchstart' in window ||
@@ -29,8 +31,10 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
   const clampMenu = useCallback((x, y) => {
     const vw = window.innerWidth
     const vh = window.innerHeight
-    const menuWidth = 140
-    const menuHeight = 52
+  const menuWidth = 140
+  const baseItems = 2 // Open, Delete
+  const extraItems = 2 // Rename, Copy
+  const menuHeight = (baseItems + extraItems) * 26
     return {
       x: Math.min(x, vw - menuWidth - 4),
       y: Math.min(y, vh - menuHeight - 4)
@@ -81,13 +85,13 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
       if (isIconDroppedOnTarget(ref, binRef)) {
         setVisible(false)
         setModalOpen(false)
-        onDroppedIntoBin && onDroppedIntoBin({ id: 'mycomputer', name: 'My Computer', icon: myComputerIcon })
+  onDroppedIntoBin && onDroppedIntoBin({ id: 'mycomputer', name, icon: myComputerIcon })
         return
       }
       if (folderRef && isIconDroppedOnTarget(ref, folderRef)) {
         setVisible(false)
         setModalOpen(false)
-        onDroppedIntoFolder && onDroppedIntoFolder({ id: 'mycomputer', name: 'My Computer', icon: myComputerIcon })
+  onDroppedIntoFolder && onDroppedIntoFolder({ id: 'mycomputer', name, icon: myComputerIcon })
         return
       }
     }
@@ -99,7 +103,7 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
     }
-  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder])
+  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, name])
 
   const handleClick = useCallback(() => {
     if (!isTouchOrCoarse) return
@@ -208,8 +212,14 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
       setVisible(false)
       setModalOpen(false)
       closeContext()
-      onDroppedIntoBin && onDroppedIntoBin({ id: 'mycomputer', name: 'My Computer', icon: myComputerIcon })
+  onDroppedIntoBin && onDroppedIntoBin({ id: 'mycomputer', name, icon: myComputerIcon })
   },
-  setPosition: (x, y) => setPos({ x, y })
+  setPosition: (x, y) => setPos({ x, y }),
+  name,
+  startRename: () => { setRenaming(true); closeContext() },
+  commitRename: (newName) => { if (newName) setName(newName.slice(0,32)); setRenaming(false) },
+  cancelRename: () => setRenaming(false),
+  renaming,
+  copyDescriptor: () => ({ id: 'mycomputer', name, icon: myComputerIcon })
   }
 }

@@ -11,6 +11,8 @@ export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoF
   const movedRef = useRef(false)
   const [context, setContext] = useState({ open: false, x: 0, y: 0 })
   const [modalOpen, setModalOpen] = useState(false)
+  const [name, setName] = useState('Email')
+  const [renaming, setRenaming] = useState(false)
   const isTouchOrCoarse = typeof window !== 'undefined' && (
     'ontouchstart' in window ||
     (navigator && navigator.maxTouchPoints > 0) ||
@@ -36,12 +38,12 @@ export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoF
       setDragging(false)
       if (isIconDroppedOnTarget(ref, binRef)) {
         setVisible(false)
-        onDroppedIntoBin && onDroppedIntoBin({ id: 'email', name: 'Email', icon: emailIcon })
+        onDroppedIntoBin && onDroppedIntoBin({ id: 'email', name, icon: emailIcon })
         return
       }
       if (folderRef && isIconDroppedOnTarget(ref, folderRef)) {
         setVisible(false)
-        onDroppedIntoFolder && onDroppedIntoFolder({ id: 'email', name: 'Email', icon: emailIcon })
+        onDroppedIntoFolder && onDroppedIntoFolder({ id: 'email', name, icon: emailIcon })
         return
       }
     }
@@ -53,13 +55,15 @@ export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoF
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
     }
-  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder])
+  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, name])
 
   const clampMenu = useCallback((x, y) => {
     const vw = window.innerWidth
     const vh = window.innerHeight
     const menuWidth = 140
-    const menuHeight = 52
+    const baseItems = 2 // Open, Delete
+    const extraItems = 2 // Rename, Copy
+    const menuHeight = (baseItems + extraItems) * 26
     return { x: Math.min(x, vw - menuWidth - 4), y: Math.min(y, vh - menuHeight - 4) }
   }, [])
 
@@ -93,7 +97,6 @@ export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoF
     }
   }, [context.open, closeContext])
 
-  // Email icon: base zIndex 50; elevate while dragging above folder (55)
   const baseZ = 50
   const dragZ = 70
   const style = pos.x !== null && pos.y !== null
@@ -105,15 +108,21 @@ export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoF
     visible,
     style,
     handleMouseDown,
-  handleClick,
-  handleDoubleClick,
+    handleClick,
+    handleDoubleClick,
     handleContextMenu,
     context,
     closeContext,
-    deleteSelf: () => { if (!visible) return; setVisible(false); closeContext(); onDroppedIntoBin && onDroppedIntoBin({ id: 'email', name: 'Email', icon: emailIcon }) },
-  restore: () => { setVisible(true); setPos({ x: null, y: null }); closeContext() },
-  modalOpen,
-  setModalOpen,
-  setPosition: (x, y) => setPos({ x, y })
+    deleteSelf: () => { if (!visible) return; setVisible(false); closeContext(); onDroppedIntoBin && onDroppedIntoBin({ id: 'email', name, icon: emailIcon }) },
+    restore: () => { setVisible(true); setPos({ x: null, y: null }); closeContext() },
+    modalOpen,
+    setModalOpen,
+    setPosition: (x, y) => setPos({ x, y }),
+    name,
+    renaming,
+    startRename: () => { setRenaming(true); closeContext() },
+    commitRename: (val) => { if (val) setName(val.slice(0,32)); setRenaming(false) },
+    cancelRename: () => setRenaming(false),
+    copyDescriptor: () => ({ id: 'email', name, icon: emailIcon })
   }
 }

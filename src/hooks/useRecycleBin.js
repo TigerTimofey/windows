@@ -7,6 +7,8 @@ export function useRecycleBin() {
   const binRef = useRef(null)
   const dragOffset = useRef({ x: 0, y: 0 })
   const [context, setContext] = useState({ open: false, x: 0, y: 0 })
+  const [name, setName] = useState('Recycle Bin')
+  const [renaming, setRenaming] = useState(false)
   const longPressTimer = useRef(null)
   const [items, setItems] = useState([])
 
@@ -113,5 +115,11 @@ export function useRecycleBin() {
     handleContextMenu,
     handleTouchStart,
     cancelLongPress,
+  name,
+  startRename: () => { setRenaming(true); closeContext() },
+  commitRename: (newName) => { if (newName) setName(newName.slice(0,32)); setRenaming(false) },
+  cancelRename: () => setRenaming(false),
+  renaming,
+  copyDescriptor: () => ({ id: 'recycle-bin', name })
   }
 }

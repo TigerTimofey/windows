@@ -85,6 +85,11 @@ function App() {
   handleContextMenu: handleCompContextMenu,
   closeContext: closeCompContext,
   deleteSelf: deleteComputer,
+  name: compName,
+  renaming: compRenaming,
+  startRename: compStartRename,
+  commitRename: compCommitRename,
+  cancelRename: compCancelRename,
   } = useMyComputer(recycle.binRef, folder.ref, addItemToBin, addItemToFolder)
 
   // Auto bring-to-front when a modal becomes open (after all hook states exist)
@@ -168,9 +173,13 @@ function App() {
           onClick={handleCompClick}
           onDoubleClick={handleCompDoubleClick}
           onContextMenu={handleCompContextMenu}
+          name={compName}
+          renaming={compRenaming}
+          onRenameCommit={compCommitRename}
+          onRenameCancel={compCancelRename}
         />
       )}
-  {email.visible && (
+      {email.visible && (
         <EmailIcon
           iconRef={email.ref}
           style={email.style}
@@ -178,6 +187,10 @@ function App() {
           onContextMenu={email.handleContextMenu}
           onClick={email.handleClick}
           onDoubleClick={email.handleDoubleClick}
+          name={email.name}
+          renaming={email.renaming}
+          onRenameCommit={email.commitRename}
+          onRenameCancel={email.cancelRename}
         />
       )}
       {folder.visible && (
@@ -188,23 +201,31 @@ function App() {
           onContextMenu={folder.handleContextMenu}
           onClick={folder.handleClick}
           onDoubleClick={folder.handleDoubleClick}
+          name={folder.name}
+          renaming={folder.renaming}
+          onRenameCommit={folder.commitRename}
+          onRenameCancel={folder.cancelRename}
         />
       )}
 
-  <EmailContextMenu
+      <EmailContextMenu
         x={email.context?.x}
         y={email.context?.y}
         open={email.context?.open}
-  onOpen={() => { email.setModalOpen(true); email.closeContext(); bring('email') }}
+        onOpen={() => { email.setModalOpen(true); email.closeContext(); bring('email') }}
         onDelete={() => { email.deleteSelf(); email.closeContext() }}
+        onRename={() => { email.startRename() }}
+        onCopy={() => { navigator.clipboard && navigator.clipboard.writeText(email.name).catch(()=>{}); email.closeContext() }}
       />
 
       <FolderContextMenu
         x={folder.context?.x}
         y={folder.context?.y}
         open={folder.context?.open}
-  onOpen={() => { folder.setModalOpen(true); folder.closeContext(); bring('folder') }}
+        onOpen={() => { folder.setModalOpen(true); folder.closeContext(); bring('folder') }}
         onDelete={() => { folder.deleteSelf(); folder.closeContext() }}
+        onRename={() => { folder.startRename() }}
+        onCopy={() => { navigator.clipboard && navigator.clipboard.writeText(folder.name).catch(()=>{}) ; folder.closeContext() }}
       />
 
       <BinContextMenu
@@ -212,9 +233,11 @@ function App() {
         y={recycle.context.y}
         open={recycle.context.open}
         hasItems={recycle.items.length > 0}
-  onOpen={() => { setBinModalOpen(true); recycle.closeContext(); bring('bin') }}
+        onOpen={() => { setBinModalOpen(true); recycle.closeContext(); bring('bin') }}
         onEmpty={() => { recycle.closeContext(); handleEmptyRequest() }}
         onRestoreAll={() => { recycle.closeContext(); handleRestoreAll() }}
+        onRename={() => { recycle.startRename && recycle.startRename() }}
+        onCopy={() => { navigator.clipboard && navigator.clipboard.writeText(recycle.name || 'Recycle Bin').catch(()=>{}); recycle.closeContext() }}
       />
 
       <MyComputerContextMenu
@@ -223,6 +246,8 @@ function App() {
         open={compContext?.open}
   onOpen={() => { setCompModalOpen(true); closeCompContext(); bring('comp') }}
         onDelete={() => { deleteComputer(); closeCompContext() }}
+  onRename={() => { compStartRename() }}
+  onCopy={() => { navigator.clipboard && navigator.clipboard.writeText(compName).catch(()=>{}); closeCompContext() }}
       />
 
       <RecycleBin
@@ -236,10 +261,14 @@ function App() {
         onTouchStart={recycle.handleTouchStart}
         onTouchMove={recycle.cancelLongPress}
         onTouchEnd={recycle.cancelLongPress}
+        name={recycle.name}
+        renaming={recycle.renaming}
+        onRenameCommit={recycle.commitRename}
+        onRenameCancel={recycle.cancelRename}
       />
 
       {binModalOpen && (
-        <ModalWindow title="Recycle Bin" onClose={handleBinModalClose} zIndex={binZ} onActivate={() => bring('bin')}>
+  <ModalWindow title={recycle.name} onClose={handleBinModalClose} zIndex={binZ} onActivate={() => bring('bin')}>
           {recycle.items.length === 0 ? (
             <div className="modal-empty-message">
               The Recycle Bin is empty.
@@ -271,7 +300,7 @@ function App() {
       )}
 
       {compModalOpen && computerInfo && (
-        <ModalWindow title="My Computer" onClose={() => setCompModalOpen(false)} zIndex={compZ} onActivate={() => bring('comp')}>
+  <ModalWindow title={compName} onClose={() => setCompModalOpen(false)} zIndex={compZ} onActivate={() => bring('comp')}>
           <div className="computer-info">
             <ul className="computer-info-list">
               <li><strong>Platform:</strong> {computerInfo.platform}</li>
@@ -290,12 +319,12 @@ function App() {
         </ModalWindow>
       )}
 
-  <EmailAssistant open={email.modalOpen} onClose={() => email.setModalOpen(false)} zIndex={emailZ} onActivate={() => bring('email')} />
+  <EmailAssistant open={email.modalOpen} onClose={() => email.setModalOpen(false)} zIndex={emailZ} onActivate={() => bring('email')} appName={email.name} />
 
       {folder.modalOpen && (
-        <ModalWindow title="ghost-writer" onClose={() => folder.setModalOpen(false)} zIndex={folderZ} onActivate={() => bring('folder')}>
+  <ModalWindow title={folder.name} onClose={() => folder.setModalOpen(false)} zIndex={folderZ} onActivate={() => bring('folder')}>
           {folder.items.length === 0 ? (
-            <div className="modal-empty-message">The ghost-writer folder is empty.</div>
+            <div className="modal-empty-message">The folder is empty.</div>
           ) : (
             <div className="modal-bin-items" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
               {folder.items.map(item => (

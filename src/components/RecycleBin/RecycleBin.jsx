@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import binEmpty from '../../assets/win7/bin-emty.svg'
 import binFull from '../../assets/win7/bin-full.svg'
 
@@ -13,7 +13,13 @@ export function RecycleBin({
   onTouchStart,
   onTouchMove,
   onTouchEnd,
+  name = 'Recycle Bin',
+  renaming = false,
+  onRenameCommit,
+  onRenameCancel,
 }) {
+  const inputRef = useRef(null)
+  useEffect(() => { if (renaming && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [renaming])
   return (
     <div
       className="windows-bin"
@@ -34,7 +40,21 @@ export function RecycleBin({
         draggable={false}
         onDragStart={e => e.preventDefault()}
       />
-      <div className="bin-label">Recycle Bin</div>
+      {renaming ? (
+        <input
+          ref={inputRef}
+          className="bin-label"
+          style={{ width: '100%', boxSizing: 'border-box', color: '#333' }}
+          defaultValue={name}
+          onBlur={(e) => onRenameCommit && onRenameCommit(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') { onRenameCommit && onRenameCommit(e.target.value) }
+            if (e.key === 'Escape') { onRenameCancel && onRenameCancel() }
+          }}
+        />
+      ) : (
+  <div className="bin-label" style={{ color: renaming ? '#333' : undefined }}>{name}</div>
+      )}
     </div>
   )
 }

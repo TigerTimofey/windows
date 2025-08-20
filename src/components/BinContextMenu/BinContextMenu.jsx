@@ -1,7 +1,7 @@
 import React from 'react'
 import './BinContextMenu.css'
 
-export function BinContextMenu({ x, y, open, hasItems, onOpen, onEmpty, onRestoreAll }) {
+export function BinContextMenu({ x, y, open, hasItems, onOpen, onEmpty, onRestoreAll, onRename, onCopy }) {
   if (!open) return null
   return (
     <ul
@@ -18,6 +18,8 @@ export function BinContextMenu({ x, y, open, hasItems, onOpen, onEmpty, onRestor
         className={`context-menu-item${!hasItems ? ' disabled' : ''}`}
         onClick={() => hasItems && onRestoreAll && onRestoreAll()}
       >Restore All Items</li>
+  <li className="context-menu-item" onClick={onRename}>Rename</li>
+  <li className="context-menu-item" onClick={onCopy}>Copy</li>
     </ul>
   )
 }

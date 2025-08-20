@@ -1,7 +1,7 @@
 import React from 'react'
 import '../../BinContextMenu/BinContextMenu.css'
 
-export function EmailContextMenu({ x, y, open, onOpen, onDelete }) {
+export function EmailContextMenu({ x, y, open, onOpen, onDelete, onRename, onCopy }) {
   if (!open) return null
   return (
     <ul
@@ -10,7 +10,9 @@ export function EmailContextMenu({ x, y, open, onOpen, onDelete }) {
       onClick={e => e.stopPropagation()}
     >
       <li className="context-menu-item" onClick={onOpen}>Open</li>
-      <li className="context-menu-item" onClick={onDelete}>Delete</li>
+  <li className="context-menu-item" onClick={onDelete}>Delete</li>
+  <li className="context-menu-item" onClick={onRename}>Rename</li>
+  <li className="context-menu-item" onClick={onCopy}>Copy</li>
     </ul>
   )
 }
