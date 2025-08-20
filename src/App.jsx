@@ -12,6 +12,7 @@ import { FolderContextMenu } from './components/folder/FolderContextMenu/FolderC
 import { BinContextMenu } from './components/BinContextMenu/BinContextMenu.jsx'
 import { MyComputerContextMenu } from './components/MyComputerContextMenu/MyComputerContextMenu.jsx'
 import { EmailContextMenu } from './components/email/EmailContextMenu/EmailContextMenu.jsx'
+import { DesktopContextMenu } from './components/DesktopContextMenu/DesktopContextMenu.jsx'
 import { useClock } from './hooks/useClock.js'
 import { useStartMenu } from './hooks/useStartMenu.js'
 import { useRecycleBin } from './hooks/useRecycleBin.js'
@@ -20,8 +21,11 @@ import { useEmailIcon } from './hooks/useEmailIcon.js'
 import { useFolderIcon } from './hooks/useFolderIcon.js'
 import { EmailAssistant } from './components/email/EmailAssistant/EmailAssistant.jsx'
 import trashSound from './assets/win7/sounds/trash.mp3'
+import { openItemFromBaseFolder, deleteItemFromBaseFolder, moveItemFromBaseFolderToDesktop } from './utils/folderActions.js'
+import { ExtraFolderModal } from './components/folder/ExtraFolderModal/ExtraFolderModal.jsx'
+import { useExtraFolders } from './hooks/useExtraFolders.js'
 import myComputerIconAsset from './assets/win7/mycomputer.svg'
-import emailIconAsset from './assets/win7/icons/email.ico'
+import extraFolderIcon from './assets/win7/icons/folder.ico'
 
 function App() {
   const [binModalOpen, setBinModalOpen] = useState(false)
@@ -46,9 +50,37 @@ function App() {
   const clock = useClock()
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
   const recycle = useRecycleBin()
-  const folder = useFolderIcon(recycle.binRef, addItemToBin)
+  // Base folder hook will be created after we assemble dependencies; use ref bridge for extra folders hook
+  const baseFolderRef = React.useRef(null)
+  const {
+    extraFolders,
+    setExtraFolders,
+    createNewFolder,
+    registerRef: registerExtraFolderRef,
+    handleMouseDown: handleExtraFolderMouseDown,
+    openContext: openExtraFolderContext,
+    getExtraFolderTargets,
+    revealOrCloneFromDescriptor,
+    addItemToExtraFolder,
+    bringExtraFolder
+  } = useExtraFolders({ baseFolderRef, recycleBinRef: recycle.binRef, addItemToBin, extraFolderIcon, zCounterRef })
+
+  const folder = useFolderIcon(
+    recycle.binRef,
+    addItemToBin,
+    getExtraFolderTargets,
+    (item, targetId) => addItemToExtraFolder(targetId, item)
+  )
+  baseFolderRef.current = folder
   function addItemToFolder(item) { folder.addItem(item) }
-  const email = useEmailIcon(recycle.binRef, folder.ref, addItemToBin, addItemToFolder)
+  const email = useEmailIcon(
+    recycle.binRef,
+    folder.ref,
+    addItemToBin,
+    addItemToFolder,
+    getExtraFolderTargets,
+    (item, targetId) => addItemToExtraFolder(targetId, item)
+  )
   // Email assistant modal isolated in its own component
 
   function playTrashSound() {
@@ -90,7 +122,14 @@ function App() {
   startRename: compStartRename,
   commitRename: compCommitRename,
   cancelRename: compCancelRename,
-  } = useMyComputer(recycle.binRef, folder.ref, addItemToBin, addItemToFolder)
+  } = useMyComputer(
+    recycle.binRef,
+    folder.ref,
+    addItemToBin,
+    addItemToFolder,
+    getExtraFolderTargets,
+    (item, targetId) => addItemToExtraFolder(targetId, item)
+  )
 
   // Auto bring-to-front when a modal becomes open (after all hook states exist)
   useEffect(() => { if (folder.modalOpen) bring('folder') }, [folder.modalOpen])
@@ -120,6 +159,10 @@ function App() {
     if (recycle.items.some(i => i.id === 'mycomputer')) restoreComputer()
     if (recycle.items.some(i => i.id === 'email')) email.restore()
     if (recycle.items.some(i => i.id === 'ghost-folder')) folder.restore()
+    // Restore all extra folders
+    recycle.items.filter(i => i.id && i.id.startsWith('new-folder-')).forEach(item => {
+      revealOrCloneFromDescriptor(item)
+    })
     recycle.setItems([])
   }
   function handleRestoreItem(id) {
@@ -127,37 +170,67 @@ function App() {
     if (id === 'mycomputer') restoreComputer()
     if (id === 'email') email.restore()
     if (id === 'ghost-folder') folder.restore()
+    if (id.startsWith && id.startsWith('new-folder-')) {
+      const item = recycle.items.find(i => i.id === id)
+      if (item) revealOrCloneFromDescriptor(item)
+    }
   }
   function handleConfirmEmpty() { if (recycle.items.length) playTrashSound(); recycle.setItems([]); setConfirmClearOpen(false) }
   function handleCancelEmpty() { setConfirmClearOpen(false) }
 
-  function handleFolderItemToDesktop(id) {
-    if (id === 'email') {
-      folder.removeItem('email')
-      email.restore()
-    }
-    if (id === 'mycomputer') {
-      folder.removeItem('mycomputer')
-      restoreComputer()
-    }
+  const handleFolderItemOpen = (id) => openItemFromBaseFolder(id, { email, bring, setCompModalOpen, setExtraFolders, folder, zCounterRef, bringExtraFolder })
+  const handleFolderItemDelete = (id) => deleteItemFromBaseFolder(id, { folder, addItemToBin, email, setExtraFolders, extraFolderIcon })
+  const handleFolderItemToDesktop = (id) => moveItemFromBaseFolderToDesktop(id, { folder, email, restoreComputer, setExtraFolders })
+
+  // Desktop context menu & copy buffer
+  const [deskMenu, setDeskMenu] = useState({ open: false, x: 0, y: 0 })
+  const [copiedItem, setCopiedItem] = useState(null)
+  const [refreshTick, setRefreshTick] = useState(0) // force re-render on refresh
+
+  function captureCopy(descriptor) { setCopiedItem(descriptor) }
+
+  const handleCopyEmail = () => { captureCopy(email.copyDescriptor()); navigator.clipboard && navigator.clipboard.writeText(email.name).catch(()=>{}); email.closeContext() }
+  const handleCopyFolder = () => { captureCopy(folder.copyDescriptor()); navigator.clipboard && navigator.clipboard.writeText(folder.name).catch(()=>{}); folder.closeContext() }
+  const handleCopyBin = () => { captureCopy(recycle.copyDescriptor()); navigator.clipboard && navigator.clipboard.writeText(recycle.name).catch(()=>{}); recycle.closeContext() }
+  const handleCopyComp = () => { captureCopy({ id: 'mycomputer', name: compName, icon: myComputerIconAsset }); navigator.clipboard && navigator.clipboard.writeText(compName).catch(()=>{}); closeCompContext() }
+
+  function handleDesktopContextMenu(e) {
+    if (e.target.closest('.windows-icon') || e.target.closest('.context-menu') || e.target.closest('.modal-window')) return
+    e.preventDefault()
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    const menuWidth = 180
+    const menuHeight = 130
+    const x = Math.min(e.clientX, vw - menuWidth - 4)
+    const y = Math.min(e.clientY, vh - menuHeight - 4)
+    setDeskMenu({ open: true, x, y })
   }
-  function handleFolderItemOpen(id) {
-    if (id === 'email') { email.setModalOpen(true); bring('email') }
-    if (id === 'mycomputer') { setCompModalOpen(true); bring('comp') }
-  }
-  function handleFolderItemDelete(id) {
-    if (id === 'email') {
-      folder.removeItem('email')
-      addItemToBin({ id: 'email', name: 'Email', icon: emailIconAsset })
-    }
-    if (id === 'mycomputer') {
-      folder.removeItem('mycomputer')
-      addItemToBin({ id: 'mycomputer', name: 'My Computer', icon: myComputerIconAsset })
-    }
+  function closeDesktopMenu() { setDeskMenu(m => ({ ...m, open: false })) }
+
+  useEffect(() => {
+    if (!deskMenu.open) return
+    function onDoc(ev) { if (!(ev.target.closest && ev.target.closest('.context-menu'))) closeDesktopMenu() }
+    function onKey(ev) { if (ev.key === 'Escape') closeDesktopMenu() }
+    document.addEventListener('mousedown', onDoc, true)
+    document.addEventListener('keydown', onKey)
+    window.addEventListener('resize', closeDesktopMenu)
+    return () => { document.removeEventListener('mousedown', onDoc, true); document.removeEventListener('keydown', onKey); window.removeEventListener('resize', closeDesktopMenu) }
+  }, [deskMenu.open])
+
+  function handleNewFolder() { closeDesktopMenu(); createNewFolder() }
+  function handleRefresh() { closeDesktopMenu(); setRefreshTick(t => t + 1) }
+  function handleCleanUp() { closeDesktopMenu(); recycle.setBinPos({ x: null, y: null }); folder.restore(); email.restore(); restoreComputer() }
+  function handlePaste() {
+    if (!copiedItem) return
+    closeDesktopMenu()
+    if (copiedItem.id === 'email') { email.restore(); if (copiedItem.name) email.commitRename(copiedItem.name) }
+    else if (copiedItem.id === 'mycomputer') { restoreComputer(); if (copiedItem.name) compCommitRename(copiedItem.name) }
+    else if (copiedItem.id === 'ghost-folder') { folder.restore(); if (copiedItem.name) folder.commitRename(copiedItem.name) }
+  else if (copiedItem.id.startsWith && copiedItem.id.startsWith('new-folder-')) { revealOrCloneFromDescriptor(copiedItem) }
   }
 
   return (
-    <div className="windows-bg">
+  <div className="windows-bg" onContextMenu={handleDesktopContextMenu}>
       <Taskbar
         startOpen={menuOpen}
         onToggleStart={() => setMenuOpen(!menuOpen)}
@@ -169,7 +242,7 @@ function App() {
         <MyComputerIcon
           iconRef={compRef}
           style={compStyle}
-          onMouseDown={handleCompMouseDown}
+          onMouseDown={(e) => { bring('comp'); handleCompMouseDown(e) }}
           onClick={handleCompClick}
           onDoubleClick={handleCompDoubleClick}
           onContextMenu={handleCompContextMenu}
@@ -183,7 +256,7 @@ function App() {
         <EmailIcon
           iconRef={email.ref}
           style={email.style}
-          onMouseDown={email.handleMouseDown}
+          onMouseDown={(e) => { bring('email'); email.handleMouseDown(e) }}
           onContextMenu={email.handleContextMenu}
           onClick={email.handleClick}
           onDoubleClick={email.handleDoubleClick}
@@ -197,7 +270,7 @@ function App() {
         <FolderIcon
           iconRef={folder.ref}
           style={folder.style}
-          onMouseDown={folder.handleMouseDown}
+          onMouseDown={(e) => { bring('folder'); folder.handleMouseDown(e) }}
           onContextMenu={folder.handleContextMenu}
           onClick={folder.handleClick}
           onDoubleClick={folder.handleDoubleClick}
@@ -207,6 +280,38 @@ function App() {
           onRenameCancel={folder.cancelRename}
         />
       )}
+    {extraFolders.filter(f => f.visible).map(f => (
+        <div
+          key={f.id}
+          className="windows-icon"
+      style={{ left: f.pos.x, top: f.pos.y, position: 'fixed', zIndex: f.z || 55 }}
+          ref={el => registerExtraFolderRef(f.id, el)}
+          onMouseDown={(e) => handleExtraFolderMouseDown(f.id, e)}
+          onDoubleClick={() => setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, modalOpen: true } : fl))}
+          onContextMenu={(e) => openExtraFolderContext(f.id, e)}
+        >
+          <img src={extraFolderIcon} alt={f.name} className="icon-img" draggable={false} />
+          {f.renaming ? (
+            <input
+              className="icon-label"
+              style={{ width: '100%', boxSizing: 'border-box', color: '#333' }}
+              defaultValue={f.name}
+              autoFocus
+              onBlur={(e) => setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, name: e.target.value ? e.target.value.slice(0,32) : fl.name, renaming: false } : fl))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, name: e.target.value ? e.target.value.slice(0,32) : fl.name, renaming: false } : fl))
+                }
+                if (e.key === 'Escape') {
+                  setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, renaming: false } : fl))
+                }
+              }}
+            />
+          ) : (
+            <div className="icon-label">{f.name}</div>
+          )}
+        </div>
+      ))}
 
       <EmailContextMenu
         x={email.context?.x}
@@ -215,7 +320,7 @@ function App() {
         onOpen={() => { email.setModalOpen(true); email.closeContext(); bring('email') }}
         onDelete={() => { email.deleteSelf(); email.closeContext() }}
         onRename={() => { email.startRename() }}
-        onCopy={() => { navigator.clipboard && navigator.clipboard.writeText(email.name).catch(()=>{}); email.closeContext() }}
+        onCopy={handleCopyEmail}
       />
 
       <FolderContextMenu
@@ -225,8 +330,27 @@ function App() {
         onOpen={() => { folder.setModalOpen(true); folder.closeContext(); bring('folder') }}
         onDelete={() => { folder.deleteSelf(); folder.closeContext() }}
         onRename={() => { folder.startRename() }}
-        onCopy={() => { navigator.clipboard && navigator.clipboard.writeText(folder.name).catch(()=>{}) ; folder.closeContext() }}
+        onCopy={handleCopyFolder}
       />
+      {extraFolders.map(f => f.context.open && (
+        <ul key={f.id} className="context-menu" style={{ left: f.context.x, top: f.context.y }} onClick={e => e.stopPropagation()}>
+          <li className="context-menu-item" onClick={() => setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, modalOpen: true, context: { ...fl.context, open: false } } : fl))}>Open</li>
+          <li className="context-menu-item" onClick={() => {
+            setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, visible: false, modalOpen: false, context: { ...fl.context, open: false } } : fl))
+            const tgt = extraFolders.find(fl => fl.id === f.id)
+            if (tgt) addItemToBin({ id: tgt.id, name: tgt.name, icon: extraFolderIcon })
+          }}>Delete</li>
+          <li className="context-menu-item" onClick={() => setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, renaming: true, context: { ...fl.context, open: false } } : fl))}>Rename</li>
+          <li className="context-menu-item" onClick={() => {
+            const tgt = extraFolders.find(fl => fl.id === f.id)
+            if (tgt) {
+              captureCopy({ id: tgt.id, name: tgt.name, icon: extraFolderIcon })
+              navigator.clipboard && navigator.clipboard.writeText(tgt.name).catch(()=>{})
+            }
+            setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, context: { ...fl.context, open: false } } : fl))
+          }}>Copy</li>
+        </ul>
+      ))}
 
       <BinContextMenu
         x={recycle.context.x}
@@ -237,24 +361,24 @@ function App() {
         onEmpty={() => { recycle.closeContext(); handleEmptyRequest() }}
         onRestoreAll={() => { recycle.closeContext(); handleRestoreAll() }}
         onRename={() => { recycle.startRename && recycle.startRename() }}
-        onCopy={() => { navigator.clipboard && navigator.clipboard.writeText(recycle.name || 'Recycle Bin').catch(()=>{}); recycle.closeContext() }}
+        onCopy={handleCopyBin}
       />
 
-      <MyComputerContextMenu
+    <MyComputerContextMenu
         x={compContext?.x}
         y={compContext?.y}
         open={compContext?.open}
   onOpen={() => { setCompModalOpen(true); closeCompContext(); bring('comp') }}
         onDelete={() => { deleteComputer(); closeCompContext() }}
   onRename={() => { compStartRename() }}
-  onCopy={() => { navigator.clipboard && navigator.clipboard.writeText(compName).catch(()=>{}); closeCompContext() }}
+  onCopy={handleCopyComp}
       />
 
       <RecycleBin
         binRef={recycle.binRef}
         style={binStyle}
         full={binFullState}
-        onMouseDown={recycle.handleMouseDown}
+        onMouseDown={(e) => { bring('bin'); recycle.handleMouseDown(e) }}
         onDoubleClick={handleBinDoubleClick}
         onClick={handleBinClick}
         onContextMenu={recycle.handleContextMenu}
@@ -327,27 +451,53 @@ function App() {
             <div className="modal-empty-message">The folder is empty.</div>
           ) : (
             <div className="modal-bin-items" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
-              {folder.items.map(item => (
-                <div
-                  key={item.id}
-                  className="modal-bin-item"
-                  style={{ alignItems: 'center', gap: 4 }}
-                >
-                  <img src={item.icon} alt={item.name} className="modal-bin-icon" draggable={false} />
-                  <span className="modal-bin-label" style={{ textAlign: 'center' }}>{item.name}</span>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
-                    <button className="modal-bin-restore-btn" onClick={() => handleFolderItemOpen(item.id)}>Open</button>
-                    <button className="modal-bin-restore-btn" onClick={() => handleFolderItemDelete(item.id)}>Delete</button>
-                    <button className="modal-bin-restore-btn" onClick={() => handleFolderItemToDesktop(item.id)}>To Desktop</button>
+              {folder.items.map(item => {
+                return (
+                  <div key={item.id} className="modal-bin-item" style={{ alignItems: 'center', gap: 4 }}>
+                    <img src={item.icon} alt={item.name} className="modal-bin-icon" draggable={false} />
+                    <span className="modal-bin-label" style={{ textAlign: 'center' }}>{item.name}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
+                      <button className="modal-bin-restore-btn" onClick={() => handleFolderItemOpen(item.id)}>Open</button>
+                      <button className="modal-bin-restore-btn" onClick={() => handleFolderItemDelete(item.id)}>Delete</button>
+                      <button className="modal-bin-restore-btn" onClick={() => handleFolderItemToDesktop(item.id)}>To Desktop</button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </ModalWindow>
       )}
+    {extraFolders.filter(f => f.modalOpen).map(f => (
+        <ExtraFolderModal
+          key={f.id}
+          f={f}
+      zIndex={f.z || folderZ}
+      bring={bring}
+      bringExtraFolder={bringExtraFolder}
+          setExtraFolders={setExtraFolders}
+          email={email}
+          setCompModalOpen={setCompModalOpen}
+          restoreComputer={restoreComputer}
+          folder={folder}
+          addItemToBin={addItemToBin}
+          extraFolderIcon={extraFolderIcon}
+          onClose={() => setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, modalOpen: false } : fl))}
+        />
+      ))}
 
-      {menuOpen && <StartMenu menuRef={menuRef} />}
+  {menuOpen && <StartMenu menuRef={menuRef} />}
+  <span style={{ display: 'none' }}>{refreshTick}</span>
+      <DesktopContextMenu
+        x={deskMenu.x}
+        y={deskMenu.y}
+        open={deskMenu.open}
+        onNewFolder={handleNewFolder}
+        onRefresh={handleRefresh}
+        onCleanUp={handleCleanUp}
+        onPaste={handlePaste}
+        canPaste={!!copiedItem}
+      />
     </div>
   )
 }

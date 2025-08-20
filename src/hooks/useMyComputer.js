@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { getClampedBinPosition, isIconDroppedOnTarget } from '../hooks/useDesktop.js'
 import myComputerIcon from '../assets/win7/mycomputer.svg'
 
-export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder) {
+export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, getExtraFolderTargets, onDroppedIntoExtraFolder) {
   const [pos, setPos] = useState({ x: null, y: null })
   const [dragging, setDragging] = useState(false)
   const [visible, setVisible] = useState(true)
@@ -94,6 +94,20 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
   onDroppedIntoFolder && onDroppedIntoFolder({ id: 'mycomputer', name, icon: myComputerIcon })
         return
       }
+      if (getExtraFolderTargets) {
+        const targets = getExtraFolderTargets()
+        const selfRect = ref.current.getBoundingClientRect()
+        for (const t of targets) {
+          if (!t.el) continue
+          const r = t.el.getBoundingClientRect()
+          if (!(selfRect.right < r.left || selfRect.left > r.right || selfRect.bottom < r.top || selfRect.top > r.bottom)) {
+            setVisible(false)
+            setModalOpen(false)
+            onDroppedIntoExtraFolder && onDroppedIntoExtraFolder({ id: 'mycomputer', name, icon: myComputerIcon }, t.id)
+            return
+          }
+        }
+      }
     }
     if (dragging) {
       document.addEventListener('mousemove', onMove)
@@ -103,7 +117,7 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
     }
-  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, name])
+  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, name, getExtraFolderTargets, onDroppedIntoExtraFolder])
 
   const handleClick = useCallback(() => {
     if (!isTouchOrCoarse) return

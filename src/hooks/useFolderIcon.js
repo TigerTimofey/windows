@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import folderIcon from '../assets/win7/icons/folder.ico'
 import { getClampedBinPosition, isIconDroppedOnTarget } from '../hooks/useDesktop.js'
 
-export function useFolderIcon(binRef, onDroppedIntoBin) {
+export function useFolderIcon(binRef, onDroppedIntoBin, getExtraFolderTargets, onDroppedIntoExtraFolder) {
   const [pos, setPos] = useState({ x: null, y: null })
   const [dragging, setDragging] = useState(false)
   const [visible, setVisible] = useState(true)
@@ -40,6 +40,20 @@ export function useFolderIcon(binRef, onDroppedIntoBin) {
       if (isIconDroppedOnTarget(ref, binRef)) {
         setVisible(false)
   onDroppedIntoBin && onDroppedIntoBin({ id: 'ghost-folder', name, icon: folderIcon })
+        return
+      }
+      if (getExtraFolderTargets) {
+        const targets = getExtraFolderTargets()
+        const selfRect = ref.current.getBoundingClientRect()
+        for (const t of targets) {
+          if (!t.el) continue
+          const r = t.el.getBoundingClientRect()
+          if (!(selfRect.right < r.left || selfRect.left > r.right || selfRect.bottom < r.top || selfRect.top > r.bottom)) {
+            setVisible(false)
+            onDroppedIntoExtraFolder && onDroppedIntoExtraFolder({ id: 'ghost-folder', name, icon: folderIcon }, t.id)
+            return
+          }
+        }
       }
     }
     if (dragging) {
@@ -50,7 +64,7 @@ export function useFolderIcon(binRef, onDroppedIntoBin) {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
     }
-  }, [dragging, binRef, onDroppedIntoBin, name])
+  }, [dragging, binRef, onDroppedIntoBin, name, getExtraFolderTargets, onDroppedIntoExtraFolder])
 
   const clampMenu = useCallback((x, y) => {
     const vw = window.innerWidth

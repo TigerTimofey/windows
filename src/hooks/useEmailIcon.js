@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import emailIcon from '../assets/win7/icons/email.ico'
 import { getClampedBinPosition, isIconDroppedOnTarget } from '../hooks/useDesktop.js'
 
-export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder) {
+export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, getExtraFolderTargets, onDroppedIntoExtraFolder) {
   const [pos, setPos] = useState({ x: null, y: null })
   const [dragging, setDragging] = useState(false)
   const [visible, setVisible] = useState(true)
@@ -46,6 +46,19 @@ export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoF
         onDroppedIntoFolder && onDroppedIntoFolder({ id: 'email', name, icon: emailIcon })
         return
       }
+      if (getExtraFolderTargets) {
+        const targets = getExtraFolderTargets()
+        const selfRect = ref.current.getBoundingClientRect()
+        for (const t of targets) {
+          if (!t.el) continue
+          const r = t.el.getBoundingClientRect()
+          if (!(selfRect.right < r.left || selfRect.left > r.right || selfRect.bottom < r.top || selfRect.top > r.bottom)) {
+            setVisible(false)
+            onDroppedIntoExtraFolder && onDroppedIntoExtraFolder({ id: 'email', name, icon: emailIcon }, t.id)
+            return
+          }
+        }
+      }
     }
     if (dragging) {
       document.addEventListener('mousemove', onMove)
@@ -55,7 +68,7 @@ export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoF
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
     }
-  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, name])
+  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, name, getExtraFolderTargets, onDroppedIntoExtraFolder])
 
   const clampMenu = useCallback((x, y) => {
     const vw = window.innerWidth
