@@ -7,9 +7,9 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
   const [installStep, setInstallStep] = useState(0) // 0 installing, 1 form
   const [form, setForm] = useState({ purpose: '', recipientContext: '', keyPoints: '', tone: '', urgency: '', cta: '' })
 
-  const toneOptions = ['Professional', 'Friendly', 'Formal', 'Casual', 'Persuasive', 'Empathetic']
+  const toneOptions = ['Professional', 'Friendly', 'Formal', 'Casual']
   const urgencyOptions = ['Low', 'Normal', 'High', 'Critical']
-  const ctaOptions = ['Schedule a Call', 'Reply to Confirm', 'Visit Website', 'Download Attachment', 'Approve Request', 'Provide Feedback']
+  const ctaOptions = ['Schedule a Call', 'Reply to Confirm', 'Approve Request', 'Provide Feedback', 'Other']
 
   // Reset state when opened
   useEffect(() => {
@@ -41,15 +41,30 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
       ) : (
   <form className="email-form"
           onSubmit={e => { e.preventDefault(); /* placeholder for future generation */ }}>
-          <label className="email-form-field">Purpose
-            <input value={form.purpose} onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))} required />
-          </label>
-          <label className="email-form-field">Recipient Context
-            <textarea value={form.recipientContext} onChange={e => setForm(f => ({ ...f, recipientContext: e.target.value }))} rows={2} />
-          </label>
-          <label className="email-form-field">Key Points / Messages
-            <textarea value={form.keyPoints} onChange={e => setForm(f => ({ ...f, keyPoints: e.target.value }))} rows={3} />
-          </label>
+            <label className="email-form-field">Purpose
+              <input
+                value={form.purpose}
+                onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))}
+                required
+                placeholder="Describe the purpose of your email"
+              />
+            </label>
+            <label className="email-form-field">Recipient Context
+              <textarea
+                value={form.recipientContext}
+                onChange={e => setForm(f => ({ ...f, recipientContext: e.target.value }))}
+                rows={2}
+                placeholder="Who is the recipient? (role, relationship)"
+              />
+            </label>
+            <label className="email-form-field">Key Points / Messages
+              <textarea
+                value={form.keyPoints}
+                onChange={e => setForm(f => ({ ...f, keyPoints: e.target.value }))}
+                rows={3}
+                placeholder="List key points or messages to include"
+              />
+            </label>
           <WinDropdown
             label="Tone"
             value={form.tone}
