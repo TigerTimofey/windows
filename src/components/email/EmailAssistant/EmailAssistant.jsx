@@ -9,6 +9,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
   const [errors, setErrors] = useState({})
   const [installStep, setInstallStep] = useState(0) // 0 installing, 1 form
   const [form, setForm] = useState({ purpose: '', recipientContext: '', keyPoints: '', tone: '', urgency: '', cta: '' })
+  const [llmResponse, setLlmResponse] = useState(null)
 
   const toneOptions = ['Professional', 'Friendly', 'Formal', 'Casual']
   const urgencyOptions = ['Low', 'Normal', 'High', 'Critical']
@@ -31,7 +32,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
       zIndex={zIndex}
       onActivate={onActivate}
     >
-      {installStep === 0 ? (
+  {installStep === 0 ? (
         <div style={{ width: '100%', textAlign: 'center' }}>
           <p style={{ marginBottom: 16 }}>Preparing components...</p>
           <div style={{ width: '80%', height: 16, border: '2px inset #fff', background: '#dcdcdc', margin: '0 auto', position: 'relative' }}>
@@ -42,20 +43,21 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
           </div>
         </div>
       ) : (
-  <form className="email-form"
-          onSubmit={e => {
-            e.preventDefault();
-            const newErrors = {};
-            if (!form.purpose.trim()) newErrors.purpose = 'Please provide the purpose.';
-            if (!form.recipientContext.trim()) newErrors.recipientContext = 'Please provide the recipient context.';
-            if (!form.keyPoints.trim()) newErrors.keyPoints = 'Please provide key points.';
-            if (!form.tone.trim()) newErrors.tone = 'Please select a tone.';
-            if (!form.urgency.trim()) newErrors.urgency = 'Please select urgency.';
-            if (!form.cta.trim()) newErrors.cta = 'Please select a CTA.';
-            setErrors(newErrors);
-            if (Object.keys(newErrors).length > 0) return;
-            // ...existing code for submit...
-          }}>
+        <>
+          <form className="email-form"
+            onSubmit={e => {
+              e.preventDefault();
+              const newErrors = {};
+              if (!form.purpose.trim()) newErrors.purpose = 'Please provide the purpose.';
+              if (!form.recipientContext.trim()) newErrors.recipientContext = 'Please provide the recipient context.';
+              if (!form.keyPoints.trim()) newErrors.keyPoints = 'Please provide key points.';
+              if (!form.tone.trim()) newErrors.tone = 'Please select a tone.';
+              if (!form.urgency.trim()) newErrors.urgency = 'Please select urgency.';
+              if (!form.cta.trim()) newErrors.cta = 'Please select a CTA.';
+              setErrors(newErrors);
+              if (Object.keys(newErrors).length > 0) return;
+              // ...existing code for submit...
+            }}>
             <label className="email-form-field">Purpose
               <input
                 value={form.purpose}
@@ -125,11 +127,29 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                   urgency: form.urgency,
                   cta: form.cta
                 })
-                  console.log('Provide form data to LLM')
+                import('../../../utils/Api/email/hfQuery.js').then(({ query }) => {
+                  const prompt = `Purpose: ${form.purpose}\nRecipient: ${form.recipientContext}\nKey Points: ${form.keyPoints}\nTone: ${form.tone}\nUrgency: ${form.urgency}\nCTA: ${form.cta}`;
+                  query({ prompt }).then(response => {
+                    console.log('[LLM Response]', response)
+                    if (response && response.choices && response.choices[0] && response.choices[0].text) {
+                      setLlmResponse(response.choices[0].text)
+                    } else {
+                      setLlmResponse('No response text found.')
+                    }
+                  })
+                })
               }}
             >Save</button>
           </div>
-        </form>
+          </form>
+          {llmResponse && (
+            <div className="llm-response-modal">
+              <h3>Generated Email</h3>
+              <pre style={{whiteSpace:'pre-wrap',background:'#f8f8ff',padding:'12px',borderRadius:'6px',marginTop:'8px'}}>{llmResponse}</pre>
+              <button className="modal-btn-text" style={{marginTop:'8px'}} onClick={()=>setLlmResponse(null)}>Close</button>
+            </div>
+          )}
+        </>
       )}
     </ModalWindow>
   )
