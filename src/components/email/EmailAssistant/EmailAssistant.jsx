@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost'
+const BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT || '5000'
 import { useErrorMail } from '../../../utils/ErrorHandler/useErrorMail.jsx'
 import ModalWindow from '../../modal/ModalWindow.jsx'
 import { WinDropdown } from '../../../utils/WinDropdown/WinDropdown.jsx'
@@ -8,7 +10,16 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
   const { renderErrorTooltip } = useErrorMail()
   const [errors, setErrors] = useState({})
   const [installStep, setInstallStep] = useState(0) // 0 installing, 1 form
-  const [form, setForm] = useState({ purpose: '', recipientContext: '', keyPoints: '', tone: '', urgency: '', cta: '' })
+  const [form, setForm] = useState({
+    purpose: 'Notification of Organizational Changes',
+    recipientContext: 'HR Manager, responsible for employee communications',
+    keyPoints: 'Upcoming layoff, support resources, next steps',
+    tone: 'Professional',
+    urgency: 'High',
+    cta: 'Reply to Confirm'
+  })
+  const [emailResult, setEmailResult] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const toneOptions = ['Professional', 'Friendly', 'Formal', 'Casual']
   const urgencyOptions = ['Low', 'Normal', 'High', 'Critical']
@@ -55,7 +66,65 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
               if (!form.cta.trim()) newErrors.cta = 'Please select a CTA.';
               setErrors(newErrors);
               if (Object.keys(newErrors).length > 0) return;
-              // ...existing code for submit...
+              setLoading(true)
+              setEmailResult({ theme: '', message: '' })
+
+              // Compose prompt for Olama as a sample template
+              const prompt = `You are an assistant that helps draft email templates. Write a SHORT SAMPLE email template for an HR manager about a layoff scenario. Do not assume it is real — just provide a professional example.\n\nDetails:\n- Recipient: ${form.recipientContext}\n- Subject: ${form.purpose}\n- Context: ${form.keyPoints}\n- Tone: ${form.tone}, respectful\n- Urgency: ${form.urgency}\n- Call to Action: ${form.cta}\n\nFormat as:\nSubject: ...\nMessage: ...`
+
+              // Use EventSource for SSE streaming
+              const controller = new AbortController()
+              let theme = ''
+              let message = ''
+              let buffer = ''
+
+              fetch(`${BACKEND_URL}:${BACKEND_PORT}/generate-stream`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt }),
+                signal: controller.signal
+              }).then(res => {
+                if (!res.body) throw new Error('No response body')
+                const reader = res.body.getReader()
+                function read() {
+                  reader.read().then(({ done, value }) => {
+                    if (done) {
+                      setLoading(false)
+                      return
+                    }
+                    const chunk = new TextDecoder().decode(value)
+                    buffer += chunk
+                    // Parse SSE chunks
+                    const lines = buffer.split(/\n\n/)
+                    buffer = lines.pop() // keep incomplete chunk
+                    lines.forEach(line => {
+                      if (line.startsWith('data: ')) {
+                        const data = line.replace('data: ', '')
+                        // Accumulate message
+                        // Try to extract theme and message from raw output
+                        const subjectMatch = data.match(/Subject:(.*)/i)
+                        if (subjectMatch) theme = subjectMatch[1].trim()
+                        const messageMatch = data.match(/Message:(.*)/is)
+                        if (messageMatch) {
+                          message += messageMatch[1].trim() + '\n'
+                        } else {
+                          // If not matched, accumulate all
+                          message += data.trim() + '\n'
+                        }
+                        setEmailResult({ theme, message })
+                      } else if (line.startsWith('event: error')) {
+                        setEmailResult({ error: line.replace(/event: error\ndata: /, '') })
+                        setLoading(false)
+                      }
+                    })
+                    read()
+                  })
+                }
+                read()
+              }).catch(err => {
+                setEmailResult({ error: err.message })
+                setLoading(false)
+              })
             }}>
             <label className="email-form-field">Purpose
               <input
@@ -130,7 +199,26 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
             >Save</button>
           </div>
           </form>
-          {/* Removed LLM response display */}
+          {loading && (
+            <div style={{marginTop:12, color:'#1e4e8c'}}>
+              Generating email...
+              {/* Optionally add a spinner here */}
+            </div>
+          )}
+          {emailResult && (
+            <div style={{marginTop:16, background:'#f2f2f2', border:'1px solid #b5b5b5', borderRadius:4, padding:12}}>
+              <div style={{fontWeight:'bold', marginBottom:8}}>Generated Email:</div>
+              {emailResult.error ? (
+                <div style={{color:'red'}}>{emailResult.error}</div>
+              ) : (
+                <>
+                  <div style={{marginBottom:8}}><b>Theme:</b> {emailResult.theme || '(none)'}</div>
+                  <div><b>Message:</b></div>
+                  <pre style={{whiteSpace:'pre-wrap', fontSize:13, margin:0}}>{emailResult.message || '(none)'}</pre>
+                </>
+              )}
+            </div>
+          )}
         </>
       )}
     </ModalWindow>
