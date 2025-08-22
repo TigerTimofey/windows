@@ -9,7 +9,6 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
   const [errors, setErrors] = useState({})
   const [installStep, setInstallStep] = useState(0) // 0 installing, 1 form
   const [form, setForm] = useState({ purpose: '', recipientContext: '', keyPoints: '', tone: '', urgency: '', cta: '' })
-  const [llmResponse, setLlmResponse] = useState(null)
 
   const toneOptions = ['Professional', 'Friendly', 'Formal', 'Casual']
   const urgencyOptions = ['Low', 'Normal', 'High', 'Critical']
@@ -127,28 +126,11 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                   urgency: form.urgency,
                   cta: form.cta
                 })
-                import('../../../utils/Api/email/hfQuery.js').then(({ query }) => {
-                  const prompt = `Purpose: ${form.purpose}\nRecipient: ${form.recipientContext}\nKey Points: ${form.keyPoints}\nTone: ${form.tone}\nUrgency: ${form.urgency}\nCTA: ${form.cta}`;
-                  query({ prompt }).then(response => {
-                    console.log('[LLM Response]', response)
-                    if (response && response.choices && response.choices[0] && response.choices[0].text) {
-                      setLlmResponse(response.choices[0].text)
-                    } else {
-                      setLlmResponse('No response text found.')
-                    }
-                  })
-                })
               }}
             >Save</button>
           </div>
           </form>
-          {llmResponse && (
-            <div className="llm-response-modal">
-              <h3>Generated Email</h3>
-              <pre style={{whiteSpace:'pre-wrap',background:'#f8f8ff',padding:'12px',borderRadius:'6px',marginTop:'8px'}}>{llmResponse}</pre>
-              <button className="modal-btn-text" style={{marginTop:'8px'}} onClick={()=>setLlmResponse(null)}>Close</button>
-            </div>
-          )}
+          {/* Removed LLM response display */}
         </>
       )}
     </ModalWindow>
