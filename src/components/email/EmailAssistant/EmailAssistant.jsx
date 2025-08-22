@@ -72,14 +72,27 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
               setLoading(true)
               setEmailResult({ theme: '', message: '' })
 
-              // Compose prompt for Olama as a sample template
-              const prompt = `You are an assistant that helps draft email templates. Write a SHORT SAMPLE email template for an HR manager about a layoff scenario. Do not assume it is real — just provide a professional example.\n\nDetails:\n- Recipient: ${form.recipientContext}\n- Subject: ${form.purpose}\n- Context: ${form.keyPoints}\n- Tone: ${form.tone}, respectful\n- Urgency: ${form.urgency}\n- Call to Action: ${form.cta}\n\nFormat as:\nSubject: ...\nMessage: ...`
+              // Compose prompt for Ollama as a sample template
+              const prompt = `You are an assistant that helps draft email templates. Write a SHORT SAMPLE email template for an HR manager about a layoff scenario. Do not assume it is real — just provide a professional example.\n\nDetails:\n- Recipient: ${form.recipientContext}\n- Subject: ${form.purpose}\n- Context: ${form.keyPoints}\n- Tone: ${form.tone}, respectful\n- Urgency: ${form.urgency}\n- Call to Action: ${form.cta}\n\nPlease include at the top a one-line Theme: (5-8 words) that summarizes the email, then a Subject: line, then Message: with the email body. Keep Theme short and explicit.\n\nFormat as:\nTheme: ...\nSubject: ...\nMessage: ...`
 
               // Use EventSource for SSE streaming
               const controller = new AbortController()
               let theme = ''
               let message = ''
+              let streamEnded = false
               let buffer = ''
+
+              // Helper: infer a short theme from the generated message
+              const inferThemeFromMessage = (msg) => {
+                if (!msg) return ''
+                // Remove placeholders like [Your Name], collapse whitespace
+                const cleaned = msg.replace(/\[[^\]]*\]/g, '').replace(/\s+/g, ' ').trim()
+                if (!cleaned) return ''
+                // Take the first sentence or first line
+                const first = cleaned.split(/[.\n]/)[0].trim()
+                const words = first.split(' ').filter(Boolean)
+                return words.slice(0, 6).join(' ')
+              }
 
               fetch(`${VITE_BACKEND_URL}:${VITE_BACKEND_PORT}/generate-stream`, {
                 method: 'POST',
@@ -92,6 +105,15 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                 function read() {
                   reader.read().then(({ done, value }) => {
                     if (done) {
+                      if (!streamEnded) {
+                        streamEnded = true
+                        if (!theme) {
+                          theme = inferThemeFromMessage(message)
+                        }
+                        const final = { theme, message }
+                        setEmailResult(final)
+                        console.log('[EmailAssistant] Final generated result:', final)
+                      }
                       setLoading(false)
                       return
                     }
@@ -103,20 +125,35 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                     lines.forEach(line => {
                       if (line.startsWith('data: ')) {
                         const data = line.replace('data: ', '')
-                        // Accumulate message
-                        // Try to extract theme and message from raw output
+                        // Accumulate message and try to capture Theme/Subject
+                        const themeMatch = data.match(/Theme:(.*)/i)
                         const subjectMatch = data.match(/Subject:(.*)/i)
-                        if (subjectMatch) theme = subjectMatch[1].trim()
+                        if (themeMatch) {
+                          theme = themeMatch[1].trim()
+                        } else if (subjectMatch && !theme) {
+                          theme = subjectMatch[1].trim()
+                        }
                         const messageMatch = data.match(/Message:(.*)/is)
                         if (messageMatch) {
                           message += messageMatch[1].trim() + '\n'
                         } else {
-                          // If not matched, accumulate all
                           message += data.trim() + '\n'
                         }
-                        setEmailResult({ theme, message })
+                        const result = { theme, message }
+                        setEmailResult(result)
+                        console.log('[EmailAssistant] Streaming partial result:', result)
                       } else if (line.startsWith('event: error')) {
-                        setEmailResult({ error: line.replace(/event: error\ndata: /, '') })
+                        const errMsg = line.replace(/event: error\\ndata: /, '')
+                        setEmailResult({ error: errMsg })
+                        setLoading(false)
+                      } else if (line.startsWith('event: end')) {
+                        if (!streamEnded) {
+                          streamEnded = true
+                          if (!theme) theme = inferThemeFromMessage(message)
+                          const final = { theme, message }
+                          setEmailResult(final)
+                          console.log('[EmailAssistant] SSE end event - final result:', final)
+                        }
                         setLoading(false)
                       }
                     })
@@ -126,6 +163,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                 read()
               }).catch(err => {
                 setEmailResult({ error: err.message })
+                console.error('[EmailAssistant] Fetch/stream error:', err)
                 setLoading(false)
               })
             }}>
