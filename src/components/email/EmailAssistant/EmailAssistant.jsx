@@ -25,6 +25,9 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
   const urgencyOptions = ['Low', 'Normal', 'High', 'Critical']
   const ctaOptions = ['Schedule a Call', 'Reply to Confirm', 'Approve Request', 'Provide Feedback', 'Other']
 
+  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || BACKEND_URL
+  const VITE_BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT || BACKEND_PORT
+
   // Reset state when opened
   useEffect(() => {
     if (open) {
@@ -78,7 +81,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
               let message = ''
               let buffer = ''
 
-              fetch(`${BACKEND_URL}:${BACKEND_PORT}/generate-stream`, {
+              fetch(`${VITE_BACKEND_URL}:${VITE_BACKEND_PORT}/generate-stream`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt }),
