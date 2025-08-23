@@ -1,4 +1,11 @@
 import React from 'react'
+import './EmailAssistantForm.css'
+
+const maxWordsOptions = [50, 100, 120, 150, 200]
+const complexityOptions = ['simple', 'moderate', 'advanced']
+const presentationOptions = ['clear paragraphs', 'bulleted list', 'formal letter']
+const temperatureOptions = [0.3, 0.5, 0.7, 1.0]
+const maxTokensOptions = [128, 256, 512, 1024]
 
 export function EmailAssistantForm({
   form, setForm, errors, setErrors, setLoading, setEmailResult,
@@ -10,17 +17,26 @@ export function EmailAssistantForm({
       onSubmit={e => {
         e.preventDefault();
         const newErrors = {};
-        if (!form.contentType.trim()) newErrors.contentType = 'Please specify the content type.';
         if (!form.context.trim()) newErrors.context = 'Please provide the core content requirements.';
-        if (!form.specifications.trim()) newErrors.specifications = 'Please provide content specifications.';
-        if (!form.style.trim()) newErrors.style = 'Please specify style parameters.';
-        if (!form.generation.trim()) newErrors.generation = 'Please specify generation settings.';
+        if (!form.maxWords) newErrors.maxWords = 'Please select max words.';
+        if (!form.complexity) newErrors.complexity = 'Please select complexity.';
+        if (!form.presentation) newErrors.presentation = 'Please select presentation.';
+        if (!form.temperature) newErrors.temperature = 'Please select temperature.';
+        if (!form.maxTokens) newErrors.maxTokens = 'Please select max tokens.';
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
         setLoading(true)
         setEmailResult({ theme: '', message: '' })
 
-        const prompt = buildPrompt(form)
+        // Compose form for prompt builder, remove format from specifications
+        const promptForm = {
+          contentType: 'Email',
+          context: form.context,
+          specifications: `Max ${form.maxWords} words. Platform: Gmail.`,
+          style: `Complexity: ${form.complexity}. Presentation: ${form.presentation}.`,
+          generation: `temperature=${form.temperature}, max_tokens=${form.maxTokens}`
+        }
+        const prompt = buildPrompt(promptForm)
         const controller = new AbortController()
         let theme = ''
         let message = ''
@@ -91,48 +107,81 @@ export function EmailAssistantForm({
         })
       }}
     >
-      <label className="email-form-field">Content Type
-        <input
-          value={form.contentType}
-          onChange={e => setForm(f => ({ ...f, contentType: e.target.value }))}
-          placeholder="e.g. Email, Blog Post, Report"
-        />
-        {renderErrorTooltip('contentType', errors)}
-      </label>
-      <label className="email-form-field">Context (Topic, Purpose, Audience)
+      {/* Hide contentType, platform, tone, format */}
+      <label className="email-form-field">
+        Context (Topic, Purpose, Audience)
         <textarea
           value={form.context}
           onChange={e => setForm(f => ({ ...f, context: e.target.value }))}
           rows={2}
-          placeholder="Describe topic, purpose, audience"
+          placeholder="eg. describe topic, purpose, audience etc.."
         />
         {renderErrorTooltip('context', errors)}
       </label>
-      <label className="email-form-field">Content Specifications
-        <textarea
-          value={form.specifications}
-          onChange={e => setForm(f => ({ ...f, specifications: e.target.value }))}
-          rows={2}
-          placeholder="e.g. word count, platform, format"
-        />
-        {renderErrorTooltip('specifications', errors)}
+      <label className="email-form-field">
+        Max Words
+        <select
+          value={form.maxWords || ''}
+          onChange={e => setForm(f => ({ ...f, maxWords: e.target.value }))}
+        >
+          <option value="">Select max words</option>
+          {maxWordsOptions.map(opt => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+        {renderErrorTooltip('maxWords', errors)}
       </label>
-      <label className="email-form-field">Style Parameters
-        <textarea
-          value={form.style}
-          onChange={e => setForm(f => ({ ...f, style: e.target.value }))}
-          rows={2}
-          placeholder="e.g. tone, complexity, presentation"
-        />
-        {renderErrorTooltip('style', errors)}
+      <label className="email-form-field">
+        Complexity
+        <select
+          value={form.complexity || ''}
+          onChange={e => setForm(f => ({ ...f, complexity: e.target.value }))}
+        >
+          <option value="">Select complexity</option>
+          {complexityOptions.map(opt => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+        {renderErrorTooltip('complexity', errors)}
       </label>
-      <label className="email-form-field">Generation Settings
-        <input
-          value={form.generation}
-          onChange={e => setForm(f => ({ ...f, generation: e.target.value }))}
-          placeholder="e.g. temperature, max tokens"
-        />
-        {renderErrorTooltip('generation', errors)}
+      <label className="email-form-field">
+        Presentation
+        <select
+          value={form.presentation || ''}
+          onChange={e => setForm(f => ({ ...f, presentation: e.target.value }))}
+        >
+          <option value="">Select presentation</option>
+          {presentationOptions.map(opt => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+        {renderErrorTooltip('presentation', errors)}
+      </label>
+      <label className="email-form-field">
+        Temperature
+        <select
+          value={form.temperature || ''}
+          onChange={e => setForm(f => ({ ...f, temperature: e.target.value }))}
+        >
+          <option value="">Select temperature</option>
+          {temperatureOptions.map(opt => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+        {renderErrorTooltip('temperature', errors)}
+      </label>
+      <label className="email-form-field">
+        Max Tokens
+        <select
+          value={form.maxTokens || ''}
+          onChange={e => setForm(f => ({ ...f, maxTokens: e.target.value }))}
+        >
+          <option value="">Select max tokens</option>
+          {maxTokensOptions.map(opt => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+        {renderErrorTooltip('maxTokens', errors)}
       </label>
       <div className="email-assistant-btn-row">
         <button type="button" className="modal-btn-text" onClick={() => setEmailResult(null)}>Close</button>

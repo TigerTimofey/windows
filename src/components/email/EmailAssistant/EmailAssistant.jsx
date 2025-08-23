@@ -4,7 +4,7 @@ import { inferThemeFromMessage, cleanMessage, removeDuplicates } from '../utils/
 import { useErrorMail } from '../../../utils/ErrorHandler/useErrorMail.jsx'
 import ModalWindow from '../../modal/ModalWindow.jsx'
 import { EmailAssistantForm } from '../FormResponse/EmailAssistantForm.jsx'
-import { EmailResultModal } from '../FormResponse/EmailResultModal.jsx'
+import { EmailResultModal } from '../FormResponse/EmailResultModal/EmailResultModal.jsx'
 import './EmailAssistant.css'
 
 export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'Email Assistant' }) {

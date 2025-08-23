@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import ModalWindow from '../../modal/ModalWindow.jsx'
+import ModalWindow from '../../../modal/ModalWindow.jsx'
 import './EmailResultModal.css' // Add this import for styles
 
 
