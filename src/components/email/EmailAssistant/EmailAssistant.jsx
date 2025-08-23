@@ -24,8 +24,6 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
   const [editableTheme, setEditableTheme] = useState('')
   const [editableMessage, setEditableMessage] = useState('')
 
-  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL
-  const VITE_BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT 
   useEffect(() => {
     if (open) setInstallStep(0)
   }, [open])
