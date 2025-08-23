@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react'
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost'
-const BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT || '5000'
+import { buildPrompt } from '../utils/buildPrompt.js'
+import { inferThemeFromMessage, cleanMessage, removeDuplicates } from '../utils/messageUtils.js'
 import { useErrorMail } from '../../../utils/ErrorHandler/useErrorMail.jsx'
 import ModalWindow from '../../modal/ModalWindow.jsx'
-import { WinDropdown } from '../../../utils/WinDropdown/WinDropdown.jsx'
 import './EmailAssistant.css'
 
 export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'Email Assistant' }) {
   const { renderErrorTooltip } = useErrorMail()
   const [errors, setErrors] = useState({})
-  const [installStep, setInstallStep] = useState(0) // 0 installing, 1 form
+  const [installStep, setInstallStep] = useState(0)
   const [form, setForm] = useState({
     contentType: 'Email',
     context: 'Welcome email for new developer Tim. Purpose: onboarding. Audience: Tim and HR Manager Jane Smith.',
@@ -20,16 +19,10 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
   const [emailResult, setEmailResult] = useState(null)
   const [loading, setLoading] = useState(false)
 
-
-  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || BACKEND_URL
-  const VITE_BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT || BACKEND_PORT
-
-  // Reset state when opened
+  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+  const VITE_BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT 
   useEffect(() => {
-    if (open) {
-      // Reset to install step when reopened
-      setInstallStep(0)
-    }
+    if (open) setInstallStep(0)
   }, [open])
 
   if (!open) return null
@@ -67,51 +60,13 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
               setLoading(true)
               setEmailResult({ theme: '', message: '' })
 
-              // Compose a generic, flexible prompt for any content type
-              const prompt = `
-You are an expert AI writing assistant.
+              const prompt = buildPrompt(form)
 
-Content type: ${form.contentType}
-Context: ${form.context}
-Specifications: ${form.specifications}
-Style: ${form.style}
-Generation settings: ${form.generation}
-
-TASK:
-Generate 2-3 sentences of the requested content according to the above details.
-Strictly follow the specifications and style parameters.
-Do not add explanations or extra information.
-              `.trim()
-
-              // Use EventSource for SSE streaming
               const controller = new AbortController()
               let theme = ''
               let message = ''
               let streamEnded = false
               let buffer = ''
-
-              // Helper: infer a short theme from the generated message
-              const inferThemeFromMessage = (msg) => {
-                if (!msg) return ''
-                // Remove placeholders like [Your Name], collapse whitespace
-                const cleaned = msg.replace(/\[[^\]]*\]/g, '').replace(/\s+/g, ' ').trim()
-                if (!cleaned) return ''
-                // Take the first sentence or first line
-                const first = cleaned.split(/[.\n]/)[0].trim()
-                const words = first.split(' ').filter(Boolean)
-                return words.slice(0, 6).join(' ')
-              }
-
-              // Helper: clean up message, remove excessive newlines and whitespace
-              const cleanMessage = (msg) => {
-                if (!msg) return ''
-                let cleaned = msg.replace(/\s+/g, ' ').replace(/\n+/g, '\n').trim()
-                // Remove leading/trailing newlines
-                cleaned = cleaned.replace(/^\n+|\n+$/g, '')
-                // If message is empty or only whitespace, return '(none)'
-                if (!cleaned || /^[\s\n]*$/.test(cleaned)) return '(none)'
-                return cleaned
-              }
 
               fetch(`${VITE_BACKEND_URL}:${VITE_BACKEND_PORT}/generate-stream`, {
                 method: 'POST',
@@ -129,22 +84,19 @@ Do not add explanations or extra information.
                         if (!theme) {
                           theme = inferThemeFromMessage(message)
                         }
-                        const final = { theme, message }
+                        const final = { theme, message: cleanMessage(removeDuplicates(message)) }
                         setEmailResult(final)
-                        console.log('[EmailAssistant] Final generated result:', final)
                         setLoading(false)
                       }
                       return
                     }
                     const chunk = new TextDecoder().decode(value)
                     buffer += chunk
-                    // Parse SSE chunks
                     const lines = buffer.split(/\n\n/)
-                    buffer = lines.pop() // keep incomplete chunk
+                    buffer = lines.pop()
                     lines.forEach(line => {
                       if (line.startsWith('data: ')) {
                         const data = line.replace('data: ', '')
-                        // Accumulate message and try to capture Theme/Subject
                         const themeMatch = data.match(/Theme:(.*)/i)
                         const subjectMatch = data.match(/Subject:(.*)/i)
                         if (themeMatch) {
@@ -158,10 +110,6 @@ Do not add explanations or extra information.
                         } else {
                           message += data.trim() + '\n'
                         }
-                        // Clean up message before displaying
-                        const result = { theme, message: cleanMessage(message)}
-                        setEmailResult(result)
-                        // console.log('[EmailAssistant] Streaming partial result:', result)
                       } else if (line.startsWith('event: error')) {
                         const errMsg = line.replace(/event: error\\ndata: /, '')
                         setEmailResult({ error: errMsg })
@@ -169,9 +117,8 @@ Do not add explanations or extra information.
                         if (!streamEnded) {
                           streamEnded = true
                           if (!theme) theme = inferThemeFromMessage(message)
-                          const final = { theme, message: cleanMessage(message) }
+                          const final = { theme, message: cleanMessage(removeDuplicates(message)) }
                           setEmailResult(final)
-                          console.log('[EmailAssistant] SSE end event - final result:', final)
                         }
                       }
                     })
@@ -181,7 +128,6 @@ Do not add explanations or extra information.
                 read()
               }).catch(err => {
                 setEmailResult({ error: err.message })
-                console.error('[EmailAssistant] Fetch/stream error:', err)
                 setLoading(false)
               })
             }}>
@@ -228,37 +174,32 @@ Do not add explanations or extra information.
               />
               {renderErrorTooltip('generation', errors)}
             </label>
-          <div className="email-assistant-btn-row">
-            <button type="button" className="modal-btn-text" onClick={onClose}>Close</button>
-            <button
-              type="submit"
-              className="modal-btn-text"
-              disabled={loading}
-              onClick={() => {
-                // Log only user-provided raw data
-                console.log('[EmailAssistant] User data:', {
-                  contentType: form.contentType,
-                  context: form.context,
-                  specifications: form.specifications,
-                  style: form.style,
-                  generation: form.generation
-                })
-              }}
-            >
-              {loading ? 'Generating...' : 'Generate'}
-            </button>
-          </div>
+            <div className="email-assistant-btn-row">
+              <button type="button" className="modal-btn-text" onClick={onClose}>Close</button>
+              <button
+                type="submit"
+                className="modal-btn-text"
+                disabled={loading}
+                onClick={() => {
+                  console.log('[EmailAssistant] User data:', { ...form })
+                }}
+              >
+                {loading ? 'Generating...' : 'Generate'}
+              </button>
+            </div>
           </form>
           {emailResult && (
             <div className="email-assistant-result">
               <div className="email-assistant-result-title">Generated Email:</div>
-     
+              {emailResult.error ? (
+                <div className="email-assistant-error">{emailResult.error}</div>
+              ) : (
                 <>
                   <div className="email-assistant-theme"><b>Theme:</b> {emailResult.theme || '(none)'}</div>
                   <div><b>Message:</b></div>
                   <pre className="email-assistant-message">{emailResult.message || '(none)'}</pre>
                 </>
-              
+              )}
             </div>
           )}
         </>
