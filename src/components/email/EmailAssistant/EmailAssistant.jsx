@@ -45,12 +45,12 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
       zIndex={zIndex}
       onActivate={onActivate}
     >
-  {installStep === 0 ? (
-        <div style={{ width: '100%', textAlign: 'center' }}>
-          <p style={{ marginBottom: 16 }}>Preparing components...</p>
-          <div style={{ width: '80%', height: 16, border: '2px inset #fff', background: '#dcdcdc', margin: '0 auto', position: 'relative' }}>
+      {installStep === 0 ? (
+        <div className="email-assistant-install">
+          <p className="email-assistant-install-text">Preparing components...</p>
+          <div className="email-assistant-progress-bar">
             <div
-              style={{ position: 'absolute', left: 0, top: 0, bottom: 0, background: '#1e4e8c', animation: 'emailProgress 1.05s linear forwards' }}
+              className="email-assistant-progress"
               onAnimationEnd={() => setInstallStep(1)}
             />
           </div>
@@ -113,8 +113,8 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                         const final = { theme, message }
                         setEmailResult(final)
                         console.log('[EmailAssistant] Final generated result:', final)
+                        setLoading(false)
                       }
-                      setLoading(false)
                       return
                     }
                     const chunk = new TextDecoder().decode(value)
@@ -145,7 +145,6 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                       } else if (line.startsWith('event: error')) {
                         const errMsg = line.replace(/event: error\\ndata: /, '')
                         setEmailResult({ error: errMsg })
-                        setLoading(false)
                       } else if (line.startsWith('event: end')) {
                         if (!streamEnded) {
                           streamEnded = true
@@ -154,7 +153,6 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                           setEmailResult(final)
                           console.log('[EmailAssistant] SSE end event - final result:', final)
                         }
-                        setLoading(false)
                       }
                     })
                     read()
@@ -193,7 +191,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
               />
               {renderErrorTooltip('keyPoints', errors)}
             </label>
-          <div style={{position:'relative'}}>
+          <div className="email-assistant-dropdown">
             <WinDropdown
               label="Tone"
               value={form.tone}
@@ -203,7 +201,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
             />
             {renderErrorTooltip('tone', errors)}
           </div>
-          <div style={{position:'relative'}}>
+          <div className="email-assistant-dropdown">
             <WinDropdown
               label="Urgency"
               value={form.urgency}
@@ -213,7 +211,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
             />
             {renderErrorTooltip('urgency', errors)}
           </div>
-          <div style={{position:'relative'}}>
+          <div className="email-assistant-dropdown">
             <WinDropdown
               label="CTA"
               value={form.cta}
@@ -223,9 +221,12 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
             />
             {renderErrorTooltip('cta', errors)}
           </div>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 4 }}>
+          <div className="email-assistant-btn-row">
             <button type="button" className="modal-btn-text" onClick={onClose}>Close</button>
-            <button type="submit" className="modal-btn-text"
+            <button
+              type="submit"
+              className="modal-btn-text"
+              disabled={loading}
               onClick={() => {
                 // Log only user-provided raw data
                 console.log('[EmailAssistant] User data:', {
@@ -237,25 +238,21 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                   cta: form.cta
                 })
               }}
-            >Save</button>
+            >
+              {loading ? 'Generating...' : 'Generate'}
+            </button>
           </div>
           </form>
-          {loading && (
-            <div style={{marginTop:12, color:'#1e4e8c'}}>
-              Generating email...
-              {/* Optionally add a spinner here */}
-            </div>
-          )}
           {emailResult && (
-            <div style={{marginTop:16, background:'#f2f2f2', border:'1px solid #b5b5b5', borderRadius:4, padding:12}}>
-              <div style={{fontWeight:'bold', marginBottom:8}}>Generated Email:</div>
+            <div className="email-assistant-result">
+              <div className="email-assistant-result-title">Generated Email:</div>
               {emailResult.error ? (
-                <div style={{color:'red'}}>{emailResult.error}</div>
+                <div className="email-assistant-error">{emailResult.error}</div>
               ) : (
                 <>
-                  <div style={{marginBottom:8}}><b>Theme:</b> {emailResult.theme || '(none)'}</div>
+                  <div className="email-assistant-theme"><b>Theme:</b> {emailResult.theme || '(none)'}</div>
                   <div><b>Message:</b></div>
-                  <pre style={{whiteSpace:'pre-wrap', fontSize:13, margin:0}}>{emailResult.message || '(none)'}</pre>
+                  <pre className="email-assistant-message">{emailResult.message || '(none)'}</pre>
                 </>
               )}
             </div>
