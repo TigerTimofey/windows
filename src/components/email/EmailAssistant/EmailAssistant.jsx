@@ -11,19 +11,15 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
   const [errors, setErrors] = useState({})
   const [installStep, setInstallStep] = useState(0) // 0 installing, 1 form
   const [form, setForm] = useState({
-    purpose: 'Notification of Organizational Changes',
-    recipientContext: 'HR Manager, responsible for employee communications',
-    keyPoints: 'Upcoming layoff, support resources, next steps',
-    tone: 'Professional',
-    urgency: 'High',
-    cta: 'Reply to Confirm'
+    contentType: 'Email',
+    context: 'Welcome email for new developer Tim. Purpose: onboarding. Audience: Tim and HR Manager Jane Smith.',
+    specifications: 'Max 120 words. Format: plain text. Platform: Gmail.',
+    style: 'Tone: friendly, professional. Complexity: simple. Presentation: clear paragraphs.',
+    generation: 'temperature=0.7, max_tokens=256'
   })
   const [emailResult, setEmailResult] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  const toneOptions = ['Professional', 'Friendly', 'Formal', 'Casual']
-  const urgencyOptions = ['Low', 'Normal', 'High', 'Critical']
-  const ctaOptions = ['Schedule a Call', 'Reply to Confirm', 'Approve Request', 'Provide Feedback', 'Other']
 
   const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || BACKEND_URL
   const VITE_BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT || BACKEND_PORT
@@ -61,19 +57,31 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
             onSubmit={e => {
               e.preventDefault();
               const newErrors = {};
-              if (!form.purpose.trim()) newErrors.purpose = 'Please provide the purpose.';
-              if (!form.recipientContext.trim()) newErrors.recipientContext = 'Please provide the recipient context.';
-              if (!form.keyPoints.trim()) newErrors.keyPoints = 'Please provide key points.';
-              if (!form.tone.trim()) newErrors.tone = 'Please select a tone.';
-              if (!form.urgency.trim()) newErrors.urgency = 'Please select urgency.';
-              if (!form.cta.trim()) newErrors.cta = 'Please select a CTA.';
+              if (!form.contentType.trim()) newErrors.contentType = 'Please specify the content type.';
+              if (!form.context.trim()) newErrors.context = 'Please provide the core content requirements.';
+              if (!form.specifications.trim()) newErrors.specifications = 'Please provide content specifications.';
+              if (!form.style.trim()) newErrors.style = 'Please specify style parameters.';
+              if (!form.generation.trim()) newErrors.generation = 'Please specify generation settings.';
               setErrors(newErrors);
               if (Object.keys(newErrors).length > 0) return;
               setLoading(true)
               setEmailResult({ theme: '', message: '' })
 
-              // Compose prompt for Ollama as a sample template
-              const prompt = `You are an assistant that helps draft email templates. Write a SHORT SAMPLE email template for an HR manager about a layoff scenario. Do not assume it is real — just provide a professional example.\n\nDetails:\n- Recipient: ${form.recipientContext}\n- Subject: ${form.purpose}\n- Context: ${form.keyPoints}\n- Tone: ${form.tone}, respectful\n- Urgency: ${form.urgency}\n- Call to Action: ${form.cta}\n\nPlease include at the top a one-line Theme: (5-8 words) that summarizes the email, then a Subject: line, then Message: with the email body. Keep Theme short and explicit.\n\nFormat as:\nTheme: ...\nSubject: ...\nMessage: ...`
+              // Compose a generic, flexible prompt for any content type
+              const prompt = `
+You are an expert AI writing assistant.
+
+Content type: ${form.contentType}
+Context: ${form.context}
+Specifications: ${form.specifications}
+Style: ${form.style}
+Generation settings: ${form.generation}
+
+TASK:
+Generate 2-3 sentences of the requested content according to the above details.
+Strictly follow the specifications and style parameters.
+Do not add explanations or extra information.
+              `.trim()
 
               // Use EventSource for SSE streaming
               const controller = new AbortController()
@@ -92,6 +100,17 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                 const first = cleaned.split(/[.\n]/)[0].trim()
                 const words = first.split(' ').filter(Boolean)
                 return words.slice(0, 6).join(' ')
+              }
+
+              // Helper: clean up message, remove excessive newlines and whitespace
+              const cleanMessage = (msg) => {
+                if (!msg) return ''
+                let cleaned = msg.replace(/\s+/g, ' ').replace(/\n+/g, '\n').trim()
+                // Remove leading/trailing newlines
+                cleaned = cleaned.replace(/^\n+|\n+$/g, '')
+                // If message is empty or only whitespace, return '(none)'
+                if (!cleaned || /^[\s\n]*$/.test(cleaned)) return '(none)'
+                return cleaned
               }
 
               fetch(`${VITE_BACKEND_URL}:${VITE_BACKEND_PORT}/generate-stream`, {
@@ -139,9 +158,10 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                         } else {
                           message += data.trim() + '\n'
                         }
-                        const result = { theme, message }
+                        // Clean up message before displaying
+                        const result = { theme, message: cleanMessage(message)}
                         setEmailResult(result)
-                        console.log('[EmailAssistant] Streaming partial result:', result)
+                        // console.log('[EmailAssistant] Streaming partial result:', result)
                       } else if (line.startsWith('event: error')) {
                         const errMsg = line.replace(/event: error\\ndata: /, '')
                         setEmailResult({ error: errMsg })
@@ -149,7 +169,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                         if (!streamEnded) {
                           streamEnded = true
                           if (!theme) theme = inferThemeFromMessage(message)
-                          const final = { theme, message }
+                          const final = { theme, message: cleanMessage(message) }
                           setEmailResult(final)
                           console.log('[EmailAssistant] SSE end event - final result:', final)
                         }
@@ -165,62 +185,49 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
                 setLoading(false)
               })
             }}>
-            <label className="email-form-field">Purpose
+            <label className="email-form-field">Content Type
               <input
-                value={form.purpose}
-                onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))}
-                placeholder="Describe the purpose of your email"
+                value={form.contentType}
+                onChange={e => setForm(f => ({ ...f, contentType: e.target.value }))}
+                placeholder="e.g. Email, Blog Post, Report"
               />
-              {renderErrorTooltip('purpose', errors)}
+              {renderErrorTooltip('contentType', errors)}
             </label>
-            <label className="email-form-field">Recipient Context
+            <label className="email-form-field">Context (Topic, Purpose, Audience)
               <textarea
-                value={form.recipientContext}
-                onChange={e => setForm(f => ({ ...f, recipientContext: e.target.value }))}
+                value={form.context}
+                onChange={e => setForm(f => ({ ...f, context: e.target.value }))}
                 rows={2}
-                placeholder="Who is the recipient? (role, relationship)"
+                placeholder="Describe topic, purpose, audience"
               />
-              {renderErrorTooltip('recipientContext', errors)}
+              {renderErrorTooltip('context', errors)}
             </label>
-            <label className="email-form-field">Key Points / Messages
+            <label className="email-form-field">Content Specifications
               <textarea
-                value={form.keyPoints}
-                onChange={e => setForm(f => ({ ...f, keyPoints: e.target.value }))}
-                rows={3}
-                placeholder="List key points or messages to include"
+                value={form.specifications}
+                onChange={e => setForm(f => ({ ...f, specifications: e.target.value }))}
+                rows={2}
+                placeholder="e.g. word count, platform, format"
               />
-              {renderErrorTooltip('keyPoints', errors)}
+              {renderErrorTooltip('specifications', errors)}
             </label>
-          <div className="email-assistant-dropdown">
-            <WinDropdown
-              label="Tone"
-              value={form.tone}
-              onChange={v => setForm(f => ({ ...f, tone: v }))}
-              options={toneOptions}
-              placeholder="Select tone"
-            />
-            {renderErrorTooltip('tone', errors)}
-          </div>
-          <div className="email-assistant-dropdown">
-            <WinDropdown
-              label="Urgency"
-              value={form.urgency}
-              onChange={v => setForm(f => ({ ...f, urgency: v }))}
-              options={urgencyOptions}
-              placeholder="Select urgency"
-            />
-            {renderErrorTooltip('urgency', errors)}
-          </div>
-          <div className="email-assistant-dropdown">
-            <WinDropdown
-              label="CTA"
-              value={form.cta}
-              onChange={v => setForm(f => ({ ...f, cta: v }))}
-              options={ctaOptions}
-              placeholder="Select CTA"
-            />
-            {renderErrorTooltip('cta', errors)}
-          </div>
+            <label className="email-form-field">Style Parameters
+              <textarea
+                value={form.style}
+                onChange={e => setForm(f => ({ ...f, style: e.target.value }))}
+                rows={2}
+                placeholder="e.g. tone, complexity, presentation"
+              />
+              {renderErrorTooltip('style', errors)}
+            </label>
+            <label className="email-form-field">Generation Settings
+              <input
+                value={form.generation}
+                onChange={e => setForm(f => ({ ...f, generation: e.target.value }))}
+                placeholder="e.g. temperature, max tokens"
+              />
+              {renderErrorTooltip('generation', errors)}
+            </label>
           <div className="email-assistant-btn-row">
             <button type="button" className="modal-btn-text" onClick={onClose}>Close</button>
             <button
@@ -230,12 +237,11 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
               onClick={() => {
                 // Log only user-provided raw data
                 console.log('[EmailAssistant] User data:', {
-                  purpose: form.purpose,
-                  recipientContext: form.recipientContext,
-                  keyPoints: form.keyPoints,
-                  tone: form.tone,
-                  urgency: form.urgency,
-                  cta: form.cta
+                  contentType: form.contentType,
+                  context: form.context,
+                  specifications: form.specifications,
+                  style: form.style,
+                  generation: form.generation
                 })
               }}
             >
@@ -246,15 +252,13 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
           {emailResult && (
             <div className="email-assistant-result">
               <div className="email-assistant-result-title">Generated Email:</div>
-              {emailResult.error ? (
-                <div className="email-assistant-error">{emailResult.error}</div>
-              ) : (
+     
                 <>
                   <div className="email-assistant-theme"><b>Theme:</b> {emailResult.theme || '(none)'}</div>
                   <div><b>Message:</b></div>
                   <pre className="email-assistant-message">{emailResult.message || '(none)'}</pre>
                 </>
-              )}
+              
             </div>
           )}
         </>
