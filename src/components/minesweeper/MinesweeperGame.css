@@ -86,7 +86,7 @@ input[type="number"] { width: 60px; }
   display: grid;
   place-items: center;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 13px;
   border: 1.5px solid;
   border-color: var(--highlight) var(--shadow) var(--shadow) var(--highlight);
   cursor: pointer;
