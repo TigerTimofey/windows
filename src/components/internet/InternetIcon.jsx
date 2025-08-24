@@ -1,10 +1,24 @@
 import React, { useEffect, useRef } from 'react'
-import internetIcon from '../../assets/win7/icons/internet.ico'
+import internetIcon from '../../assets/win7/icons/gitgub.png'
 
 
-export function InternetIcon({ iconRef, style, onMouseDown, onContextMenu, onClick, onDoubleClick, name = 'Internet', renaming = false, onRenameCommit, onRenameCancel }) {
+export function InternetIcon({ iconRef, style, onMouseDown, onContextMenu, name = 'GitHub', renaming = false, onRenameCommit, onRenameCancel }) {
   const inputRef = useRef(null)
   useEffect(() => { if (renaming && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [renaming])
+
+  // Detect touch/coarse pointer
+  const isTouchOrCoarse = typeof window !== 'undefined' && (
+    'ontouchstart' in window ||
+    (navigator && navigator.maxTouchPoints > 0) ||
+    (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+  )
+
+  // Open GitHub in new tab
+  const openGitHub = (e) => {
+    if (e) e.preventDefault()
+    window.open('https://github.com/TigerTimofey/windows', '_blank', 'noopener,noreferrer')
+  }
+
   return (
     <div
       className="windows-icon"
@@ -12,12 +26,12 @@ export function InternetIcon({ iconRef, style, onMouseDown, onContextMenu, onCli
       style={style}
       onMouseDown={onMouseDown}
       onContextMenu={onContextMenu}
-      onClick={onClick}
-      onDoubleClick={onDoubleClick}
+      onClick={isTouchOrCoarse ? openGitHub : undefined}
+      onDoubleClick={!isTouchOrCoarse ? openGitHub : undefined}
     >
       <img
         src={internetIcon}
-        alt="Internet"
+        alt="GitHub"
         className="icon-img"
         draggable={false}
         onDragStart={e => e.preventDefault()}

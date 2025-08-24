@@ -277,7 +277,7 @@ export function DesktopRoot() {
             x={internet.context.x}
             y={internet.context.y}
             open={internet.context.open}
-            onOpen={() => {/* Optionally open a modal or perform an action */ internet.closeContext()}}
+            onOpen={() =>{ internet.closeContext()}}
             onDelete={internet.deleteSelf}
             onRename={internet.startRename}
             onCopy={() => { copyHandlers.copyInternet(); internet.closeContext(); }}

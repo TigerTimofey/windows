@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import internetIcon from '../assets/win7/icons/internet.ico'
+import internetIcon from '../assets/win7/icons/gitgub.png'
 import { getClampedBinPosition, isIconDroppedOnTarget } from './useDesktop.js'
 
 export function useInternetIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIntoFolder, getExtraFolderTargets, onDroppedIntoExtraFolder) {
@@ -11,7 +11,7 @@ export function useInternetIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIn
   const dragOffset = useRef({ x: 0, y: 0 })
   const movedRef = useRef(false)
   const [context, setContext] = useState({ open: false, x: 0, y: 0 })
-  const [name, setName] = useState('Internet')
+  const [name, setName] = useState('GitHub')
   const [renaming, setRenaming] = useState(false)
   const isTouchOrCoarse = typeof window !== 'undefined' && (
     'ontouchstart' in window ||
@@ -130,13 +130,13 @@ export function useInternetIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIn
     context,
     closeContext,
     deleteSelf: () => { if (!visible) return; setVisible(false); closeContext(); onDroppedIntoBin && onDroppedIntoBin({ id: 'internet', name, icon: internetIcon }) },
-    restore: () => { setVisible(true); setPos({ x: null, y: null }); closeContext() },
+    restore: () => { setVisible(true); setPos({ x: 18, y: 320 }); closeContext() },
     setPosition: (x, y) => setPos({ x, y }),
     name,
     renaming,
     startRename: () => { setRenaming(true); closeContext() },
     commitRename: (val) => { if (val) setName(val.slice(0,32)); setRenaming(false) },
     cancelRename: () => setRenaming(false),
-    copyDescriptor: () => ({ id: 'internet', name, icon: internetIcon })
+    copyDescriptor: () => ({ id: 'GitHub', name, icon: internetIcon })
   }
 }
