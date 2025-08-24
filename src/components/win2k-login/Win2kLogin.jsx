@@ -1,6 +1,7 @@
 import { useState } from "react";
 import './Win2kLogin.css'
 import winLogo from '../../assets/win7/images/win-logo.png'
+import loginSound from '../../assets/win7/sounds/login.mp3'
 
 export default function Win2kLogin({ onLogin }) {
   const [username, setUsername] = useState("admin");
@@ -9,6 +10,12 @@ export default function Win2kLogin({ onLogin }) {
 
   function handleSubmit(e) {
     e.preventDefault();
+    // Play login sound
+    try {
+      const audio = new Audio(loginSound);
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    } catch {e}
     if (onLogin) onLogin();
   }
 
@@ -26,7 +33,6 @@ export default function Win2kLogin({ onLogin }) {
           <div className="win2k-login-logo-img-wrap">
             <img src={winLogo} alt="Windows Logo" className="win2k-login-logo-img" />
           </div>
-          
           <form onSubmit={handleSubmit} className="win2k-login-form">
             <div className="win2k-login-row">
               <label>User name:</label>
