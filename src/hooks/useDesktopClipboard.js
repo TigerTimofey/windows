@@ -47,7 +47,7 @@ export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, c
   return { copiedItem, captureCopy, paste }
 }
 
-export function buildCopyHandlers({ email, folder, recycle, compName, captureCopy, extraFolderIcon, internet }) {
+export function buildCopyHandlers({ email, folder, recycle, compName, captureCopy, extraFolderIcon, internet, minesweeper }) {
   return {
     copyEmail: () => { captureCopy({ id: 'email', name: email.name, icon: email.copyDescriptor().icon, type: 'email' }); navigator.clipboard?.writeText(email.name).catch(()=>{}) },
     // Copy the base ghost folder as a brand new extra folder descriptor (so the copy can hold items independently)
@@ -67,6 +67,10 @@ export function buildCopyHandlers({ email, folder, recycle, compName, captureCop
     copyInternet: () => {
       captureCopy({ id: 'internet', name: internet.name, icon: internet.copyDescriptor().icon, type: 'internet' })
       navigator.clipboard?.writeText(internet.name).catch(()=>{})
+    },
+    copyMinesweeper: () => {
+      captureCopy({ id: 'minesweeper', name: minesweeper.name, icon: minesweeper.copyDescriptor().icon, type: 'minesweeper' })
+      navigator.clipboard?.writeText(minesweeper.name).catch(()=>{})
     }
   }
 }

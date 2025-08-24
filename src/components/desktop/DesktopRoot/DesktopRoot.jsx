@@ -32,6 +32,10 @@ import { useSounds } from '../../../hooks/useSounds.js'
 import { useInternetIcon } from '../../../hooks/useInternetIcon.js'
 import { InternetIcon } from '../../internet/InternetIcon.jsx'
 import { InternetContextMenu } from '../../internet/InternetContextMenu.jsx'
+import { useMinesweeperIcon } from '../../../hooks/useMinesweeperIcon.js'
+import { MinesweeperIcon } from '../../minesweeper/MinesweeperIcon.jsx'
+import { MinesweeperContextMenu } from '../../minesweeper/MinesweeperContextMenu.jsx'
+import { MinesweeperGameModal } from '../../minesweeper/MinesweeperGameModal.jsx'
 
 export function DesktopRoot() {
   const { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ } = useZLayers(150)
@@ -76,6 +80,15 @@ export function DesktopRoot() {
     (item, targetId) => addItemToExtraFolder(targetId, item)
   )
 
+  const minesweeper = useMinesweeperIcon(
+    recycle.binRef,
+    addItemToBin,
+    folder.ref,
+    (item) => folder.addItem(item),
+    getExtraFolderTargets,
+    (item, targetId) => addItemToExtraFolder(targetId, item)
+  )
+
   const { isTouchOrCoarse } = usePointerMode()
   // Pass restoreInternet to binHandlers
   const binHandlers = useBinHandlers({
@@ -87,7 +100,8 @@ export function DesktopRoot() {
     trashSound,
     isTouchOrCoarse,
     bring,
-    restoreInternet: internet.restore
+    restoreInternet: internet.restore,
+    restoreMinesweeper: minesweeper.restore // <-- add this
   })
   const { binModalOpen, confirmClearOpen, handleBinDoubleClick, handleBinClick, handleBinModalClose, handleEmptyRequest, handleRestoreAll, handleRestoreItem, handleConfirmEmpty, handleCancelEmpty } = binHandlers
 
@@ -102,7 +116,8 @@ export function DesktopRoot() {
     compName,
     captureCopy,
     extraFolderIcon,
-    internet // <-- pass internet hook for copyInternet
+    internet,
+    minesweeper
   })
 
   const [deskMenu, setDeskMenu] = useState({ open: false, x: 0, y: 0 })
@@ -142,6 +157,7 @@ export function DesktopRoot() {
   function handleFolderItemOpen(id){
     openItemFromBaseFolder(id,{ email, bring, setCompModalOpen, setExtraFolders, folder, zCounterRef, bringExtraFolder })
     if (id === 'internet') { internet.restore(); return }
+    if (id === 'minesweeper') { minesweeper.restore(); return }
   }
   function handleFolderItemDelete(id){
     if (id === 'internet') {
@@ -149,10 +165,16 @@ export function DesktopRoot() {
       addItemToBin({ id: 'internet', name: internet.name, icon: internet.copyDescriptor().icon })
       return
     }
+    if (id === 'minesweeper') {
+      folder.removeItem('minesweeper')
+      addItemToBin({ id: 'minesweeper', name: minesweeper.name, icon: minesweeper.copyDescriptor().icon })
+      return
+    }
     deleteItemFromBaseFolder(id,{ folder, addItemToBin, email, setExtraFolders, extraFolderIcon })
   }
   function handleFolderItemToDesktop(id){
     if (id === 'internet') { folder.removeItem('internet'); internet.restore(); return }
+    if (id === 'minesweeper') { folder.removeItem('minesweeper'); minesweeper.restore(); return }
     moveItemFromBaseFolderToDesktop(id,{ folder, email, restoreComputer, setExtraFolders })
   }
 
@@ -284,6 +306,38 @@ export function DesktopRoot() {
           />
         </>
       )}
+      {minesweeper.visible && (
+        <>
+          <MinesweeperIcon
+            iconRef={minesweeper.ref}
+            style={minesweeper.style}
+            onMouseDown={minesweeper.handleMouseDown}
+            onContextMenu={minesweeper.handleContextMenu}
+            name={minesweeper.name}
+            renaming={minesweeper.renaming}
+            onRenameCommit={minesweeper.commitRename}
+            onRenameCancel={minesweeper.cancelRename}
+            onClick={minesweeper.handleClick}
+            onDoubleClick={minesweeper.handleDoubleClick}
+          />
+          <MinesweeperContextMenu
+            x={minesweeper.context.x}
+            y={minesweeper.context.y}
+            open={minesweeper.context.open}
+            onOpen={() => { minesweeper.setModalOpen(true); minesweeper.closeContext() }}
+            onDelete={minesweeper.deleteSelf}
+            onRename={minesweeper.startRename}
+            onCopy={() => { copyHandlers.copyMinesweeper(); minesweeper.closeContext(); }}
+          />
+        </>
+      )}
+      {/* Minesweeper modal */}
+      <MinesweeperGameModal
+        open={minesweeper.modalOpen}
+        onClose={() => minesweeper.setModalOpen(false)}
+        zIndex={130}
+        onActivate={() => bring('minesweeper')}
+      />
     </div>
   )
 }
