@@ -15,7 +15,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(90deg, #1e4e8c 80%, #1e4e8c 100%);
+background: linear-gradient(90deg, #0A246A 0%,  #113461d3 50%, #5d89c3d3 100%);  color: #fff;
+
   color: #fff;
   padding: 4px 8px;
   border-bottom: 1px solid #b5b5b5;

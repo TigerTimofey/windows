@@ -15,7 +15,8 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 28px; /* Added height as requested */
+  height: 26px; /* Added height as requested */
+  
 }
 /* Centered empty message */
 .modal-empty-message {
@@ -109,8 +110,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(90deg, #1e4e8c 80%, #1e4e8c 100%);
-  color: #fff;
+background: linear-gradient(90deg, #0A246A 0%,  #113461d3 50%, #5d89c3d3 100%);  color: #fff;
   padding: 3px 8px;
   font-size: 15px;
   border-bottom: 1px solid #b5b5b5;

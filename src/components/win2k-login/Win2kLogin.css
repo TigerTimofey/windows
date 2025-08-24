@@ -1,7 +1,7 @@
 .win2k-login-bg {
   position: fixed;
   inset: 0;
-  background: #3A6EA5; /* Classic Win2k blue */
+  background: linear-gradient(90deg, #969db0 0%, #1e4e8c8b 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,11 +21,11 @@
 
 /* Title bar */
 .win2k-login-titlebar {
-  background: #0A246A;
+  background: linear-gradient(90deg, #0A246A 0%,  #113461d3 50%, #5d89c3d3 100%);  color: #fff;
+
   color: #fff;
   padding: 0px;
   font-size: 15px;
-  border-bottom: 1px solid #b5b5b5;
 }
 .win2k-login-titlebar-left {
   display: flex;
