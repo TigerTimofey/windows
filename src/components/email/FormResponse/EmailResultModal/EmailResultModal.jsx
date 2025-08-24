@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import ModalWindow from '../../../modal/ModalWindow.jsx'
-import './EmailResultModal.css' // Add this import for styles
+import './EmailResultModal.css'
 
 
 function normalizeSpacing(text) {
@@ -15,7 +15,7 @@ function normalizeSpacing(text) {
     .trim()
 }
 
-// Clean message body
+
 function cleanMessage(text) {
   if (!text) return ''
   let cleaned = normalizeSpacing(text)
@@ -23,7 +23,7 @@ function cleanMessage(text) {
   return cleaned
 }
 
-// Utility for export formats
+
 function getPlainText(theme, message) {
   return `${theme}\n\n${message}`
 }
@@ -36,7 +36,7 @@ function getHTML(theme, message) {
   return `<h1 style="font-family:sans-serif;">${theme}</h1><div style="font-family:sans-serif;white-space:pre-line;">${message}</div>`
 }
 
-// PDF export (uses browser print dialog for simplicity)
+
 function exportPDF(theme, message) {
   const html = getHTML(theme, message)
   const win = window.open('', '_blank')
@@ -76,7 +76,7 @@ export function EmailResultModal({
   const handleThemeChange = e => setTheme(normalizeSpacing(e.target.value))
   const handleMessageChange = e => setMessage(cleanMessage(e.target.value))
 
-  // Show menu if either button or menu is hovered
+
   const exportMenuVisible = showExportMenu || menuHover
 
   return (
@@ -120,7 +120,7 @@ export function EmailResultModal({
             style={{ position: 'relative', display: 'inline-block' }}
             onMouseEnter={() => setShowExportMenu(true)}
             onMouseLeave={() => {
-              // Delay hiding to allow moving cursor into menu
+
               setTimeout(() => setShowExportMenu(false), 180)
             }}
             tabIndex={0}

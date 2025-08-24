@@ -29,7 +29,6 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
   }, [open])
 
   useEffect(() => {
-    // Only open modal if we have a final result (not during streaming, not error)
     if (
       emailResult &&
       !emailResult.error &&
@@ -40,7 +39,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
       setEditableTheme(emailResult.theme)
       setEditableMessage(emailResult.message)
       setResultModalOpen(true)
-      setLoading(false) // Enable "Generate" button when modal is open
+      setLoading(false) 
     }
   }, [emailResult])
 
@@ -79,7 +78,6 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
             loading={loading}
             renderErrorTooltip={renderErrorTooltip}
           />
-          {/* Only show modal if we have a final result */}
           {resultModalOpen && emailResult && emailResult.theme && emailResult.message && emailResult.message !== '(none)' && (
             <EmailResultModal
               open={resultModalOpen}

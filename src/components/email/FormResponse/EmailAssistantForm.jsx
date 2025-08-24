@@ -28,7 +28,6 @@ export function EmailAssistantForm({
         setLoading(true)
         setEmailResult({ theme: '', message: '' })
 
-        // Compose form for prompt builder, remove format from specifications
         const promptForm = {
           contentType: 'Email',
           context: form.context,
@@ -107,10 +106,10 @@ export function EmailAssistantForm({
         })
       }}
     >
-      {/* Hide contentType, platform, tone, format */}
       <label className="email-form-field">
         Context (Topic, Purpose, Audience)
         <textarea
+          id='context-message'
           value={form.context}
           onChange={e => setForm(f => ({ ...f, context: e.target.value }))}
           rows={2}
