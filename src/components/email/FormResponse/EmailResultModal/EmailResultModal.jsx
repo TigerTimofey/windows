@@ -68,7 +68,15 @@ export function EmailResultModal({
   if (!open) return null
 
   const handleThemeChange = e => setTheme(normalizeSpacing(e.target.value))
-  const handleMessageChange = e => setMessage(cleanMessage(e.target.value))
+  // Remove theme from start of message if present
+  const handleMessageChange = e => {
+    let msg = cleanMessage(e.target.value)
+    const themeNorm = normalizeSpacing(theme).trim()
+    if (msg.startsWith(themeNorm)) {
+      msg = msg.slice(themeNorm.length).trimStart()
+    }
+    setMessage(msg)
+  }
 
 
   const exportMenuVisible = showExportMenu || menuHover

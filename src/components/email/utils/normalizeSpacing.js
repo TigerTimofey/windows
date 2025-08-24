@@ -1,10 +1,10 @@
 
 export function normalizeSpacing(text) {
   return text
-   .replace(/\s+/g, ' ')         // collapse multiple spaces
-    .replace(/\s+([.,!?;:])/g, '$1') // no space before punctuation
+   .replace(/\s+/g, ' ')      
+    .replace(/\s+([.,!?;:])/g, '$1') 
   .replace(/'\s+s/g, "'s")
-  .replace(/\b(\w+)\s+'\s+(ve|ll|re|d|m|t)\b/gi, "$1'$2") // fix contractions like we've, don't, I'll
+  .replace(/\b(\w+)\s+'\s+(ve|ll|re|d|m|t)\b/gi, "$1'$2") 
     .replace(/Hello\s*\[\s*([^\]]+)\s*\],?/gi, "Hello $1,\n\n")
     .replace(/Subject\s*:/gi, '')
     .replace(/\[ ?Your Name ?\]/gi, (typeof window !== 'undefined' && window.lastSenderName) ? window.lastSenderName : '[Your Name]')

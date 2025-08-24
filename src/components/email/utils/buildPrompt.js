@@ -17,7 +17,7 @@ Generation settings:
 
 TASK:
 Generate a short, direct email from ${form.sender} to ${form.receiver} according to the above details.
-- The email should start with 'Hello ${form.receiver},' and end with 'Best regards, ${form.sender}'.
+- The email should start with 'Hello ${form.receiver},' and end with 'Best, ${form.sender}'.
 - Do not add explanations or extra information.
   `.trim();
 }

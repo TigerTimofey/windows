@@ -128,6 +128,8 @@ export function EmailAssistantForm({
           <label className="email-form-field">
         Your Name (Sender)
         <input
+          id="sender"
+          name="sender"
           type="text"
           value={form.sender || ''}
           onChange={e => setForm(f => ({ ...f, sender: e.target.value }))}
@@ -138,6 +140,8 @@ export function EmailAssistantForm({
            <label className="email-form-field">
         Receiver Name
         <input
+          id="receiver"
+          name="receiver"
           type="text"
           value={form.receiver || ''}
           onChange={e => setForm(f => ({ ...f, receiver: e.target.value }))}
@@ -148,7 +152,8 @@ export function EmailAssistantForm({
       <label className="email-form-field">
         Email Content (What should the email say?)
         <textarea
-          id='content-message'
+          id="content-message"
+          name="content"
           value={form.content || ''}
           onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
           rows={3}
@@ -160,6 +165,8 @@ export function EmailAssistantForm({
       <label className="email-form-field">
         Max Words
         <select
+          id="maxWords"
+          name="maxWords"
           value={form.maxWords || ''}
           onChange={e => setForm(f => ({ ...f, maxWords: e.target.value }))}
         >
@@ -173,6 +180,8 @@ export function EmailAssistantForm({
       <label className="email-form-field">
         Complexity
         <select
+          id="complexity"
+          name="complexity"
           value={form.complexity || ''}
           onChange={e => setForm(f => ({ ...f, complexity: e.target.value }))}
         >
@@ -186,6 +195,8 @@ export function EmailAssistantForm({
       <label className="email-form-field">
         Presentation
         <select
+          id="presentation"
+          name="presentation"
           value={form.presentation || ''}
           onChange={e => setForm(f => ({ ...f, presentation: e.target.value }))}
         >
