@@ -27,14 +27,17 @@ export default function ModalWindow({ title, children, onClose, zIndex = 100, on
       // Clamp to viewport
       const winW = window.innerWidth
       const winH = window.innerHeight
-      const modalW = modalRef.current.offsetWidth
+      const modalW = modalRef.current.offsetWidth 
       const modalH = modalRef.current.offsetHeight
       x = Math.max(0, Math.min(x, winW - modalW))
       y = Math.max(0, Math.min(y, winH - modalH))
       setPos({ x, y })
+      // Prevent text selection while dragging
+      document.body.style.userSelect = 'none'
     }
     function onMouseUp() {
-      setDragging(false)
+  setDragging(false)
+  document.body.style.userSelect = ''
     }
     if (dragging) {
       document.addEventListener('mousemove', onMouseMove)
