@@ -123,27 +123,20 @@ background: linear-gradient(90deg, #0A246A 0%,  #113461d3 50%, #5d89c3d3 100%); 
 .modal-btn {
   width: 24px;
   height: 24px;
-  padding: 0;
-  font-size: 16px;
-  font-weight: bold;
-  font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
-  line-height: 1;
-  cursor: pointer;
   background: #c0c0c0;
-  border-left-color: #ffffff;
-  border-top-color: #ffffff;
-  border-right-color: #404040; 
-  border-bottom-color: #404040;
+  color: #222;
+  border: 1px solid #000;
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080;
+  margin-left: 2px;
+  transition: box-shadow 0.1s, background 0.1s;
 }
 .modal-btn:hover {
-  border-top-color: #404040;
-  border-right-color: #ffffff;   border-right-color: #404040; 
-  border-bottom-color: #ffffff;
   background: #d4d4d4;
+  box-shadow: inset 2px 2px 0 #808080, inset -2px -2px 0 #fff;
 }
 .modal-btn:active {
   border: 1px solid #404040;

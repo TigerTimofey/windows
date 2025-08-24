@@ -37,7 +37,7 @@ export function EmailSignatureModal({
             type="button"
             onClick={onClose}
           >
-            ×
+          ×
           </button>
         </div>
       </div>
