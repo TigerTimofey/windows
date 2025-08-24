@@ -91,7 +91,11 @@ input[type="number"] { width: 60px; }
   border-color: var(--highlight) var(--shadow) var(--shadow) var(--highlight);
   cursor: pointer;
 }
-.cell.revealed { border: 1.5px solid #808080; background: var(--cell-pressed); cursor: default; }
+.cell.revealed {
+  border: 1.5px solid #808080;
+  background: #e3e3e3;
+  cursor: default;
+}
 .cell.flag::after { content: "🚩"; }
 .cell.qmark::after { content: "?"; font-weight: 900; }
 .cell.mine.revealed { background: #f7b; }
