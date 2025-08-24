@@ -1,5 +1,6 @@
 import React from 'react'
 import './EmailAssistantForm.css'
+import { normalizeSpacing } from '../utils/normalizeSpacing'
 
 const maxWordsOptions = [50, 100, 120, 150, 200]
 const complexityOptions = ['simple', 'moderate', 'advanced']
@@ -12,12 +13,28 @@ export function EmailAssistantForm({
   buildPrompt, inferThemeFromMessage, cleanMessage, removeDuplicates,
   loading, renderErrorTooltip
 }) {
+  // Example default values
+  React.useEffect(() => {
+    setForm(f => ({
+      ...f,
+      content: f.content || 'I would like to welcome you to our team and provide onboarding details.',
+      sender: f.sender || 'John Doe',
+      receiver: f.receiver || 'Jane Smith',
+      maxWords: f.maxWords || 120,
+      complexity: f.complexity || 'simple',
+      presentation: f.presentation || 'clear paragraphs',
+      temperature: f.temperature || 0.7,
+      maxTokens: f.maxTokens || 128
+    }))
+  }, [setForm])
   return (
     <form className="email-form"
       onSubmit={e => {
         e.preventDefault();
         const newErrors = {};
-        if (!form.context.trim()) newErrors.context = 'Please provide the core content requirements.';
+        if (!form.content || !form.content.trim()) newErrors.content = 'Please provide the email content.';
+        if (!form.sender || !form.sender.trim()) newErrors.sender = 'Please provide your name.';
+        if (!form.receiver || !form.receiver.trim()) newErrors.receiver = 'Please provide the receiver name.';
         if (!form.maxWords) newErrors.maxWords = 'Please select max words.';
         if (!form.complexity) newErrors.complexity = 'Please select complexity.';
         if (!form.presentation) newErrors.presentation = 'Please select presentation.';
@@ -30,7 +47,9 @@ export function EmailAssistantForm({
 
         const promptForm = {
           contentType: 'Email',
-          context: form.context,
+          content: form.content,
+          sender: form.sender,
+          receiver: form.receiver,
           specifications: `Max ${form.maxWords} words. Platform: Gmail.`,
           style: `Complexity: ${form.complexity}. Presentation: ${form.presentation}.`,
           generation: `temperature=${form.temperature}, max_tokens=${form.maxTokens}`
@@ -91,7 +110,7 @@ export function EmailAssistantForm({
                   if (!streamEnded) {
                     streamEnded = true
                     if (!theme) theme = inferThemeFromMessage(message)
-                    const final = { theme, message: cleanMessage(removeDuplicates(message)) }
+                    const final = { theme, message: normalizeSpacing(cleanMessage(removeDuplicates(message))) }
                     setEmailResult(final)
                   }
                 }
@@ -106,17 +125,38 @@ export function EmailAssistantForm({
         })
       }}
     >
-      <label className="email-form-field">
-        Context (Topic, Purpose, Audience)
-        <textarea
-          id='context-message'
-          value={form.context}
-          onChange={e => setForm(f => ({ ...f, context: e.target.value }))}
-          rows={2}
-          placeholder="eg. describe topic, purpose, audience etc.."
+          <label className="email-form-field">
+        Your Name (Sender)
+        <input
+          type="text"
+          value={form.sender || ''}
+          onChange={e => setForm(f => ({ ...f, sender: e.target.value }))}
+          placeholder="eg. John Doe"
         />
-        {renderErrorTooltip('context', errors)}
+        {renderErrorTooltip('sender', errors)}
       </label>
+           <label className="email-form-field">
+        Receiver Name
+        <input
+          type="text"
+          value={form.receiver || ''}
+          onChange={e => setForm(f => ({ ...f, receiver: e.target.value }))}
+          placeholder="eg. Jane Smith"
+        />
+        {renderErrorTooltip('receiver', errors)}
+      </label>
+      <label className="email-form-field">
+        Email Content (What should the email say?)
+        <textarea
+          id='content-message'
+          value={form.content || ''}
+          onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
+          rows={3}
+          placeholder="Type the main message or topic of your email..."
+        />
+        {renderErrorTooltip('content', errors)}
+      </label>
+  
       <label className="email-form-field">
         Max Words
         <select

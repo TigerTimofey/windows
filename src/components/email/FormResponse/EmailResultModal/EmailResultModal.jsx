@@ -1,20 +1,7 @@
 import React, { useState } from 'react'
 import ModalWindow from '../../../modal/ModalWindow.jsx'
 import './EmailResultModal.css'
-
-
-function normalizeSpacing(text) {
-  return text
-    .replace(/\s+/g, ' ')            
-    .replace(/\s+([.,!?;:])/g, '$1')  
-    .replace(/'\s+s/g, "'s")         
-    .replace(/Dear\s*\[\s*([^\]]+)\s*\],?/gi, "Dear $1,\n\n")
-    .replace(/Hello\s*\[\s*([^\]]+)\s*\],?/gi, "Hello $1,\n\n") 
-    .replace(/Subject\s*:/gi, '')  
-    .replace(/\b(Best regards|Sincerely)\b/gi, "\n\n$1,")
-    .trim()
-}
-
+import { normalizeSpacing } from '../../utils/normalizeSpacing.js'
 
 function cleanMessage(text) {
   if (!text) return ''
@@ -67,8 +54,15 @@ export function EmailResultModal({
   setMessage,
   onSave,
   zIndex = 100,
-  onActivate
+  onActivate,
+  sender,
+  receiver
 }) {
+  // Store sender/receiver globally for replacement
+  if (typeof window !== 'undefined') {
+    if (sender) window.lastSenderName = sender
+    if (receiver) window.lastReceiverName = receiver
+  }
   const [showExportMenu, setShowExportMenu] = useState(false)
   const [menuHover, setMenuHover] = useState(false)
   if (!open) return null
@@ -92,7 +86,7 @@ export function EmailResultModal({
           e.preventDefault()
           onSave && onSave({
             theme: normalizeSpacing(theme),
-            message: cleanMessage(message)
+            message: normalizeSpacing(message)
           })
           onClose && onClose()
         }}
