@@ -1,4 +1,4 @@
-// Simple Express backend to run Ollama locally
+// Moved to src/server.js. See new structure in src/
 import express from 'express'
 import { spawn, spawnSync } from 'child_process'
 

@@ -16,7 +16,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
     context: 'Welcome email for new developer Tim. Purpose: onboarding. Audience: Tim and HR Manager Jane Smith.',
     specifications: 'Max 120 words. Format: plain text. Platform: Gmail.',
     style: 'Tone: friendly, professional. Complexity: simple. Presentation: clear paragraphs.',
-    generation: 'temperature=0.7, max_tokens=256'
+    generation: 'temperature=0.7, max_tokens=128'
   })
   const [emailResult, setEmailResult] = useState(null)
   const [loading, setLoading] = useState(false)

@@ -125,30 +125,32 @@ export function EmailAssistantForm({
         })
       }}
     >
-          <label className="email-form-field">
-        Your Name (Sender)
-        <input
-          id="sender"
-          name="sender"
-          type="text"
-          value={form.sender || ''}
-          onChange={e => setForm(f => ({ ...f, sender: e.target.value }))}
-          placeholder="eg. John Doe"
-        />
-        {renderErrorTooltip('sender', errors)}
-      </label>
-           <label className="email-form-field">
-        Receiver Name
-        <input
-          id="receiver"
-          name="receiver"
-          type="text"
-          value={form.receiver || ''}
-          onChange={e => setForm(f => ({ ...f, receiver: e.target.value }))}
-          placeholder="eg. Jane Smith"
-        />
-        {renderErrorTooltip('receiver', errors)}
-      </label>
+      <div style={{ display: 'flex', gap: '1rem' }}>
+        <label className="email-form-field" style={{ flex: 1 }}>
+          Sender
+          <input
+            id="sender"
+            name="sender"
+            type="text"
+            value={form.sender || ''}
+            onChange={e => setForm(f => ({ ...f, sender: e.target.value }))}
+            placeholder="eg. John Doe"
+          />
+          {renderErrorTooltip('sender', errors)}
+        </label>
+        <label className="email-form-field" style={{ flex: 1 }}>
+          Receiver
+          <input
+            id="receiver"
+            name="receiver"
+            type="text"
+            value={form.receiver || ''}
+            onChange={e => setForm(f => ({ ...f, receiver: e.target.value }))}
+            placeholder="eg. Jane Smith"
+          />
+          {renderErrorTooltip('receiver', errors)}
+        </label>
+      </div>
       <label className="email-form-field">
         Email Content (What should the email say?)
         <textarea
@@ -181,7 +183,7 @@ export function EmailAssistantForm({
         Complexity
         <select
           id="complexity"
-          name="complexity"
+          name="complexity"s
           value={form.complexity || ''}
           onChange={e => setForm(f => ({ ...f, complexity: e.target.value }))}
         >
@@ -234,7 +236,25 @@ export function EmailAssistantForm({
         {renderErrorTooltip('maxTokens', errors)}
       </label>
       <div className="email-assistant-btn-row">
-        <button type="button" className="modal-btn-text" onClick={() => setEmailResult(null)}>Close</button>
+        <button
+          type="button"
+          className="modal-btn-text"
+          onClick={() => {
+            setEmailResult(null)
+            setForm({
+              sender: '',
+              receiver: '',
+              content: '',
+              maxWords: '',
+              complexity: '',
+              presentation: '',
+              temperature: '',
+              maxTokens: ''
+            })
+          }}
+        >
+          Clear
+        </button>
         <button
           type="submit"
           className="modal-btn-text"
