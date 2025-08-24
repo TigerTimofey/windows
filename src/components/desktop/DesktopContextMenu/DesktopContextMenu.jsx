@@ -34,7 +34,7 @@ export function DesktopContextMenu({ x, y, open, onNewFolder, onRefresh, onClean
       {showNew && (
         <ul
           className="context-menu"
-          style={{ left: submenuX-55, top: submenuY, maxWidth: 150, height: 28 }}
+          style={{ left: submenuX-72, top: submenuY, maxWidth: 150, height: 28 }}
           onMouseEnter={() => setShowNew(true)}
           onMouseLeave={() => setShowNew(false)}
         >

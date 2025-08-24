@@ -33,6 +33,8 @@ export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, c
       cloned.addClone({ type: 'mycomputer', name: copiedItem.name, icon: copiedItem.icon, baseNames })
     } else if (copiedItem.type === 'ghost') {
       cloned.addClone({ type: 'ghost', name: copiedItem.name, icon: copiedItem.icon, baseNames })
+    } else if (copiedItem.type === 'internet') {
+      cloned.addClone({ type: 'internet', name: copiedItem.name, icon: copiedItem.icon, baseNames })
     } else if (copiedItem.type === 'extra-folder' || copiedItem.id?.startsWith('new-folder-')) {
       // Treat as descriptor for a brand new extra folder instance (with deep-copied items)
       const clone = { ...copiedItem, id: `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}` }
@@ -45,7 +47,7 @@ export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, c
   return { copiedItem, captureCopy, paste }
 }
 
-export function buildCopyHandlers({ email, folder, recycle, compName, captureCopy, extraFolderIcon }) {
+export function buildCopyHandlers({ email, folder, recycle, compName, captureCopy, extraFolderIcon, internet }) {
   return {
     copyEmail: () => { captureCopy({ id: 'email', name: email.name, icon: email.copyDescriptor().icon, type: 'email' }); navigator.clipboard?.writeText(email.name).catch(()=>{}) },
     // Copy the base ghost folder as a brand new extra folder descriptor (so the copy can hold items independently)
@@ -61,6 +63,10 @@ export function buildCopyHandlers({ email, folder, recycle, compName, captureCop
       const newId = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
       captureCopy({ id: newId, name: tgt.name, icon: extraFolderIcon, type: 'extra-folder', items: (tgt.items||[]).map(it => ({...it})) })
       navigator.clipboard?.writeText(tgt.name).catch(()=>{})
+    },
+    copyInternet: () => {
+      captureCopy({ id: 'internet', name: internet.name, icon: internet.copyDescriptor().icon, type: 'internet' })
+      navigator.clipboard?.writeText(internet.name).catch(()=>{})
     }
   }
 }

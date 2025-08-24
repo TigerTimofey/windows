@@ -29,6 +29,9 @@ import { usePointerMode } from '../../../hooks/usePointerMode.js'
 import { useBinHandlers } from '../../../hooks/useBinHandlers.js'
 import { useDesktopClipboard, buildCopyHandlers } from '../../../hooks/useDesktopClipboard.js'
 import { useSounds } from '../../../hooks/useSounds.js'
+import { useInternetIcon } from '../../../hooks/useInternetIcon.js'
+import { InternetIcon } from '../../internet/InternetIcon.jsx'
+import { InternetContextMenu } from '../../internet/InternetContextMenu.jsx'
 
 export function DesktopRoot() {
   const { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ } = useZLayers(150)
@@ -63,15 +66,44 @@ export function DesktopRoot() {
     name: compName, renaming: compRenaming, startRename: compStartRename, commitRename: compCommitRename, cancelRename: compCancelRename
   } = useMyComputer(recycle.binRef, folder.ref, addItemToBin, (i)=>folder.addItem(i), getExtraFolderTargets, (item, targetId) => addItemToExtraFolder(targetId, item))
 
+  // FIX: Use addItemToBin for Internet icon, not recycle.addItem
+  const internet = useInternetIcon(
+    recycle.binRef,
+    addItemToBin,
+    folder.ref,
+    (item) => folder.addItem(item),
+    getExtraFolderTargets,
+    (item, targetId) => addItemToExtraFolder(targetId, item)
+  )
+
   const { isTouchOrCoarse } = usePointerMode()
-  const binHandlers = useBinHandlers({ recycle, email, folder, revealOrCloneFromDescriptor, restoreComputer, trashSound, isTouchOrCoarse, bring })
+  // Pass restoreInternet to binHandlers
+  const binHandlers = useBinHandlers({
+    recycle,
+    email,
+    folder,
+    revealOrCloneFromDescriptor,
+    restoreComputer,
+    trashSound,
+    isTouchOrCoarse,
+    bring,
+    restoreInternet: internet.restore
+  })
   const { binModalOpen, confirmClearOpen, handleBinDoubleClick, handleBinClick, handleBinModalClose, handleEmptyRequest, handleRestoreAll, handleRestoreItem, handleConfirmEmpty, handleCancelEmpty } = binHandlers
 
   // Clipboard
   const extraFoldersRef = useRef([])
   extraFoldersRef.current = extraFolders
   const { copiedItem, captureCopy, paste } = useDesktopClipboard({ folder, email, recycle, extraFoldersRef, cloned, revealOrCloneFromDescriptor })
-  const copyHandlers = buildCopyHandlers({ email, folder, recycle, compName, captureCopy, extraFolderIcon })
+  const copyHandlers = buildCopyHandlers({
+    email,
+    folder,
+    recycle,
+    compName,
+    captureCopy,
+    extraFolderIcon,
+    internet // <-- pass internet hook for copyInternet
+  })
 
   const [deskMenu, setDeskMenu] = useState({ open: false, x: 0, y: 0 })
   const [refreshTick, setRefreshTick] = useState(0)
@@ -107,9 +139,22 @@ export function DesktopRoot() {
   function handleDeleteBinItem(id){ recycle.setItems(items=>items.filter(i=>i.id!==id)); playTrash() }
 
   // Folder modal item handlers (wrappers over folderActions for readability here)
-  function handleFolderItemOpen(id){ openItemFromBaseFolder(id,{ email, bring, setCompModalOpen, setExtraFolders, folder, zCounterRef, bringExtraFolder }) }
-  function handleFolderItemDelete(id){ deleteItemFromBaseFolder(id,{ folder, addItemToBin, email, setExtraFolders, extraFolderIcon }) }
-  function handleFolderItemToDesktop(id){ moveItemFromBaseFolderToDesktop(id,{ folder, email, restoreComputer, setExtraFolders }) }
+  function handleFolderItemOpen(id){
+    openItemFromBaseFolder(id,{ email, bring, setCompModalOpen, setExtraFolders, folder, zCounterRef, bringExtraFolder })
+    if (id === 'internet') { internet.restore(); return }
+  }
+  function handleFolderItemDelete(id){
+    if (id === 'internet') {
+      folder.removeItem('internet')
+      addItemToBin({ id: 'internet', name: internet.name, icon: internet.copyDescriptor().icon })
+      return
+    }
+    deleteItemFromBaseFolder(id,{ folder, addItemToBin, email, setExtraFolders, extraFolderIcon })
+  }
+  function handleFolderItemToDesktop(id){
+    if (id === 'internet') { folder.removeItem('internet'); internet.restore(); return }
+    moveItemFromBaseFolderToDesktop(id,{ folder, email, restoreComputer, setExtraFolders })
+  }
 
   return (
     <div className="windows-bg" onContextMenu={handleDesktopContextMenu}>
@@ -216,6 +261,29 @@ export function DesktopRoot() {
       {menuOpen && <StartMenu menuRef={menuRef} />}
       <span style={{ display:'none' }}>{refreshTick}</span>
       <DesktopContextMenu x={deskMenu.x} y={deskMenu.y} open={deskMenu.open} onNewFolder={handleNewFolder} onRefresh={handleRefresh} onCleanUp={handleCleanUp} onPaste={handlePaste} canPaste={!!copiedItem} />
+      {internet.visible && (
+        <>
+          <InternetIcon
+            iconRef={internet.ref}
+            style={internet.style}
+            onMouseDown={internet.handleMouseDown}
+            onContextMenu={internet.handleContextMenu}
+            name={internet.name}
+            renaming={internet.renaming}
+            onRenameCommit={internet.commitRename}
+            onRenameCancel={internet.cancelRename}
+          />
+          <InternetContextMenu
+            x={internet.context.x}
+            y={internet.context.y}
+            open={internet.context.open}
+            onOpen={() => {/* Optionally open a modal or perform an action */ internet.closeContext()}}
+            onDelete={internet.deleteSelf}
+            onRename={internet.startRename}
+            onCopy={() => { copyHandlers.copyInternet(); internet.closeContext(); }}
+          />
+        </>
+      )}
     </div>
   )
 }

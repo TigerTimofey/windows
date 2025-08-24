@@ -1,7 +1,7 @@
 // Centralized folder item actions to keep App.jsx cleaner
 // Each function receives dependency objects to avoid tight coupling.
 
-export function openItemFromBaseFolder(id, { email, bring, setCompModalOpen, setExtraFolders, folder, zCounterRef, bringExtraFolder }) {
+export function openItemFromBaseFolder(id, { email, bring, setCompModalOpen, setExtraFolders, folder, zCounterRef, bringExtraFolder, internet }) {
   if (id === 'email') { email.setModalOpen(true); bring('email'); return }
   if (id === 'mycomputer') { setCompModalOpen(true); bring('comp'); return }
   if (id.startsWith('new-folder-')) {
@@ -22,9 +22,10 @@ export function openItemFromBaseFolder(id, { email, bring, setCompModalOpen, set
   if (id.startsWith('clone-email-') || id.startsWith('clone-email')) { email.setModalOpen(true); bring('email'); return }
   if (id.startsWith('clone-mycomputer-') || id.startsWith('clone-mycomputer')) { setCompModalOpen(true); bring('comp'); return }
   if (id.startsWith('clone-ghost-') || id.startsWith('clone-ghost')) { folder.setModalOpen(true); bring('folder'); return }
+  if (id === 'internet') { internet && internet.restore && internet.restore(); return }
 }
 
-export function deleteItemFromBaseFolder(id, { folder, addItemToBin, email, setExtraFolders, extraFolderIcon }) {
+export function deleteItemFromBaseFolder(id, { folder, addItemToBin, email, setExtraFolders, extraFolderIcon, internet }) {
   if (id === 'email') {
     folder.removeItem('email')
     addItemToBin({ id: 'email', name: email.name, icon: email.copyDescriptor().icon })
@@ -45,9 +46,14 @@ export function deleteItemFromBaseFolder(id, { folder, addItemToBin, email, setE
     }))
     addItemToBin({ id, name: removedName, icon: extraFolderIcon })
   }
+  if (id === 'internet') {
+    folder.removeItem('internet')
+    addItemToBin({ id: 'internet', name: internet.name, icon: internet.copyDescriptor().icon })
+    return
+  }
 }
 
-export function moveItemFromBaseFolderToDesktop(id, { folder, email, restoreComputer, setExtraFolders }) {
+export function moveItemFromBaseFolderToDesktop(id, { folder, email, restoreComputer, setExtraFolders, internet }) {
   if (id === 'email') { folder.removeItem('email'); email.restore(); return }
   if (id === 'mycomputer') { folder.removeItem('mycomputer'); restoreComputer(); return }
   if (id.startsWith('new-folder-')) {
@@ -57,4 +63,5 @@ export function moveItemFromBaseFolderToDesktop(id, { folder, email, restoreComp
     return
   }
   if (id === 'ghost-folder') { folder.removeItem('ghost-folder'); folder.restore(); return }
+  if (id === 'internet') { folder.removeItem('internet'); internet && internet.restore && internet.restore(); return }
 }
