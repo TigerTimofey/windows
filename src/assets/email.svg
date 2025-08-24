@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" aria-labelledby="title">
-  <title>Email</title>
-  <rect x="4" y="12" width="56" height="40" rx="4" ry="4" fill="#e3e3e3" stroke="#555" stroke-width="2"/>
-  <path d="M6 14 L32 34 L58 14" fill="none" stroke="#1e4e8c" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M6 50 L27 32" fill="none" stroke="#888" stroke-width="2"/>
-  <path d="M58 50 L37 32" fill="none" stroke="#888" stroke-width="2"/>
-</svg>
