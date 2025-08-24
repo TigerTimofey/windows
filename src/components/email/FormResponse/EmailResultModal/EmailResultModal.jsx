@@ -49,18 +49,20 @@ export function EmailResultModal({
   onActivate,
   sender,
 }) {
+  const [signatureModalOpen, setSignatureModalOpen] = useState(false)
+  const [signatureType, setSignatureType] = useState('Best regards')
+  const [signatureName, setSignatureName] = useState(sender || '')
+  const [signatureBusiness, setSignatureBusiness] = useState('')
+  const [signatureNumber, setSignatureNumber] = useState('')
   // Export menu state
   const [exportMenuVisible, setShowExportMenu] = useState(false)
-  const [ setMenuHover] = useState(false)
   // Store sender/receiver globally for replacement
-  if (typeof window !== 'undefined') {
-    // Add missing handler functions
-    const handleThemeChange = (e) => {
-      setTheme(e.target.value)
-    }
-
-
-    return (
+  // Add missing handler functions
+  const handleThemeChange = (e) => {
+    setTheme(e.target.value)
+  }
+  return (
+    <>
       <ModalWindow
         title="Edit Generated Email"
         onClose={onClose}
@@ -80,37 +82,20 @@ export function EmailResultModal({
         >
           <label className="email-form-field">
             Theme
-            <input
-              value={normalizeSpacing(theme)}
-              onChange={handleThemeChange}
-              placeholder="Theme"
-            />
+            <input type="text" value={theme} onChange={handleThemeChange} placeholder="Email Theme" />
           </label>
- 
           <label className="email-form-field">
             Message
-            <textarea
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              rows={8}
-              placeholder="Message"
-            />
+            <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="Email Message" rows={8} />
           </label>
-          <div className="email-assistant-btn-row" style={{ position: 'relative', justifyContent: 'center', display: 'flex' }}>
-            <button type="button" className="modal-btn-text" onClick={onClose}>Close</button>
-            <button type="button" className="modal-btn-text" onClick={() => {
-              let senderName = ''
-              if (typeof document !== 'undefined') {
-                const input = document.getElementById('sender')
-                senderName = input && input.value ? input.value : (sender || 'Your Name')
-              } else {
-                senderName = sender || 'Your Name'
-              }
-              let signature = `\n\nBest Regards,\n${senderName}`
-              setMessage(prev => prev + signature)
-            }}>Add Signature</button>
+          <div className="email-assistant-btn-row">
+                        <button type="button" className="modal-btn-text" onClick={onClose}>Cancel</button>
+            <button type="button" className="modal-btn-text" onClick={() => setSignatureModalOpen(true)}>
+              Add Signature
+            </button>
+            
             <div
-              style={{ position: 'relative', display: 'inline-block' }}
+              className="export-menu-trigger"
               onMouseEnter={() => setShowExportMenu(true)}
               onMouseLeave={() => {
                 setTimeout(() => setShowExportMenu(false), 180)
@@ -126,24 +111,11 @@ export function EmailResultModal({
                 aria-expanded={exportMenuVisible}
                 tabIndex={-1}
               >
-                Export
+                Export Email
               </button>
               {exportMenuVisible && (
                 <ul
                   className="context-menu"
-                  style={{
-                    position: 'absolute',
-                    top: '110%',
-                    left: '50%',
-                    transform: 'translateX(-50%)'
-                  }}
-                  onMouseEnter={() => setMenuHover(true)}
-                  onMouseLeave={() => {
-                    setMenuHover(false)
-                    setShowExportMenu(false)
-                  }}
-                  onFocus={() => setMenuHover(true)}
-                  onBlur={() => setMenuHover(false)}
                   tabIndex={0}
                 >
                   <li
@@ -180,4 +152,53 @@ export function EmailResultModal({
           </div>
         </form>
       </ModalWindow>
-    )}}
+      {signatureModalOpen && (
+        <ModalWindow
+          onClose={() => setSignatureModalOpen(false)}
+          zIndex={zIndex + 20}
+          title={'Email Signature'}
+        >
+
+          <form
+            className="email-form signature-modal-form"
+            onSubmit={e => {
+              e.preventDefault()
+              const signature = `\n\n${signatureType},\n${signatureName}${signatureBusiness ? `\n${signatureBusiness}` : ''}${signatureNumber ? `\n${signatureNumber}` : ''}`
+              setMessage(prev => prev + signature)
+              setSignatureModalOpen(false)
+            }}
+          >
+            <label className="email-form-field">
+              <select value={signatureType} onChange={e => setSignatureType(e.target.value)}>
+                <option value="Sincerely">Sincerely</option>
+                <option value="Warm regards">Warm regards</option>
+                <option value="Best regards">Best regards</option>
+                <option value="Best wishes">Best wishes</option>
+              </select>
+            </label>
+            <label className="email-form-field">
+              Your Name
+              <input
+                type="text"
+                value={signatureName}
+                onChange={e => setSignatureName(e.target.value)}
+                placeholder="Your Name"
+              />
+            </label>
+            <label className="email-form-field">
+              Business Name
+              <input type="text" value={signatureBusiness} onChange={e => setSignatureBusiness(e.target.value)} placeholder="Business Name" />
+            </label>
+            <label className="email-form-field">
+              Number
+              <input type="text" value={signatureNumber} onChange={e => setSignatureNumber(e.target.value)} placeholder="Number" />
+            </label>
+            <div className="email-assistant-btn-row signature-btn-row">
+              <button type="button" className="modal-btn-text" onClick={() => setSignatureModalOpen(false)}>Cancel</button>
+              <button type="submit" className="modal-btn-text">Add</button>
+            </div>
+          </form>
+        </ModalWindow>
+      )}
+    </>
+  )}

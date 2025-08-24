@@ -92,6 +92,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
               }}
               zIndex={zIndex + 10}
               onActivate={onActivate}
+              sender={form.sender}
             />
           )}
         </>

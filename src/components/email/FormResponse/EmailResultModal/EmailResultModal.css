@@ -7,7 +7,7 @@
     margin: 0;
     list-style: none;
     z-index: 300;
-    min-width: 100px;
+    min-width: 50px;
     font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
     font-size: 14px;
 }
@@ -26,4 +26,16 @@
 .context-menu-item.disabled {
     opacity: 0.5;
     pointer-events: none;
+}
+.export-menu-trigger {
+    position: relative;
+    display: inline-block;
+}
+
+.signature-modal-form {
+    min-width: 320px;
+}
+
+.signature-btn-row {
+    justify-content: flex-end;
 }
