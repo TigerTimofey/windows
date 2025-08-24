@@ -10,7 +10,6 @@ Specifications:
 - Max ${form.maxWords} words. 
 Style: 
 - Complexity: ${form.complexity}. 
-- Presentation: ${form.presentation}.
 Generation settings: 
 - Temperature: ${form.temperature}. 
 - Max tokens: ${form.maxTokens}.

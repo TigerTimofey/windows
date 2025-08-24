@@ -4,7 +4,6 @@ import { normalizeSpacing } from '../utils/normalizeSpacing'
 
 const maxWordsOptions = [50, 100, 120, 150, 200]
 const complexityOptions = ['simple', 'moderate', 'advanced']
-const presentationOptions = ['clear paragraphs', 'bulleted list', 'formal letter']
 const temperatureOptions = [0.3, 0.5, 0.7, 1.0]
 const maxTokensOptions = [128, 256, 512, 1024]
 
@@ -37,7 +36,6 @@ export function EmailAssistantForm({
         if (!form.receiver || !form.receiver.trim()) newErrors.receiver = 'Please provide the receiver name.';
         if (!form.maxWords) newErrors.maxWords = 'Please select max words.';
         if (!form.complexity) newErrors.complexity = 'Please select complexity.';
-        if (!form.presentation) newErrors.presentation = 'Please select presentation.';
         if (!form.temperature) newErrors.temperature = 'Please select temperature.';
         if (!form.maxTokens) newErrors.maxTokens = 'Please select max tokens.';
         setErrors(newErrors);
@@ -152,7 +150,7 @@ export function EmailAssistantForm({
         </label>
       </div>
       <label className="email-form-field">
-        Email Content (What should the email say?)
+        Email Content 
         <textarea
           id="content-message"
           name="content"
@@ -163,78 +161,66 @@ export function EmailAssistantForm({
         />
         {renderErrorTooltip('content', errors)}
       </label>
-  
-      <label className="email-form-field">
-        Max Words
-        <select
-          id="maxWords"
-          name="maxWords"
-          value={form.maxWords || ''}
-          onChange={e => setForm(f => ({ ...f, maxWords: e.target.value }))}
-        >
-          <option value="">Select max words</option>
-          {maxWordsOptions.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-        {renderErrorTooltip('maxWords', errors)}
-      </label>
-      <label className="email-form-field">
-        Complexity
-        <select
-          id="complexity"
-          name="complexity"s
-          value={form.complexity || ''}
-          onChange={e => setForm(f => ({ ...f, complexity: e.target.value }))}
-        >
-          <option value="">Select complexity</option>
-          {complexityOptions.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-        {renderErrorTooltip('complexity', errors)}
-      </label>
-      <label className="email-form-field">
-        Presentation
-        <select
-          id="presentation"
-          name="presentation"
-          value={form.presentation || ''}
-          onChange={e => setForm(f => ({ ...f, presentation: e.target.value }))}
-        >
-          <option value="">Select presentation</option>
-          {presentationOptions.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-        {renderErrorTooltip('presentation', errors)}
-      </label>
-      <label className="email-form-field">
-        Temperature
-        <select
-          value={form.temperature || ''}
-          onChange={e => setForm(f => ({ ...f, temperature: e.target.value }))}
-        >
-          <option value="">Select temperature</option>
-          {temperatureOptions.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-        {renderErrorTooltip('temperature', errors)}
-      </label>
-      <label className="email-form-field">
-        Max Tokens
-        <select
-          value={form.maxTokens || ''}
-          onChange={e => setForm(f => ({ ...f, maxTokens: e.target.value }))}
-        >
-          <option value="">Select max tokens</option>
-          {maxTokensOptions.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-        {renderErrorTooltip('maxTokens', errors)}
-      </label>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+        <label className="email-form-field" style={{ flex: 1 }}>
+          Max Words
+          <select
+            id="maxWords"
+            name="maxWords"
+            value={form.maxWords || ''}
+            onChange={e => setForm(f => ({ ...f, maxWords: e.target.value }))}
+          >
+            <option value="">Select max words</option>
+            {maxWordsOptions.map(opt => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+          {renderErrorTooltip('maxWords', errors)}
+        </label>
+        <label className="email-form-field" style={{ flex: 1 }}>
+          Complexity
+          <select
+            id="complexity"
+            name="complexity"
+            value={form.complexity || ''}
+            onChange={e => setForm(f => ({ ...f, complexity: e.target.value }))}
+          >
+            <option value="">Select complexity</option>
+            {complexityOptions.map(opt => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+          {renderErrorTooltip('complexity', errors)}
+        </label>
+      </div>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+        <label className="email-form-field" style={{ flex: 1 }}>
+          Temperature
+          <select
+            value={form.temperature || ''}
+            onChange={e => setForm(f => ({ ...f, temperature: e.target.value }))}
+          >
+            <option value="">Select temperature</option>
+            {temperatureOptions.map(opt => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+          {renderErrorTooltip('temperature', errors)}
+        </label>
+        <label className="email-form-field" style={{ flex: 1 }}>
+          Max Tokens
+          <select
+            value={form.maxTokens || ''}
+            onChange={e => setForm(f => ({ ...f, maxTokens: e.target.value }))}
+          >
+            <option value="">Select max tokens</option>
+            {maxTokensOptions.map(opt => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+          {renderErrorTooltip('maxTokens', errors)}
+        </label>
+      </div>
       <div className="email-assistant-btn-row">
         <button
           type="button"
