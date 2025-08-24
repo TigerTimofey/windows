@@ -7,11 +7,16 @@ import Win2kLogin from './components/win2k-login/Win2kLogin.jsx'
 function App() {
   const [loggedIn, setLoggedIn] = useState(false)
 
+  function handleShutdown() {
+    setLoggedIn(false)
+  }
+
   if (!loggedIn) {
     return <Win2kLogin onLogin={() => setLoggedIn(true)} />
   }
 
-  return <DesktopRoot />
+  return <DesktopRoot onShutdown={handleShutdown} />
 }
 
 export default App
+

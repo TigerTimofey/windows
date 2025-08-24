@@ -37,7 +37,7 @@ import { MinesweeperIcon } from '../../minesweeper/MinesweeperIcon.jsx'
 import { MinesweeperContextMenu } from '../../minesweeper/MinesweeperContextMenu.jsx'
 import { MinesweeperGameModal } from '../../minesweeper/MinesweeperGameModal.jsx'
 
-export function DesktopRoot() {
+export function DesktopRoot({ onShutdown }) {
   const { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ } = useZLayers(150)
   const clock = useClock()
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
@@ -280,7 +280,7 @@ export function DesktopRoot() {
       {extraFolders.filter(f=>f.modalOpen).map(f => (
         <ExtraFolderModal key={f.id} f={f} zIndex={f.z||folderZ} bring={bring} bringExtraFolder={bringExtraFolder} setExtraFolders={setExtraFolders} email={email} setCompModalOpen={setCompModalOpen} restoreComputer={restoreComputer} folder={folder} addItemToBin={addItemToBin} extraFolderIcon={extraFolderIcon} onClose={()=>setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,modalOpen:false}:fl))} />
       ))}
-      {menuOpen && <StartMenu menuRef={menuRef} />}
+      {menuOpen && <StartMenu menuRef={menuRef} onShutdown={onShutdown} />}
       <span style={{ display:'none' }}>{refreshTick}</span>
       <DesktopContextMenu x={deskMenu.x} y={deskMenu.y} open={deskMenu.open} onNewFolder={handleNewFolder} onRefresh={handleRefresh} onCleanUp={handleCleanUp} onPaste={handlePaste} canPaste={!!copiedItem} />
       {internet.visible && (
