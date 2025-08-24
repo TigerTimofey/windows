@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import ModalWindow from '../../../modal/ModalWindow.jsx'
-import './EmailResultModal.css'
 import { normalizeSpacing } from '../../utils/normalizeSpacing.js'
+import { EmailSignatureModal } from './SignatureModal/EmailSignatureModal.jsx'
+import { EditEmailModal } from './EditEmailModal/EditEmailModal.jsx'
+import './EmailResultModal.css'
 
 
 function getPlainText(theme, message) {
@@ -54,151 +55,52 @@ export function EmailResultModal({
   const [signatureName, setSignatureName] = useState(sender || '')
   const [signatureBusiness, setSignatureBusiness] = useState('')
   const [signatureNumber, setSignatureNumber] = useState('')
-  // Export menu state
   const [exportMenuVisible, setShowExportMenu] = useState(false)
-  // Store sender/receiver globally for replacement
-  // Add missing handler functions
   const handleThemeChange = (e) => {
     setTheme(e.target.value)
   }
   return (
     <>
-      <ModalWindow
-        title="Edit Generated Email"
+      <EditEmailModal
+        open={true}
         onClose={onClose}
         zIndex={zIndex}
         onActivate={onActivate}
-      >
-        <form
-          className="email-form"
-          onSubmit={e => {
-            e.preventDefault()
-            onSave && onSave({
-              theme: normalizeSpacing(theme),
-              message: normalizeSpacing(message)
-            })
-            onClose && onClose()
-          }}
-        >
-          <label className="email-form-field">
-            Theme
-            <input type="text" value={theme} onChange={handleThemeChange} placeholder="Email Theme" />
-          </label>
-          <label className="email-form-field">
-            Message
-            <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="Email Message" rows={8} />
-          </label>
-          <div className="email-assistant-btn-row">
-                        <button type="button" className="modal-btn-text" onClick={onClose}>Cancel</button>
-            <button type="button" className="modal-btn-text" onClick={() => setSignatureModalOpen(true)}>
-              Add Signature
-            </button>
-            
-            <div
-              className="export-menu-trigger"
-              onMouseEnter={() => setShowExportMenu(true)}
-              onMouseLeave={() => {
-                setTimeout(() => setShowExportMenu(false), 180)
-              }}
-              tabIndex={0}
-              onFocus={() => setShowExportMenu(true)}
-              onBlur={() => setShowExportMenu(false)}
-            >
-              <button
-                type="button"
-                className="modal-btn-text"
-                aria-haspopup="true"
-                aria-expanded={exportMenuVisible}
-                tabIndex={-1}
-              >
-                Export Email
-              </button>
-              {exportMenuVisible && (
-                <ul
-                  className="context-menu"
-                  tabIndex={0}
-                >
-                  <li
-                    className="context-menu-item"
-                    onClick={() => downloadFile(getPlainText(theme, message), 'email.txt', 'text/plain')}
-                    tabIndex={0}
-                  >
-                    Plain Text
-                  </li>
-                  <li
-                    className="context-menu-item"
-                    onClick={() => downloadFile(getMarkdown(theme, message), 'email.md', 'text/markdown')}
-                    tabIndex={0}
-                  >
-                    Markdown
-                  </li>
-                  <li
-                    className="context-menu-item"
-                    onClick={() => downloadFile(getHTML(theme, message), 'email.html', 'text/html')}
-                    tabIndex={0}
-                  >
-                    HTML
-                  </li>
-                  <li
-                    className="context-menu-item"
-                    onClick={() => exportPDF(theme, message)}
-                    tabIndex={0}
-                  >
-                    PDF
-                  </li>
-                </ul>
-              )}
-            </div>
-          </div>
-        </form>
-      </ModalWindow>
+        theme={theme}
+        setTheme={setTheme}
+        message={message}
+        setMessage={setMessage}
+        onSave={onSave}
+        normalizeSpacing={normalizeSpacing}
+        setSignatureModalOpen={setSignatureModalOpen}
+        exportMenuVisible={exportMenuVisible}
+        setShowExportMenu={setShowExportMenu}
+        handleThemeChange={handleThemeChange}
+        signatureType={signatureType}
+        signatureName={signatureName}
+        signatureBusiness={signatureBusiness}
+        signatureNumber={signatureNumber}
+        downloadFile={downloadFile}
+        getPlainText={getPlainText}
+        getMarkdown={getMarkdown}
+        getHTML={getHTML}
+        exportPDF={exportPDF}
+      />
       {signatureModalOpen && (
-        <ModalWindow
+        <EmailSignatureModal
+          open={signatureModalOpen}
           onClose={() => setSignatureModalOpen(false)}
           zIndex={zIndex + 20}
-          title={'Email Signature'}
-        >
-
-          <form
-            className="email-form signature-modal-form"
-            onSubmit={e => {
-              e.preventDefault()
-              const signature = `\n\n${signatureType},\n${signatureName}${signatureBusiness ? `\n${signatureBusiness}` : ''}${signatureNumber ? `\n${signatureNumber}` : ''}`
-              setMessage(prev => prev + signature)
-              setSignatureModalOpen(false)
-            }}
-          >
-            <label className="email-form-field">
-              <select value={signatureType} onChange={e => setSignatureType(e.target.value)}>
-                <option value="Sincerely">Sincerely</option>
-                <option value="Warm regards">Warm regards</option>
-                <option value="Best regards">Best regards</option>
-                <option value="Best wishes">Best wishes</option>
-              </select>
-            </label>
-            <label className="email-form-field">
-              Your Name
-              <input
-                type="text"
-                value={signatureName}
-                onChange={e => setSignatureName(e.target.value)}
-                placeholder="Your Name"
-              />
-            </label>
-            <label className="email-form-field">
-              Business Name
-              <input type="text" value={signatureBusiness} onChange={e => setSignatureBusiness(e.target.value)} placeholder="Business Name" />
-            </label>
-            <label className="email-form-field">
-              Number
-              <input type="text" value={signatureNumber} onChange={e => setSignatureNumber(e.target.value)} placeholder="Number" />
-            </label>
-            <div className="email-assistant-btn-row signature-btn-row">
-              <button type="button" className="modal-btn-text" onClick={() => setSignatureModalOpen(false)}>Cancel</button>
-              <button type="submit" className="modal-btn-text">Add</button>
-            </div>
-          </form>
-        </ModalWindow>
+          signatureType={signatureType}
+          setSignatureType={setSignatureType}
+          signatureName={signatureName}
+          setSignatureName={setSignatureName}
+          signatureBusiness={signatureBusiness}
+          setSignatureBusiness={setSignatureBusiness}
+          signatureNumber={signatureNumber}
+          setSignatureNumber={setSignatureNumber}
+          setMessage={setMessage}
+        />
       )}
     </>
   )}
