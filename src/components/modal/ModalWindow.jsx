@@ -1,8 +1,7 @@
-
 import React, { useRef, useState } from 'react'
 import './ModalWindow.css'
 
-export default function ModalWindow({ title, children, onClose, zIndex = 100, onActivate }) {
+export default function ModalWindow({ title, children, onClose, zIndex = 100, onActivate, small }) {
   const modalRef = useRef(null)
   const [dragging, setDragging] = useState(false)
   const [pos, setPos] = useState({ x: null, y: null })
@@ -50,8 +49,8 @@ export default function ModalWindow({ title, children, onClose, zIndex = 100, on
   }, [dragging])
 
   const style = pos.x !== null && pos.y !== null
-    ? { left: pos.x, top: pos.y, position: 'fixed', zIndex, width: 420, transform: 'none' }
-    : { zIndex }
+    ? { left: pos.x, top: pos.y, position: 'fixed', zIndex, width: small ? 320 : 420, transform: 'none' }
+    : { zIndex, width: small ? 320 : 420 }
 
   return (
     <div className="windows2000-modal" ref={modalRef} style={style} onMouseDown={() => onActivate && onActivate()}>
@@ -69,3 +68,4 @@ export default function ModalWindow({ title, children, onClose, zIndex = 100, on
     </div>
   )
 }
+

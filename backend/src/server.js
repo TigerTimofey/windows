@@ -28,7 +28,7 @@ app.use('/', generateRoutes)
 
 const rawHost = process.env.HOST || '0.0.0.0'
 const HOST = rawHost.replace(/^https?:\/\//, '')
-const PORT = parseInt(process.env.PORT, 10) || 5000
+const PORT = parseInt(process.env.PORT, 10) || 5001
 app.listen(PORT, HOST, () => {
   console.log(`Backend running on ${HOST}:${PORT}`)
 })

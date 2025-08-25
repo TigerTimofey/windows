@@ -1,4 +1,4 @@
-// Moved to src/server.js. See new structure in src/
+// REMOVE THIS FILE. Logic is now in src/server.js
 import express from 'express'
 import { spawn, spawnSync } from 'child_process'
 
