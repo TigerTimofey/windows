@@ -4,7 +4,7 @@
 }
 
 .email-form { width: 100%; display: flex; flex-direction: column; gap: 6px; }
-.email-form-field { display: flex; flex-direction: column; font-size: 13px; }
+.email-form-field { display: flex; flex-direction: column; font-size: 13px; font-weight: bold; }
 .email-form input, .email-form textarea {
   width: 100%;
   box-sizing: border-box;

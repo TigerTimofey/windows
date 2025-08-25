@@ -3,7 +3,7 @@ import minesweeperIcon from '../assets/win7/icons/minesweeper.png'
 import { getClampedBinPosition, isIconDroppedOnTarget } from './useDesktop.js'
 
 export function useMinesweeperIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIntoFolder, getExtraFolderTargets, onDroppedIntoExtraFolder) {
-  const [pos, setPos] = useState({ x: 18, y: 420 })
+  const [pos, setPos] = useState({ x: 18, y: 400 })
   const [dragging, setDragging] = useState(false)
   const [visible, setVisible] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
@@ -114,12 +114,12 @@ export function useMinesweeperIcon(binRef, onDroppedIntoBin, folderRef, onDroppe
   const dragZ = 70
   const style = pos.x !== null && pos.y !== null
     ? { left: pos.x, top: pos.y, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
-    : { left: 120, top: 320, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
+    : { left: 120, top: 300, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
 
   // Restore always sets position to desktop default
   const restore = useCallback(() => {
     setVisible(true)
-    setPos({ x: 18, y: 420 })
+    setPos({ x: 18, y: 400 })
     closeContext()
   }, [closeContext])
 

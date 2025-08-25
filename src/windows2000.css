@@ -21,8 +21,8 @@ background: linear-gradient(90deg, #0A246A 0%,  #113461d3 50%, #5d89c3d3 100%); 
   padding: 4px 8px;
   border-bottom: 1px solid #b5b5b5;
 }
-.modal-title {
-  font-weight: 500;
+.modal-title {  color: #fff;
+  font-weight: 600;
   font-size: 14px;
 }
 
@@ -248,14 +248,13 @@ body, .windows-bg {
 /* Text buttons inside confirm dialog */
 .modal-btn-text {
 
-  padding: 6px 14px;
+  padding: 3px 20px;
   font-family: inherit;
   font-size: 14px;
   border: 1px solid #b5b5b5;
   background: #e3e3e3;
   cursor: pointer;
-  border: 2px solid #33333376
+  border: 1px solid #33333376
 }
-.modal-btn-text:hover { border: 2px inset #fff; background: #dcdcdc; }
+.modal-btn-text:hover { border: 1px inset #fff; background: #dcdcdc; }
 
-/* Email assistant styles moved to components/email/EmailAssistant/EmailAssistant.css */

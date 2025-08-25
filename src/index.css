@@ -1,1 +1,44 @@
 
+* {
+  font-family: 'MS Sans Serif', Arial;
+  font-size: 13px;
+  -webkit-font-smoothing: none;
+  color: #222222;
+  user-select: none;
+}
+
+u {
+  text-decoration: none;
+  border-bottom: 1px solid #222222;
+}
+
+button:active {
+  box-shadow:
+    -0.5px -0.5px 0 0.5px #808080,
+    0 0 0 1px #c0c0c0,
+    -0.5px -0.5px 0 1.5px #0a0a0a,
+    0 0 0 2px #ffffff;
+}
+
+button:disabled {
+  color: #9a9a9a;
+  text-shadow: 1px 1px 0 #eeeeee;
+}
+
+button:focus {
+  outline: 1px dotted #000000;
+  outline-offset: -2px; 
+}
+
+fieldset {
+  border: none;
+}
+
+fieldset > * {
+  margin: 0 6px 8px 0;
+}
+
+fieldset > *:last-child {
+  margin: 0;
+}
+

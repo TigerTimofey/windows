@@ -23,24 +23,6 @@ export function EmailSignatureModal({
       onClose={onClose}
       zIndex={zIndex}
     >
-      <div className="modal-title-bar-flex">
-        <span className="modal-title">
-          Signature
-          {signatureName && (
-            <span className="modal-title-user"> — {signatureName}</span>
-          )}
-        </span>
-        <div className="modal-buttons">
-          <button
-            className="modal-btn close"
-            title="Close"
-            type="button"
-            onClick={onClose}
-          >
-          ×
-          </button>
-        </div>
-      </div>
       <form
         className="email-form signature-modal-form"
         onSubmit={e => {

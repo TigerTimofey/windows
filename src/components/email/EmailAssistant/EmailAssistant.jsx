@@ -20,12 +20,13 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
     generation: 'temperature=0.7, max_tokens=128'
   })
   const [emailResult, setEmailResult] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
   const [resultModalOpen, setResultModalOpen] = useState(false)
   const [editableTheme, setEditableTheme] = useState('')
   const [editableMessage, setEditableMessage] = useState('')
   const [errorModalOpen, setErrorModalOpen] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [generating, setGenerating] = useState(false)
 
   useEffect(() => {
     if (open) setInstallStep(0)
@@ -42,7 +43,8 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
       setEditableTheme(emailResult.theme)
       setEditableMessage(emailResult.message)
       setResultModalOpen(true)
-      setLoading(false) 
+      setLoading(false)
+      setGenerating(false) // <-- Only stop "Generating..." when modal is shown
     }
   }, [emailResult])
 
@@ -87,8 +89,9 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
               inferThemeFromMessage={inferThemeFromMessage}
               cleanMessage={cleanMessage}
               removeDuplicates={removeDuplicates}
-              loading={loading}
+              loading={generating} // <-- Use generating state
               renderErrorTooltip={renderErrorTooltip}
+              onStartGenerate={() => setGenerating(true)} // <-- Pass callback
             />
             {resultModalOpen && emailResult && emailResult.theme && emailResult.message && emailResult.message !== '(none)' && (
               <EmailResultModal

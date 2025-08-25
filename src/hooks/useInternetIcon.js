@@ -4,7 +4,7 @@ import { getClampedBinPosition, isIconDroppedOnTarget } from './useDesktop.js'
 
 export function useInternetIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIntoFolder, getExtraFolderTargets, onDroppedIntoExtraFolder) {
   // Set initial position under ghost-writer folder (default folder: left:18, top:60)
-  const [pos, setPos] = useState({ x: 18, y: 320 })
+  const [pos, setPos] = useState({ x: 18, y: 300 })
   const [dragging, setDragging] = useState(false)
   const [visible, setVisible] = useState(true)
   const ref = useRef(null)
@@ -130,7 +130,7 @@ export function useInternetIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIn
     context,
     closeContext,
     deleteSelf: () => { if (!visible) return; setVisible(false); closeContext(); onDroppedIntoBin && onDroppedIntoBin({ id: 'internet', name, icon: internetIcon }) },
-    restore: () => { setVisible(true); setPos({ x: 18, y: 320 }); closeContext() },
+    restore: () => { setVisible(true); setPos({ x: 18, y: 300 }); closeContext() },
     setPosition: (x, y) => setPos({ x, y }),
     name,
     renaming,

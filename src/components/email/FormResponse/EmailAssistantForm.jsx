@@ -10,7 +10,7 @@ const maxTokensOptions = [128, 256, 512, 1024]
 export function EmailAssistantForm({
   form, setForm, errors, setErrors, setLoading, setEmailResult,
   buildPrompt, inferThemeFromMessage, cleanMessage, removeDuplicates,
-  loading, renderErrorTooltip
+  loading, renderErrorTooltip, onStartGenerate
 }) {
   // Example default values
   React.useEffect(() => {
@@ -41,6 +41,7 @@ export function EmailAssistantForm({
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
         setLoading(true)
+        if (onStartGenerate) onStartGenerate() 
         setEmailResult({ theme: '', message: '' })
 
         const promptForm = {
