@@ -13,7 +13,7 @@ import { EmailContextMenu } from '../../email/EmailContextMenu/EmailContextMenu.
 import { DesktopContextMenu } from '../DesktopContextMenu/DesktopContextMenu.jsx'
 import { EmailAssistant } from '../../email/EmailAssistant/EmailAssistant.jsx'
 import trashSound from '../../../assets/win7/sounds/trash.mp3'
-import { openItemFromBaseFolder, deleteItemFromBaseFolder, moveItemFromBaseFolderToDesktop } from '../../../hooks/useFolderActions.js'
+import { deleteItemFromBaseFolder, moveItemFromBaseFolderToDesktop } from '../../../hooks/useFolderActions.js'
 import { ExtraFolderModal } from '../../folder/ExtraFolderModal/ExtraFolderModal.jsx'
 import extraFolderIcon from '../../../assets/win7/icons/folder.ico'
 import { useClock } from '../../../hooks/useClock.js'
@@ -171,9 +171,24 @@ export function DesktopRoot({ onShutdown }) {
   function closeDesktopMenu() { setDeskMenu(m => ({ ...m, open: false })) }
   useEffect(() => { if (!deskMenu.open) return; function onDoc(ev){ if(!(ev.target.closest&&ev.target.closest('.context-menu'))) closeDesktopMenu() } function onKey(ev){ if(ev.key==='Escape') closeDesktopMenu() } document.addEventListener('mousedown', onDoc, true); document.addEventListener('keydown', onKey); window.addEventListener('resize', closeDesktopMenu); return ()=>{ document.removeEventListener('mousedown', onDoc, true); document.removeEventListener('keydown', onKey); window.removeEventListener('resize', closeDesktopMenu) } }, [deskMenu.open])
 
+  // When creating new folders, set z to 55 (always less than modal zIndex 130)
   function createNewFolder() {
     const id = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
-    setExtraFolders(list => [...list, { id, name: 'New Folder', icon: extraFolderIcon, items: [], visible: true, modalOpen: false, renaming: false, context: { open: false, x:0,y:0 }, pos: { x: 100 + list.length * 40, y: 100 + list.length * 40 }, z: folderZ }])
+    setExtraFolders(list => [
+      ...list,
+      {
+        id,
+        name: 'New Folder',
+        icon: extraFolderIcon,
+        items: [],
+        visible: true,
+        modalOpen: false,
+        renaming: false,
+        context: { open: false, x:0,y:0 },
+        pos: { x: 100 + list.length * 40, y: 100 + list.length * 40 },
+        z: 55 // less than minesweeper modal
+      }
+    ])
   }
   function handleNewFolder(){ closeDesktopMenu(); createNewFolder() }
   function handleRefresh(){ closeDesktopMenu(); setRefreshTick(t=>t+1) }
@@ -196,11 +211,28 @@ export function DesktopRoot({ onShutdown }) {
 
   // Folder modal item handlers (wrappers over folderActions for readability here)
   function handleFolderItemOpen(id){
-    openItemFromBaseFolder(id,{ email, bring, setCompModalOpen, setExtraFolders, folder, zCounterRef, bringExtraFolder })
-    if (id === 'internet') { internet.restore(); return }
-    if (id === 'minesweeper') { minesweeper.restore(); return }
+    // Open logic for all supported types
+    if (id === 'email') { email.setModalOpen(true); bring('email'); return }
+    if (id === 'mycomputer') { setCompModalOpen(true); bring('comp'); return }
+    if (id === 'ghost-folder') { folder.setModalOpen(true); bring('folder'); return }
+    if (id === 'internet') { internet.setModalOpen(true); bring('internet'); return }
+    if (id === 'minesweeper') { minesweeper.setModalOpen(true); bring('minesweeper'); return }
+    // Support cloned instances stored with clone-* ids
+    if (id.startsWith('clone-email')) { email.setModalOpen(true); bring('email'); return }
+    if (id.startsWith('clone-mycomputer')) { setCompModalOpen(true); bring('comp'); return }
+    if (id.startsWith('clone-ghost')) { folder.setModalOpen(true); bring('folder'); return }
+    if (id.startsWith('clone-internet')) { internet.setModalOpen(true); bring('internet'); return }
+    if (id.startsWith('clone-minesweeper')) { minesweeper.setModalOpen(true); bring('minesweeper'); return }
+    // Support nested extra folders
+    if (id.startsWith('new-folder-')) {
+      setExtraFolders(list => list.map(fl => fl.id === id ? { ...fl, modalOpen: true } : fl))
+      bringExtraFolder && bringExtraFolder(id)
+      return
+    }
   }
+
   function handleFolderItemDelete(id){
+    // Delete logic for all supported types
     if (id === 'internet') {
       folder.removeItem('internet')
       addItemToBin({ id: 'internet', name: internet.name, icon: internet.copyDescriptor().icon })
@@ -211,11 +243,60 @@ export function DesktopRoot({ onShutdown }) {
       addItemToBin({ id: 'minesweeper', name: minesweeper.name, icon: minesweeper.copyDescriptor().icon })
       return
     }
+    if (id === 'email') {
+      folder.removeItem('email')
+      addItemToBin({ id: 'email', name: email.name, icon: email.copyDescriptor().icon })
+      return
+    }
+    if (id === 'mycomputer') {
+      folder.removeItem('mycomputer')
+      addItemToBin({ id: 'mycomputer', name: compName, icon: computerIcon })
+      return
+    }
+    if (id === 'ghost-folder') {
+      folder.removeItem('ghost-folder')
+      addItemToBin({ id: 'ghost-folder', name: folder.name, icon: folderIcon })
+      return
+    }
+    if (id.startsWith('new-folder-')) {
+      folder.removeItem(id)
+      addItemToBin({ id, name: 'New Folder', icon: extraFolderIcon })
+      setExtraFolders(list => list.map(fl => fl.id === id ? { ...fl, visible: false, modalOpen: false } : fl))
+      return
+    }
+    // Support cloned instances
+    if (id.startsWith('clone-email') || id.startsWith('clone-mycomputer') || id.startsWith('clone-ghost') || id.startsWith('clone-internet') || id.startsWith('clone-minesweeper')) {
+      folder.removeItem(id)
+      addItemToBin({ id, name: 'Cloned Item', icon: folderIcon })
+      return
+    }
+    // Fallback to base logic
     deleteItemFromBaseFolder(id,{ folder, addItemToBin, email, setExtraFolders, extraFolderIcon })
   }
+
   function handleFolderItemToDesktop(id){
+    // Move logic for all supported types
     if (id === 'internet') { folder.removeItem('internet'); internet.restore(); return }
     if (id === 'minesweeper') { folder.removeItem('minesweeper'); minesweeper.restore(); return }
+    if (id === 'email') { folder.removeItem('email'); email.restore(); return }
+    if (id === 'mycomputer') { folder.removeItem('mycomputer'); restoreComputer(); return }
+    if (id === 'ghost-folder') { folder.removeItem('ghost-folder'); folder.restore(); return }
+    if (id.startsWith('new-folder-')) {
+      folder.removeItem(id)
+      setExtraFolders(list => list.map(fl =>
+        fl.id === id
+          ? { ...fl, visible: true, pos: { x: 18, y: 300 + list.filter(x => x.visible && x.id !== id).length * 90 } }
+          : fl
+      ))
+      return
+    }
+    // Support cloned instances
+    if (id.startsWith('clone-email')) { folder.removeItem(id); email.restore(); return }
+    if (id.startsWith('clone-mycomputer')) { folder.removeItem(id); restoreComputer(); return }
+    if (id.startsWith('clone-ghost')) { folder.removeItem(id); folder.restore(); return }
+    if (id.startsWith('clone-internet')) { folder.removeItem(id); internet.restore(); return }
+    if (id.startsWith('clone-minesweeper')) { folder.removeItem(id); minesweeper.restore(); return }
+    // Fallback to base logic
     moveItemFromBaseFolderToDesktop(id,{ folder, email, restoreComputer, setExtraFolders })
   }
 
@@ -232,14 +313,21 @@ export function DesktopRoot({ onShutdown }) {
       {compVisible && <MyComputerIcon iconRef={compRef} style={compStyle} onMouseDown={(e)=>{ bring('comp'); handleCompMouseDown(e) }} onClick={handleCompClick} onDoubleClick={handleCompDoubleClick} onContextMenu={handleCompContextMenu} name={compName} renaming={compRenaming} onRenameCommit={compCommitRename} onRenameCancel={compCancelRename} />}
       {email.visible && <EmailIcon iconRef={email.ref} style={email.style} onMouseDown={(e)=>{ bring('email'); email.handleMouseDown(e) }} onContextMenu={email.handleContextMenu} onClick={email.handleClick} onDoubleClick={email.handleDoubleClick} name={email.name} renaming={email.renaming} onRenameCommit={email.commitRename} onRenameCancel={email.cancelRename} />}
       {folder.visible && <FolderIcon iconRef={folder.ref} style={folder.style} onMouseDown={(e)=>{ bring('folder'); folder.handleMouseDown(e) }} onContextMenu={folder.handleContextMenu} onClick={folder.handleClick} onDoubleClick={folder.handleDoubleClick} name={folder.name} renaming={folder.renaming} onRenameCommit={folder.commitRename} onRenameCancel={folder.cancelRename} />}
+      {/* Render extra folders with zIndex 55 */}
       {extraFolders.filter(f=>f.visible).map(f=> (
-        <div key={f.id} className="windows-icon" style={{ left:f.pos.x, top:f.pos.y, position:'fixed', zIndex:f.z||55 }} ref={el=>registerExtraFolderRef(f.id, el)} onMouseDown={(e)=>handleExtraFolderMouseDown(f.id,e)} onDoubleClick={()=>setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,modalOpen:true}:fl))} onContextMenu={(e)=>openExtraFolderContext(f.id,e)} onClick={()=>{ if(!isTouchOrCoarse) return; setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,modalOpen:true}:fl)); bringExtraFolder(f.id) }}>
+        <div key={f.id} className="windows-icon" style={{ left:f.pos.x, top:f.pos.y, position:'fixed', zIndex:55 }} ref={el=>registerExtraFolderRef(f.id, el)} onMouseDown={(e)=>handleExtraFolderMouseDown(f.id,e)} onDoubleClick={()=>setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,modalOpen:true}:fl))} onContextMenu={(e)=>openExtraFolderContext(f.id,e)} onClick={()=>{ if(!isTouchOrCoarse) return; setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,modalOpen:true}:fl)); bringExtraFolder(f.id) }}>
           <img src={extraFolderIcon} alt={f.name} className="icon-img" draggable={false} />
           {f.renaming ? <input className="icon-label" style={{ width:'100%', boxSizing:'border-box', color:'#333' }} defaultValue={f.name} autoFocus onBlur={(e)=>setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,name:e.target.value?e.target.value.slice(0,32):fl.name, renaming:false}:fl))} onKeyDown={(e)=>{ if(e.key==='Enter') setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,name:e.target.value?e.target.value.slice(0,32):fl.name, renaming:false}:fl)); if(e.key==='Escape') setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,renaming:false}:fl)) }} /> : <div className="icon-label">{f.name}</div>}
         </div>
       ))}
+      {/* Render cloned/pasted icons with zIndex 56 (less than modal zIndex 130) */}
       {cloned.clones.map(c => (
-        <div key={c.id} className="windows-icon" style={{ left:c.pos.x, top:c.pos.y, position:'fixed', zIndex:c.z||56 }} ref={el=>{ if(el) cloned.cloneRefs.current[c.id]=el }} onMouseDown={(e)=>cloned.handleMouseDown(c.id,e)} onDoubleClick={()=>cloned.openClone(c)} onContextMenu={(e)=>cloned.contextMenu(c.id,e)}>
+        <div key={c.id} className="windows-icon" style={{ left:c.pos.x, top:c.pos.y, position:'fixed', zIndex:56 }} ref={el=>{ if(el) cloned.cloneRefs.current[c.id]=el }} onMouseDown={(e)=>cloned.handleMouseDown(c.id,e)} onDoubleClick={()=>{
+          cloned.openClone(c)
+          if (c.type === 'minesweeper') {
+            minesweeper.setModalOpen(true)
+          }
+        }} onContextMenu={(e)=>cloned.contextMenu(c.id,e)}>
           <img src={c.icon} alt={c.name} className="icon-img" draggable={false} />
           {c.renaming ? <input className="icon-label" style={{ width:'100%', boxSizing:'border-box', color:'#333' }} defaultValue={c.name} autoFocus onBlur={(e)=>cloned.rename(c.id, e.target.value || c.name)} onKeyDown={(e)=>{ if(e.key==='Enter') cloned.rename(c.id, e.target.value||c.name); if(e.key==='Escape') cloned.rename(c.id,c.name) }} /> : <div className="icon-label">{c.name}</div>}
         </div>
@@ -419,58 +507,15 @@ export function DesktopRoot({ onShutdown }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
                     <button
                       className="modal-bin-restore-btn"
-                      onClick={() => {
-                        // Open logic for items in extra folder (support folders and files)
-                        if (item.id.startsWith('new-folder-')) {
-                          setExtraFolders(list => list.map(fl => fl.id === item.id ? { ...fl, modalOpen: true } : fl))
-                          bringExtraFolder(item.id)
-                          return
-                        }
-                        // If item is a folder inside this folder
-                        const targetFolder = extraFolders.find(fl => fl.id === item.id)
-                        if (targetFolder) {
-                          setExtraFolders(list => list.map(fl => fl.id === item.id ? { ...fl, modalOpen: true } : fl))
-                          bringExtraFolder(item.id)
-                          return
-                        }
-                        // If item is a file, try to open via folder logic
-                        handleFolderItemOpen(item.id)
-                      }}
+                      onClick={() => handleFolderItemOpen(item.id)}
                     >Open</button>
                     <button
                       className="modal-bin-restore-btn"
-                      onClick={() => {
-                        // Delete logic for items in extra folder
-                        addItemToBin({ id: item.id, name: item.name, icon: item.icon })
-                        setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, items: fl.items.filter(it => it.id !== item.id) } : fl))
-                        if (item.id.startsWith('new-folder-')) {
-                          setExtraFolders(list => list.map(fl => fl.id === item.id ? { ...fl, visible: false, modalOpen: false } : fl))
-                        }
-                        if (item.id === 'ghost-folder') folder.setModalOpen(false)
-                        if (item.id === 'email') email.setModalOpen(false)
-                        if (item.id === 'mycomputer') setCompModalOpen(false)
-                      }}
+                      onClick={() => handleFolderItemDelete(item.id)}
                     >Delete</button>
                     <button
                       className="modal-bin-restore-btn"
-                      onClick={() => {
-                        // Move item back to desktop at its original place
-                        if (item.id === 'email') email.restore()
-                        else if (item.id === 'mycomputer') restoreComputer()
-                        else if (item.id === 'ghost-folder') folder.restore()
-                        else if (item.id.startsWith('new-folder-')) {
-                          setExtraFolders(list => list.map(fl =>
-                            fl.id === item.id
-                              ? {
-                                  ...fl,
-                                  visible: true,
-                                  pos: { x: 100 + list.findIndex(x => x.id === item.id) * 40, y: 100 + list.findIndex(x => x.id === item.id) * 40 }
-                                }
-                              : fl
-                          ))
-                        }
-                        setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, items: fl.items.filter(it => it.id !== item.id) } : fl))
-                      }}
+                      onClick={() => handleFolderItemToDesktop(item.id)}
                     >To Desktop</button>
                   </div>
                 </div>
