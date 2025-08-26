@@ -8,7 +8,7 @@ import { EmailResultModal } from '../FormResponse/EmailResultModal/EmailResultMo
 import ErrorModal from '../../modal/ErrorModal.jsx'
 import './EmailAssistant.css'
 
-export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'Email Assistant' }) {
+export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'Email Assistant', onMinimize }) {
   const { renderErrorTooltip } = useErrorMail()
   const [errors, setErrors] = useState({})
   const [installStep, setInstallStep] = useState(0)
@@ -65,6 +65,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
         onClose={onClose}
         zIndex={zIndex}
         onActivate={onActivate}
+        onMinimize={onMinimize}
       >
         {installStep === 0 ? (
           <div className="email-assistant-install">

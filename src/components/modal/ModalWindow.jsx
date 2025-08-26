@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 import './ModalWindow.css'
 
-export default function ModalWindow({ title, children, onClose, zIndex = 100, onActivate, small }) {
+export default function ModalWindow({ title, children, onClose, onMinimize, minimized = false, zIndex = 100, onActivate, small }) {
   const modalRef = useRef(null)
   const [dragging, setDragging] = useState(false)
   const [pos, setPos] = useState({ x: null, y: null })
@@ -52,13 +52,22 @@ export default function ModalWindow({ title, children, onClose, zIndex = 100, on
     ? { left: pos.x, top: pos.y, position: 'fixed', zIndex, width: small ? 320 : 420, transform: 'none' }
     : { zIndex, width: small ? 320 : 420 }
 
+  if (minimized) return null
   return (
     <div className="windows2000-modal" ref={modalRef} style={style} onMouseDown={() => onActivate && onActivate()}>
       <div className="modal-title-bar modal-title-bar-move" onMouseDown={handleMouseDown}>
         <div className="modal-title-bar-flex">
           <span className="modal-title">{title}</span>
           <div className="modal-buttons">
-            <button className="modal-btn close" title="Close" onClick={onClose}>×</button>
+            {onMinimize && (
+              <button
+                className="modal-btn-minimize"
+                title="Minimize"
+                onClick={onMinimize}
+                tabIndex={0}
+              >–</button>
+            )}
+            <button className="modal-btn-minimize close" title="Close" onClick={onClose}>×</button>
           </div>
         </div>
       </div>

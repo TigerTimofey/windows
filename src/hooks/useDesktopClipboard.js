@@ -35,6 +35,8 @@ export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, c
       cloned.addClone({ type: 'ghost', name: copiedItem.name, icon: copiedItem.icon, baseNames })
     } else if (copiedItem.type === 'internet') {
       cloned.addClone({ type: 'internet', name: copiedItem.name, icon: copiedItem.icon, baseNames })
+    } else if (copiedItem.type === 'minesweeper') {
+      cloned.addClone({ type: 'minesweeper', name: copiedItem.name, icon: copiedItem.icon, baseNames })
     } else if (copiedItem.type === 'extra-folder' || copiedItem.id?.startsWith('new-folder-')) {
       // Treat as descriptor for a brand new extra folder instance (with deep-copied items)
       const clone = { ...copiedItem, id: `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}` }

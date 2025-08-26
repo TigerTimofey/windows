@@ -116,6 +116,114 @@ background: linear-gradient(90deg, #0A246A 0%,  #113461d3 50%, #5d89c3d3 100%); 
   border-bottom: 1px solid #b5b5b5;
 }
 
+.modal-title-btns {
+  display: flex;
+  gap: 2px;
+}
+/* Title bar controls styling */
+.title-bar-controls {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.title-bar-controls button {
+  display: block;
+  min-height: 14px;
+  min-width: 16px;
+  padding: 0;
+  background: silver;
+  border: none;
+  border-radius: 0;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #fff,
+    inset -2px -2px grey,
+    inset 2px 2px #dfdfdf;
+  box-sizing: border-box;
+  color: #222;
+  font-size: 16px;
+  margin-right: 2px;
+  text-align: center;
+  line-height: 18px;
+}
+
+.title-bar-controls button[aria-label="Maximize"],
+.title-bar-controls button.maximize {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='9' height='9' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M9 0H0v9h9V0zM8 2H1v6h7V2z' fill='%23000'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 3px 2px;
+  background-size: 9px 9px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Minimize button style (use same as title-bar-controls for consistency) */
+.modal-btn-minimize {
+  /* Use same style as .title-bar-controls button for consistency */
+  background: silver;
+  border: none;
+  border-radius: 0;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #fff,
+    inset -2px -2px grey,
+    inset 2px 2px #dfdfdf;
+  box-sizing: border-box;
+  color: #222;
+  font-size: 16px;
+  width: 22px;
+  height: 22px;
+  margin-right: 2px;
+  border: 1px solid #000;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080;
+  margin-left: 2px;
+  transition: box-shadow 0.1s, background 0.1s;
+}
+
+/* Close button style (use same as title-bar-controls for consistency) */
+.modal-btn.close {
+  background: silver;
+  border: none;
+  border-radius: 0;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #fff,
+    inset -2px -2px grey,
+    inset 2px 2px #dfdfdf;
+  box-sizing: border-box;
+  color: #222;
+  font-size: 18px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  text-align: center;
+  line-height: 18px;
+}
+
+.taskbar-modal-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #e3e3e3;
+  border: 1px solid #808080;
+  border-radius: 2px;
+  padding: 2px 8px;
+  margin-right: 4px;
+  cursor: pointer;
+  height: 28px;
+  background: #c0c0c0;
+  box-shadow: inset  0px 1px 0 #fff, inset -1px -1px 0 #404040;
+  font-weight: bold;
+  cursor: pointer;
+}
+.taskbar-modal-icon:hover { border: 1px inset #fff;  }
+
 .modal-buttons {
   display: flex;
   gap: 2px;
@@ -134,9 +242,9 @@ background: linear-gradient(90deg, #0A246A 0%,  #113461d3 50%, #5d89c3d3 100%); 
   margin-left: 2px;
   transition: box-shadow 0.1s, background 0.1s;
 }
-.modal-btn:hover {
+.modal-btn-minimize:hover {
   background: #d4d4d4;
-  box-shadow: inset 2px 2px 0 #808080, inset -2px -2px 0 #fff;
+  box-shadow: inset 1px 1px 0 #808080, inset -2px -2px 0 #fff;
 }
 .modal-btn:active {
   border: 1px solid #404040;

@@ -36,6 +36,11 @@ import { useMinesweeperIcon } from '../../../hooks/useMinesweeperIcon.js'
 import { MinesweeperIcon } from '../../minesweeper/MinesweeperIcon.jsx'
 import { MinesweeperContextMenu } from '../../minesweeper/MinesweeperContextMenu.jsx'
 import { MinesweeperGameModal } from '../../minesweeper/MinesweeperGameModal.jsx'
+import binIcon from '../../../assets/win7/bin-emty.svg'
+import emailIcon from '../../../assets/win7/icons/email.ico'
+import folderIcon from '../../../assets/win7/icons/folder.ico'
+import computerIcon from '../../../assets/win7/mycomputer.svg'
+import minesweeperIcon from '../../../assets/win7/icons/minesweeper.png'
 
 export function DesktopRoot({ onShutdown }) {
   const { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ } = useZLayers(150)
@@ -123,6 +128,29 @@ export function DesktopRoot({ onShutdown }) {
   const [deskMenu, setDeskMenu] = useState({ open: false, x: 0, y: 0 })
   const [refreshTick, setRefreshTick] = useState(0)
 
+  // Minimized modals state
+  const [minimizedModals, setMinimizedModals] = useState([])
+
+  // Helper to add/remove minimized modal
+  function minimizeModal(id, title, icon) {
+    setMinimizedModals(list => [...list, { id, title, icon }])
+  }
+  function restoreModal(id) {
+    setMinimizedModals(list => list.filter(m => m.id !== id))
+    if (id === 'email') email.setModalOpen(true)
+    if (id === 'folder') folder.setModalOpen(true)
+    if (id === 'comp') setCompModalOpen(true)
+    if (id === 'bin') recycle.setBinModalOpen(true)
+    if (id === 'internet') internet.setModalOpen(true)
+    if (id === 'minesweeper') minesweeper.setModalOpen(true)
+    // Restore extra folders
+    setExtraFolders(list => list.map(f => f.id === id ? { ...f, modalOpen: true } : f))
+    // Restore cloned items
+    if (cloned.clones.some(c => c.id === id)) {
+      cloned.openClone({ id })
+    }
+  }
+
   // Bring effects
   useEffect(() => { if (folder.modalOpen) bring('folder') }, [folder.modalOpen, bring])
   useEffect(() => { if (email.modalOpen) bring('email') }, [email.modalOpen, bring])
@@ -193,7 +221,14 @@ export function DesktopRoot({ onShutdown }) {
 
   return (
     <div className="windows-bg" onContextMenu={handleDesktopContextMenu}>
-      <Taskbar startOpen={menuOpen} onToggleStart={() => setMenuOpen(!menuOpen)} buttonRef={buttonRef} clock={clock} />
+      <Taskbar
+        startOpen={menuOpen}
+        onToggleStart={() => setMenuOpen(!menuOpen)}
+        buttonRef={buttonRef}
+        clock={clock}
+        minimizedModals={minimizedModals}
+        onRestoreModal={restoreModal}
+      />
       {compVisible && <MyComputerIcon iconRef={compRef} style={compStyle} onMouseDown={(e)=>{ bring('comp'); handleCompMouseDown(e) }} onClick={handleCompClick} onDoubleClick={handleCompDoubleClick} onContextMenu={handleCompContextMenu} name={compName} renaming={compRenaming} onRenameCommit={compCommitRename} onRenameCancel={compCancelRename} />}
       {email.visible && <EmailIcon iconRef={email.ref} style={email.style} onMouseDown={(e)=>{ bring('email'); email.handleMouseDown(e) }} onContextMenu={email.handleContextMenu} onClick={email.handleClick} onDoubleClick={email.handleDoubleClick} name={email.name} renaming={email.renaming} onRenameCommit={email.commitRename} onRenameCancel={email.cancelRename} />}
       {folder.visible && <FolderIcon iconRef={folder.ref} style={folder.style} onMouseDown={(e)=>{ bring('folder'); folder.handleMouseDown(e) }} onContextMenu={folder.handleContextMenu} onClick={folder.handleClick} onDoubleClick={folder.handleDoubleClick} name={folder.name} renaming={folder.renaming} onRenameCommit={folder.commitRename} onRenameCancel={folder.cancelRename} />}
@@ -222,8 +257,18 @@ export function DesktopRoot({ onShutdown }) {
       <BinContextMenu x={recycle.context.x} y={recycle.context.y} open={recycle.context.open} hasItems={recycle.items.length>0} onOpen={()=>{ recycle.closeContext(); handleBinDoubleClick() }} onEmpty={()=>{ recycle.closeContext(); handleEmptyRequest() }} onRestoreAll={()=>{ recycle.closeContext(); handleRestoreAll() }} onRename={()=>{ recycle.startRename && recycle.startRename() }} onCopy={()=>{ copyHandlers.copyBin(); recycle.closeContext() }} />
       <MyComputerContextMenu x={compContext?.x} y={compContext?.y} open={compContext?.open} onOpen={()=>{ setCompModalOpen(true); closeCompContext(); bring('comp') }} onDelete={()=>{ deleteComputer(); closeCompContext() }} onRename={()=>{ compStartRename() }} onCopy={()=>{ copyHandlers.copyComputer(); closeCompContext() }} />
       <RecycleBin binRef={recycle.binRef} style={binStyle} full={binFullState} onMouseDown={(e)=>{ bring('bin'); recycle.handleMouseDown(e) }} onDoubleClick={handleBinDoubleClick} onClick={handleBinClick} onContextMenu={recycle.handleContextMenu} onTouchStart={recycle.handleTouchStart} onTouchMove={recycle.cancelLongPress} onTouchEnd={recycle.cancelLongPress} name={recycle.name} renaming={recycle.renaming} onRenameCommit={recycle.commitRename} onRenameCancel={recycle.cancelRename} />
-      {binModalOpen && (
-        <ModalWindow title={recycle.name} onClose={handleBinModalClose} zIndex={binZ} onActivate={()=>bring('bin')}>
+      {/* Recycle Bin modal with minimize support */}
+      {binModalOpen && !minimizedModals.some(m => m.id === 'bin') && (
+        <ModalWindow
+          title={recycle.name}
+          onClose={handleBinModalClose}
+          zIndex={binZ}
+          onActivate={() => bring('bin')}
+          onMinimize={() => {
+            minimizeModal('bin', recycle.name, binIcon)
+            recycle.setBinModalOpen(false)
+          }}
+        >
           {recycle.items.length===0 ? <div className="modal-empty-message">The Recycle Bin is empty.</div> : (
             <div className="modal-bin-items">
               {recycle.items.map(item => (
@@ -251,8 +296,14 @@ export function DesktopRoot({ onShutdown }) {
           </div>
         </ModalWindow>
       )}
-      {compModalOpen && computerInfo && (
-        <ModalWindow title={compName} onClose={()=>setCompModalOpen(false)} zIndex={compZ} onActivate={()=>bring('comp')}>
+      {compModalOpen && computerInfo && !minimizedModals.some(m => m.id === 'comp') && (
+        <ModalWindow
+          title={compName}
+          onClose={() => setCompModalOpen(false)}
+          zIndex={compZ}
+          onActivate={() => bring('comp')}
+          onMinimize={() => { setCompModalOpen(false); minimizeModal('comp', compName, computerIcon) }}
+        >
           <div className="computer-info">
             <ul className="computer-info-list">
               <li><strong>Platform:</strong> {computerInfo.platform}</li>
@@ -270,28 +321,179 @@ export function DesktopRoot({ onShutdown }) {
           </div>
         </ModalWindow>
       )}
-      <EmailAssistant open={email.modalOpen} onClose={()=>email.setModalOpen(false)} zIndex={emailZ} onActivate={()=>bring('email')} appName={email.name} />
-      {folder.modalOpen && (
-        <ModalWindow title={folder.name} onClose={()=>folder.setModalOpen(false)} zIndex={folderZ} onActivate={()=>bring('folder')}>
-          {folder.items.length===0 ? <div className="modal-empty-message">The folder is empty.</div> : (
-            <div className="modal-bin-items" style={{ gridTemplateColumns:'repeat(auto-fill, minmax(140px, 1fr))' }}>
-              {folder.items.map(item => (
-                <div key={item.id} className="modal-bin-item" style={{ alignItems:'center', gap:4 }}>
-                  <img src={item.icon} alt={item.name} className="modal-bin-icon" draggable={false} />
-                  <span className="modal-bin-label" style={{ textAlign:'center' }}>{item.name}</span>
-                  <div style={{ display:'flex', flexDirection:'column', gap:2, width:'100%' }}>
-                    <button className="modal-bin-restore-btn" onClick={()=>handleFolderItemOpen(item.id)}>Open</button>
-                    <button className="modal-bin-restore-btn" onClick={()=>handleFolderItemDelete(item.id)}>Delete</button>
-                    <button className="modal-bin-restore-btn" onClick={()=>handleFolderItemToDesktop(item.id)}>To Desktop</button>
+      <EmailAssistant
+        open={email.modalOpen && !minimizedModals.some(m => m.id === 'email')}
+        onClose={() => email.setModalOpen(false)}
+        zIndex={emailZ}
+        onActivate={() => bring('email')}
+        appName={email.name}
+        onMinimize={() => { email.setModalOpen(false); minimizeModal('email', email.name, emailIcon) }}
+      />
+      {folder.modalOpen && !minimizedModals.some(m => m.id === 'folder') && (
+        <ModalWindow
+          title={folder.name}
+          onClose={() => folder.setModalOpen(false)}
+          zIndex={folderZ}
+          onActivate={() => bring('folder')}
+          onMinimize={() => { folder.setModalOpen(false); minimizeModal('folder', folder.name, folderIcon) }}
+        >
+  {folder.items.length === 0 ? (
+  <div className="modal-empty-message">The folder is empty.</div>
+) : (
+  <div
+    className="modal-bin-items"
+    style={{ gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))" }}
+  >
+    {folder.items.map((item) => (
+      <div
+        key={item.id}
+        className="modal-bin-item"
+        style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}
+      >
+        <img
+          src={item.icon}
+          alt={item.name}
+          className="modal-bin-icon"
+          draggable={false}
+        />
+        <span
+          className="modal-bin-label"
+          style={{ textAlign: "center" }}
+        >
+          {item.name}
+        </span>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            width: "100%",
+          }}
+        >
+          <button
+            className="modal-bin-restore-btn"
+            onClick={() => handleFolderItemOpen(item.id)}
+          >
+            Open
+          </button>
+          <button
+            className="modal-bin-restore-btn"
+            onClick={() => handleFolderItemDelete(item.id)}
+          >
+            Delete
+          </button>
+          <button
+            className="modal-bin-restore-btn"
+            onClick={() => handleFolderItemToDesktop(item.id)}
+          >
+            To Desktop
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
+        </ModalWindow>
+      )}
+      {extraFolders.filter(f => f.modalOpen && !minimizedModals.some(m => m.id === f.id)).map(f => (
+        <ModalWindow
+          key={f.id}
+          title={f.name}
+          onClose={() => setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, modalOpen: false } : fl))}
+          zIndex={f.z || folderZ}
+          onActivate={() => bringExtraFolder(f.id)}
+          onMinimize={() => {
+            setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, modalOpen: false } : fl))
+            minimizeModal(f.id, f.name, extraFolderIcon)
+          }}
+        >
+          {(!f.items || f.items.length === 0) ? (
+            <div className="modal-empty-message">The folder is empty.</div>
+          ) : (
+            <div className="modal-bin-items" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
+              {f.items.map(item => (
+                <div key={item.id} className="modal-bin-item" style={{ alignItems: 'center', gap: 4 }}>
+                  <img src={item.icon || extraFolderIcon} alt={item.name} className="modal-bin-icon" draggable={false} />
+                  <span className="modal-bin-label" style={{ textAlign: 'center' }}>{item.name}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
+                    <button
+                      className="modal-bin-restore-btn"
+                      onClick={() => {
+                        // Open logic for items in extra folder (support folders and files)
+                        if (item.id.startsWith('new-folder-')) {
+                          setExtraFolders(list => list.map(fl => fl.id === item.id ? { ...fl, modalOpen: true } : fl))
+                          bringExtraFolder(item.id)
+                          return
+                        }
+                        // If item is a folder inside this folder
+                        const targetFolder = extraFolders.find(fl => fl.id === item.id)
+                        if (targetFolder) {
+                          setExtraFolders(list => list.map(fl => fl.id === item.id ? { ...fl, modalOpen: true } : fl))
+                          bringExtraFolder(item.id)
+                          return
+                        }
+                        // If item is a file, try to open via folder logic
+                        handleFolderItemOpen(item.id)
+                      }}
+                    >Open</button>
+                    <button
+                      className="modal-bin-restore-btn"
+                      onClick={() => {
+                        // Delete logic for items in extra folder
+                        addItemToBin({ id: item.id, name: item.name, icon: item.icon })
+                        setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, items: fl.items.filter(it => it.id !== item.id) } : fl))
+                        if (item.id.startsWith('new-folder-')) {
+                          setExtraFolders(list => list.map(fl => fl.id === item.id ? { ...fl, visible: false, modalOpen: false } : fl))
+                        }
+                        if (item.id === 'ghost-folder') folder.setModalOpen(false)
+                        if (item.id === 'email') email.setModalOpen(false)
+                        if (item.id === 'mycomputer') setCompModalOpen(false)
+                      }}
+                    >Delete</button>
+                    <button
+                      className="modal-bin-restore-btn"
+                      onClick={() => {
+                        // Move item back to desktop at its original place
+                        if (item.id === 'email') email.restore()
+                        else if (item.id === 'mycomputer') restoreComputer()
+                        else if (item.id === 'ghost-folder') folder.restore()
+                        else if (item.id.startsWith('new-folder-')) {
+                          setExtraFolders(list => list.map(fl =>
+                            fl.id === item.id
+                              ? {
+                                  ...fl,
+                                  visible: true,
+                                  pos: { x: 100 + list.findIndex(x => x.id === item.id) * 40, y: 100 + list.findIndex(x => x.id === item.id) * 40 }
+                                }
+                              : fl
+                          ))
+                        }
+                        setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, items: fl.items.filter(it => it.id !== item.id) } : fl))
+                      }}
+                    >To Desktop</button>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </ModalWindow>
-      )}
-      {extraFolders.filter(f=>f.modalOpen).map(f => (
-        <ExtraFolderModal key={f.id} f={f} zIndex={f.z||folderZ} bring={bring} bringExtraFolder={bringExtraFolder} setExtraFolders={setExtraFolders} email={email} setCompModalOpen={setCompModalOpen} restoreComputer={restoreComputer} folder={folder} addItemToBin={addItemToBin} extraFolderIcon={extraFolderIcon} onClose={()=>setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,modalOpen:false}:fl))} />
+      ))}
+      {/* Cloned items modals with minimize support */}
+      {cloned.clones.filter(c => c.modalOpen && !minimizedModals.some(m => m.id === c.id)).map(c => (
+        <ModalWindow
+          key={c.id}
+          title={c.name}
+          onClose={() => cloned.closeClone(c.id)}
+          zIndex={c.z || 56}
+          onActivate={() => bring(c.id)}
+          onMinimize={() => {
+            cloned.closeClone(c.id)
+            minimizeModal(c.id, c.name, c.icon)
+          }}
+        >
+          {/* ...cloned modal content... */}
+        </ModalWindow>
       ))}
       {menuOpen && <StartMenu menuRef={menuRef} onShutdown={onShutdown} />}
       <span style={{ display:'none' }}>{refreshTick}</span>
@@ -346,10 +548,11 @@ export function DesktopRoot({ onShutdown }) {
       )}
       {/* Minesweeper modal */}
       <MinesweeperGameModal
-        open={minesweeper.modalOpen}
+        open={minesweeper.modalOpen && !minimizedModals.some(m => m.id === 'minesweeper')}
         onClose={() => minesweeper.setModalOpen(false)}
         zIndex={130}
         onActivate={() => bring('minesweeper')}
+        onMinimize={() => { minesweeper.setModalOpen(false); minimizeModal('minesweeper', minesweeper.name, minesweeperIcon) }}
       />
     </div>
   )

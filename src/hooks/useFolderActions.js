@@ -1,7 +1,7 @@
 // Centralized folder item actions to keep App.jsx cleaner
 // Each function receives dependency objects to avoid tight coupling.
 
-export function openItemFromBaseFolder(id, { email, bring, setCompModalOpen, setExtraFolders, folder, zCounterRef, bringExtraFolder, internet }) {
+export function openItemFromBaseFolder(id, { email, bring, setCompModalOpen, setExtraFolders, folder, zCounterRef, bringExtraFolder, internet, minesweeper }) {
   if (id === 'email') { email.setModalOpen(true); bring('email'); return }
   if (id === 'mycomputer') { setCompModalOpen(true); bring('comp'); return }
   if (id.startsWith('new-folder-')) {
@@ -22,6 +22,7 @@ export function openItemFromBaseFolder(id, { email, bring, setCompModalOpen, set
   if (id.startsWith('clone-email-') || id.startsWith('clone-email')) { email.setModalOpen(true); bring('email'); return }
   if (id.startsWith('clone-mycomputer-') || id.startsWith('clone-mycomputer')) { setCompModalOpen(true); bring('comp'); return }
   if (id.startsWith('clone-ghost-') || id.startsWith('clone-ghost')) { folder.setModalOpen(true); bring('folder'); return }
+  if (id.startsWith('clone-minesweeper-') || id.startsWith('clone-minesweeper')) { minesweeper.setModalOpen(true); bring('minesweeper'); return }
   if (id === 'internet') { internet && internet.restore && internet.restore(); return }
 }
 
