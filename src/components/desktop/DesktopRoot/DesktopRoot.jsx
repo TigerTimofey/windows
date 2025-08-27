@@ -174,6 +174,9 @@ export function DesktopRoot({ onShutdown }) {
   // When creating new folders, set z to 55 (always less than modal zIndex 130)
   function createNewFolder() {
     const id = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
+    // Use same positioning logic as useExtraFolders.js
+    const baseX = 18
+    const baseY = 480
     setExtraFolders(list => [
       ...list,
       {
@@ -185,7 +188,7 @@ export function DesktopRoot({ onShutdown }) {
         modalOpen: false,
         renaming: false,
         context: { open: false, x:0,y:0 },
-        pos: { x: 18, y: 300 + list.filter(f => f.visible).length * 90 },
+        pos: { x: baseX, y: baseY + list.filter(f => f.visible).length * 90 },
         z: 55
       }
     ])
