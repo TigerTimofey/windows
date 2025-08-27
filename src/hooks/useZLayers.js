@@ -1,6 +1,5 @@
 import { useRef, useState, useCallback } from 'react'
 
-// Handles z-index layering for primary windows (folder, email, computer, bin, confirm dialogs)
 export function useZLayers(initial = 150) {
   const zCounterRef = useRef(initial)
   const [folderZ, setFolderZ] = useState(110)

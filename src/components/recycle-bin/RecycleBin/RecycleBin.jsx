@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import './RecycleBin.css'
-import binEmpty from '../../../assets/win7/bin-emty.svg'
-import binFull from '../../../assets/win7/bin-full.svg'
+import binEmpty from '../../../assets/win7/icons/bin-emty.svg'
+import binFull from '../../../assets/win7/icons/bin-full.svg'
 
 export function RecycleBin({
   binRef,
@@ -45,7 +45,6 @@ export function RecycleBin({
         <input
           ref={inputRef}
           className="bin-label"
-          // style={{ width: '100%', boxSizing: 'border-box', color: '#333' }}
           defaultValue={name}
           onBlur={(e) => onRenameCommit && onRenameCommit(e.target.value)}
           onKeyDown={(e) => {

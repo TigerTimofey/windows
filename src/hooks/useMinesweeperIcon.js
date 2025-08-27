@@ -116,14 +116,12 @@ export function useMinesweeperIcon(binRef, onDroppedIntoBin, folderRef, onDroppe
     ? { left: pos.x, top: pos.y, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
     : { left: 120, top: 300, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
 
-  // Restore always sets position to desktop default
   const restore = useCallback(() => {
     setVisible(true)
     setPos({ x: 18, y: 390 })
     closeContext()
   }, [closeContext])
 
-  // Copy descriptor for clipboard
   const copyDescriptor = useCallback(() => ({
     id: 'minesweeper',
     name,

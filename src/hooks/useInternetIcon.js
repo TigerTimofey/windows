@@ -3,7 +3,6 @@ import internetIcon from '../assets/win7/icons/gitgub.png'
 import { getClampedBinPosition, isIconDroppedOnTarget } from './useDesktop.js'
 
 export function useInternetIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIntoFolder, getExtraFolderTargets, onDroppedIntoExtraFolder) {
-  // Set initial position under ghost-writer folder (default folder: left:18, top:60)
   const [pos, setPos] = useState({ x: 18, y: 300 })
   const [dragging, setDragging] = useState(false)
   const [visible, setVisible] = useState(true)
@@ -36,19 +35,16 @@ export function useInternetIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIn
     function onUp() {
       if (!dragging) return
       setDragging(false)
-      // Drop on recycle bin
       if (binRef && isIconDroppedOnTarget(ref, binRef)) {
         setVisible(false)
         onDroppedIntoBin && onDroppedIntoBin({ id: 'internet', name, icon: internetIcon })
         return
       }
-      // Drop on base folder
       if (folderRef && isIconDroppedOnTarget(ref, folderRef)) {
         setVisible(false)
         onDroppedIntoFolder && onDroppedIntoFolder({ id: 'internet', name, icon: internetIcon })
         return
       }
-      // Drop on extra folders
       if (getExtraFolderTargets) {
         const targets = getExtraFolderTargets()
         const selfRect = ref.current.getBoundingClientRect()

@@ -12,7 +12,6 @@ export function EmailAssistantForm({
   buildPrompt, inferThemeFromMessage, cleanMessage, removeDuplicates,
   loading, renderErrorTooltip, onStartGenerate
 }) {
-  // Example default values
   React.useEffect(() => {
     setForm(f => ({
       ...f,

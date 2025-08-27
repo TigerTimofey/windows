@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react'
-import myComputerIconAsset from '../assets/win7/mycomputer.svg'
+import myComputerIconAsset from '../assets/win7/icons/mycomputer.svg'
 
-// Manages copied item & paste logic (delegates clone creation / folder reveal via callbacks)
 export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, cloned, revealOrCloneFromDescriptor }) {
   const [copiedItem, setCopiedItem] = useState(null)
 
@@ -38,7 +37,6 @@ export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, c
     } else if (copiedItem.type === 'minesweeper') {
       cloned.addClone({ type: 'minesweeper', name: copiedItem.name, icon: copiedItem.icon, baseNames })
     } else if (copiedItem.type === 'extra-folder' || copiedItem.id?.startsWith('new-folder-')) {
-      // Treat as descriptor for a brand new extra folder instance (with deep-copied items)
       const clone = { ...copiedItem, id: `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}` }
       clone.name = makeUnique(clone.name || 'New Folder')
       clone.items = (copiedItem.items || []).map(it => ({ ...it }))
@@ -52,7 +50,6 @@ export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, c
 export function buildCopyHandlers({ email, folder, recycle, compName, captureCopy, extraFolderIcon, internet, minesweeper }) {
   return {
     copyEmail: () => { captureCopy({ id: 'email', name: email.name, icon: email.copyDescriptor().icon, type: 'email' }); navigator.clipboard?.writeText(email.name).catch(()=>{}) },
-    // Copy the base ghost folder as a brand new extra folder descriptor (so the copy can hold items independently)
     copyFolder: () => {
       const newId = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
       captureCopy({ id: newId, name: folder.name, icon: extraFolderIcon, type: 'extra-folder', items: folder.items.map(it => ({ ...it })) })
@@ -60,7 +57,6 @@ export function buildCopyHandlers({ email, folder, recycle, compName, captureCop
     },
     copyBin: () => { captureCopy(recycle.copyDescriptor()); navigator.clipboard?.writeText(recycle.name).catch(()=>{}) },
     copyComputer: () => { captureCopy({ id: 'mycomputer', name: compName, icon: myComputerIconAsset, type: 'mycomputer' }); navigator.clipboard?.writeText(compName).catch(()=>{}) },
-    // Always generate a fresh id when copying an extra folder to create a true duplicate rather than revealing the original
     copyExtraFolder: (tgt) => {
       const newId = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
       captureCopy({ id: newId, name: tgt.name, icon: extraFolderIcon, type: 'extra-folder', items: (tgt.items||[]).map(it => ({...it})) })

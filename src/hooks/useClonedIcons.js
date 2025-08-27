@@ -1,7 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
 
-// Manages duplicated (cloned) desktop icons for system items (email, mycomputer, ghost-folder)
-// Each clone: { id, type, name, icon, pos:{x,y}, renaming, context:{open,x,y} }
 export function useClonedIcons({ zCounterRef, recycleBinRef, addItemToBin, openHandlers, baseFolder, getExtraFolderTargets, addItemToExtraFolder }) {
   const [clones, setClones] = useState([])
   const cloneRefs = useRef({})
@@ -58,7 +56,6 @@ export function useClonedIcons({ zCounterRef, recycleBinRef, addItemToBin, openH
         const rect = el.getBoundingClientRect()
         const binRect = recycleBinRef.current.getBoundingClientRect()
         if (intersects(rect, binRect)) {
-          // delete clone to bin
             setClones(list => list.filter(c => c.id !== id))
             const clone = clonesRef.current.find(c => c.id === id)
             if (clone) addItemToBin({ id: clone.id, name: clone.name, icon: clone.icon })
@@ -66,14 +63,12 @@ export function useClonedIcons({ zCounterRef, recycleBinRef, addItemToBin, openH
             return
         }
       }
-      // Drop onto base folder
       if (el && baseFolder?.visible && baseFolder.ref?.current) {
         const rect = el.getBoundingClientRect()
         const baseRect = baseFolder.ref.current.getBoundingClientRect()
         if (intersects(rect, baseRect)) {
           const clone = clonesRef.current.find(c => c.id === id)
           if (clone) {
-            // Remove clone from desktop and add as item (retain type so it can be opened)
             setClones(list => list.filter(c => c.id !== id))
             baseFolder.addItem({ id, name: clone.name, icon: clone.icon, type: clone.type })
           }
@@ -81,7 +76,6 @@ export function useClonedIcons({ zCounterRef, recycleBinRef, addItemToBin, openH
           return
         }
       }
-      // Drop onto extra folder targets
       if (el && getExtraFolderTargets) {
         const rect = el.getBoundingClientRect()
         const targets = getExtraFolderTargets()
@@ -131,17 +125,14 @@ export function useClonedIcons({ zCounterRef, recycleBinRef, addItemToBin, openH
     return { id: clone.id, name: clone.name, icon: clone.icon, type: clone.type }
   }
 
-  // Add a restoreClone method to restore a clone to the desktop
   function restoreClone(cloneDescriptor) {
-    // Place the clone back on the desktop at a default or previous position
     setClones(prev => {
-      // Avoid duplicate clones
       if (prev.some(c => c.id === cloneDescriptor.id)) return prev
       return [
         ...prev,
         {
           ...cloneDescriptor,
-          pos: { x: 100, y: 100 }, // or use previous pos if available
+          pos: { x: 100, y: 100 }, 
           z: 56,
           modalOpen: false,
           renaming: false,
@@ -151,7 +142,6 @@ export function useClonedIcons({ zCounterRef, recycleBinRef, addItemToBin, openH
     })
   }
 
-  // Export restoreClone so DesktopRoot can use it
   return {
     clones, addClone, handleMouseDown, openClone, contextMenu, closeAllContexts, rename, startRename, deleteClone, copyDescriptor, cloneRefs, restoreClone
   }

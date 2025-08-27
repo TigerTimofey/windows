@@ -6,14 +6,12 @@ export function InternetIcon({ iconRef, style, onMouseDown, onContextMenu, name 
   const inputRef = useRef(null)
   useEffect(() => { if (renaming && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [renaming])
 
-  // Detect touch/coarse pointer
   const isTouchOrCoarse = typeof window !== 'undefined' && (
     'ontouchstart' in window ||
     (navigator && navigator.maxTouchPoints > 0) ||
     (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
   )
 
-  // Open GitHub in new tab
   const openGitHub = (e) => {
     if (e) e.preventDefault()
     window.open('https://github.com/TigerTimofey/windows', '_blank', 'noopener,noreferrer')

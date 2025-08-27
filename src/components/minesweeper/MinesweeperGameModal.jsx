@@ -4,7 +4,6 @@ import { MinesweeperGame } from './MinesweeperGame.jsx'
 
 export function MinesweeperGameModal({ open, onClose, zIndex = 120, onActivate, onMinimize }) {
   if (!open) return null
-  // Prevent context menu on the entire modal (including title bar and game)
   function preventContextMenu(e) {
     e.stopPropagation()
     e.preventDefault()

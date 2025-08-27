@@ -44,7 +44,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
       setEditableMessage(emailResult.message)
       setResultModalOpen(true)
       setLoading(false)
-      setGenerating(false) // <-- Only stop "Generating..." when modal is shown
+      setGenerating(false) 
     }
   }, [emailResult])
 
@@ -90,9 +90,9 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
               inferThemeFromMessage={inferThemeFromMessage}
               cleanMessage={cleanMessage}
               removeDuplicates={removeDuplicates}
-              loading={generating} // <-- Use generating state
+              loading={generating} 
               renderErrorTooltip={renderErrorTooltip}
-              onStartGenerate={() => setGenerating(true)} // <-- Pass callback
+              onStartGenerate={() => setGenerating(true)} 
             />
             {resultModalOpen && emailResult && emailResult.theme && emailResult.message && emailResult.message !== '(none)' && (
               <EmailResultModal

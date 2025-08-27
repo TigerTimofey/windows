@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react'
 import './MinesweeperGame.css'
 
 function createBoard(rows, cols, mines, safeCell) {
-  // Generate empty board
   const board = Array.from({ length: rows }, (_, r) =>
     Array.from({ length: cols }, (_, c) => ({
       r, c, mine: false, rev: false, flag: false, q: false, n: 0
     }))
   )
-  // Place mines, avoid safeCell and neighbors
   const forbidden = new Set([`${safeCell.r},${safeCell.c}`])
   for (let dr = -1; dr <= 1; dr++)
     for (let dc = -1; dc <= 1; dc++) {
@@ -28,7 +26,6 @@ function createBoard(rows, cols, mines, safeCell) {
     const [r, c] = cells[k]
     board[r][c].mine = true
   }
-  // Compute numbers
   for (let r = 0; r < rows; r++)
     for (let c = 0; c < cols; c++) {
       board[r][c].n = neighbors(board, r, c).reduce((a, n) => a + (n.mine ? 1 : 0), 0)

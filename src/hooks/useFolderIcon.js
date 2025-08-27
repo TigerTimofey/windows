@@ -6,7 +6,7 @@ export function useFolderIcon(binRef, onDroppedIntoBin, getExtraFolderTargets, o
   const [pos, setPos] = useState({ x: null, y: null })
   const [dragging, setDragging] = useState(false)
   const [visible, setVisible] = useState(true)
-  const [items, setItems] = useState([]) // items currently inside folder
+  const [items, setItems] = useState([]) 
   const ref = useRef(null)
   const dragOffset = useRef({ x: 0, y: 0 })
   const movedRef = useRef(false)
@@ -70,8 +70,8 @@ export function useFolderIcon(binRef, onDroppedIntoBin, getExtraFolderTargets, o
     const vw = window.innerWidth
     const vh = window.innerHeight
     const menuWidth = 140
-    const baseItems = 2 // Open, Delete
-    const extraItems = 2 // Rename, Copy
+    const baseItems = 2 
+    const extraItems = 2 
     const menuHeight = (baseItems + extraItems) * 26
     return { x: Math.min(x, vw - menuWidth - 4), y: Math.min(y, vh - menuHeight - 4) }
   }, [])
@@ -106,7 +106,6 @@ export function useFolderIcon(binRef, onDroppedIntoBin, getExtraFolderTargets, o
     }
   }, [context.open, closeContext])
 
-  // Folder should sit between bin (highest) and other icons (lowest)
   const style = pos.x !== null && pos.y !== null
     ? { left: pos.x, top: pos.y, position: 'fixed', zIndex: 55 }
     : { left: 18, top: 210, position: 'fixed', zIndex: 55 }

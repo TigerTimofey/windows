@@ -1,5 +1,5 @@
 import React from 'react'
-import windows7Logo from '../../../assets/win7/windows7.png'
+import windows7Logo from '../../../assets/win7/icons/windows7.png'
 
 export function Taskbar({ startOpen, onToggleStart, buttonRef, clock, minimizedModals = [], onRestoreModal }) {
   return (
@@ -13,7 +13,6 @@ export function Taskbar({ startOpen, onToggleStart, buttonRef, clock, minimizedM
         Start
       </button>
       <div className="windows-separator" />
-      {/* Render minimized modal icons */}
       {minimizedModals.map(modal => (
         <div
           key={modal.id}

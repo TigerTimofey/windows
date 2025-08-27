@@ -19,7 +19,6 @@
   flex-direction: column;
 }
 
-/* Title bar */
 .win2k-login-titlebar {
   background: linear-gradient(90deg, #0A246A 0%,  #113461d3 50%, #5d89c3d3 100%);  color: #fff;
 

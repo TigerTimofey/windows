@@ -1,18 +1,18 @@
 .context-menu {
 	position: fixed;
-	background: #c0c0c0; /* same as start menu */
-	border: 2px solid #808080; /* match start menu border */
-	box-shadow: 4px 4px 8px rgba(0,0,0,0.4); /* same depth as start menu */
+	background: #c0c0c0; 
+	border: 2px solid #808080; 
+	box-shadow: 4px 4px 8px rgba(0,0,0,0.4); 
 	padding: 4px 0;
 	margin: 0;
 	list-style: none;
 	z-index: 300;
-	min-width: 100px; /* match start menu width baseline */
+	min-width: 100px; 
 	font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
-	font-size: 14px; /* align with start menu items */
+	font-size: 14px; 
 }
 .context-menu-item {
-	padding: 6px 12px; /* mimic start menu item padding */
+	padding: 6px 12px; 
 	cursor: pointer;
 	white-space: nowrap;
 	user-select: none;
@@ -20,7 +20,7 @@
 	border-right: 2px solid transparent;
 }
 .context-menu-item:hover:not(.disabled) {
-	background: #000080; /* same hover color as start menu */
+	background: #000080; 
 	color: #fff;
 }
 .context-menu-item.disabled {

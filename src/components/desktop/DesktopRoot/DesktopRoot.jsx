@@ -36,10 +36,10 @@ import { useMinesweeperIcon } from '../../../hooks/useMinesweeperIcon.js'
 import { MinesweeperIcon } from '../../minesweeper/MinesweeperIcon.jsx'
 import { MinesweeperContextMenu } from '../../minesweeper/MinesweeperContextMenu.jsx'
 import { MinesweeperGameModal } from '../../minesweeper/MinesweeperGameModal.jsx'
-import binIcon from '../../../assets/win7/bin-emty.svg'
+import binIcon from '../../../assets/win7/icons/bin-emty.svg'
 import emailIcon from '../../../assets/win7/icons/email.ico'
 import folderIcon from '../../../assets/win7/icons/folder.ico'
-import computerIcon from '../../../assets/win7/mycomputer.svg'
+import computerIcon from '../../../assets/win7/icons/mycomputer.svg'
 import minesweeperIcon from '../../../assets/win7/icons/minesweeper.png'
 
 export function DesktopRoot({ onShutdown }) {

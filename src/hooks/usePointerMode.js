@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 
-// Detect touch / coarse pointer environment.
 export function usePointerMode() {
   const isTouchOrCoarse = useMemo(() => {
     if (typeof window === 'undefined') return false

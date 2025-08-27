@@ -23,7 +23,6 @@ export default function ModalWindow({ title, children, onClose, onMinimize, mini
       if (!dragging) return
       let x = e.clientX - dragOffset.current.x
       let y = e.clientY - dragOffset.current.y
-      // Clamp to viewport
       const winW = window.innerWidth
       const winH = window.innerHeight
       const modalW = modalRef.current.offsetWidth 
@@ -31,7 +30,6 @@ export default function ModalWindow({ title, children, onClose, onMinimize, mini
       x = Math.max(0, Math.min(x, winW - modalW))
       y = Math.max(0, Math.min(y, winH - modalH))
       setPos({ x, y })
-      // Prevent text selection while dragging
       document.body.style.userSelect = 'none'
     }
     function onMouseUp() {

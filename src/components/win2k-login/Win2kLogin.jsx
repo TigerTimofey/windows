@@ -10,7 +10,6 @@ export default function Win2kLogin({ onLogin }) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    // Play login sound
     try {
       const audio = new Audio(loginSound);
       audio.currentTime = 0;

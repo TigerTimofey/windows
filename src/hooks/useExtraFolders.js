@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-// Manages dynamic extra desktop folders: creation, drag & drop, nesting, recycle bin interaction.
-// Accepts a baseFolderRef (ref object whose current will be set to the base folder hook object) to avoid hook ordering circular deps.
 export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, extraFolderIcon, zCounterRef }) {
   const [extraFolders, setExtraFolders] = useState([])
   const nextFolderNumRef = useRef(1)
   const draggingIdRef = useRef(null)
   const dragOffsetRef = useRef({ x: 0, y: 0 })
-  const folderRefs = useRef({}) // id -> DOM element
+  const folderRefs = useRef({}) 
   const extraFoldersRef = useRef([])
   useEffect(() => { extraFoldersRef.current = extraFolders }, [extraFolders])
 
@@ -21,7 +19,6 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
     while (existingNames.has(proposed)) { n += 1; proposed = `New Folder ${n}` }
     nextFolderNumRef.current = n + 1
     const id = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
-    // Position under Minesweeper, offset by 90px for each visible folder
     const baseX = 18
     const baseY = 400
     const offset = extraFoldersRef.current.filter(f => f.visible).length * 90
@@ -39,11 +36,9 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
     const rect = e.currentTarget.getBoundingClientRect()
     draggingIdRef.current = id
     dragOffsetRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
-  // Raise z-index so dragged folder appears above others
   setExtraFolders(list => list.map(f => f.id === id ? { ...f, z: ++zCounterRef.current } : f))
   }
 
-  // Drag & drop effect (only sets state, uses refs to avoid deps)
   useEffect(() => {
     function onMove(e) {
       const id = draggingIdRef.current
@@ -62,7 +57,6 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
       const draggedEl = folderRefs.current[id]
       if (draggedEl) {
         const rect = draggedEl.getBoundingClientRect()
-        // Drop on base folder
         const baseFolder = baseFolderRef.current
         if (baseFolder?.visible && baseFolder.ref.current) {
           const baseRect = baseFolder.ref.current.getBoundingClientRect()
@@ -74,7 +68,6 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
             return
           }
         }
-        // Drop on another extra folder
         for (const [tid, tel] of Object.entries(folderRefs.current)) {
           if (tid === id) continue
           if (!tel) continue
@@ -90,7 +83,6 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
             return
           }
         }
-        // Drop on recycle bin
         if (recycleBinRef.current) {
           const binRect = recycleBinRef.current.getBoundingClientRect()
           if (intersects(rect, binRect)) {
@@ -126,7 +118,6 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
         return list.map(f => f.id === descriptor.id ? { ...f, visible: true, name: descriptor.name || f.name } : f)
       }
       const id = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
-      // Position under Minesweeper, offset by 90px for each visible folder
       const baseX = 18
       const baseY = 480
       const offset = list.filter(fl => fl.visible).length * 90

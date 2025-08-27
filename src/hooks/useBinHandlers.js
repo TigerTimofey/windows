@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 
-// Encapsulate recycle bin modal logic & item restoration/empty actions.
+
 export function useBinHandlers({ recycle, email, folder, revealOrCloneFromDescriptor, restoreComputer, trashSound, isTouchOrCoarse, bring, restoreInternet, restoreMinesweeper }) {
   const [binModalOpen, setBinModalOpen] = useState(false)
   const [confirmClearOpen, setConfirmClearOpen] = useState(false)

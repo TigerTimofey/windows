@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 import '../../recycle-bin/BinContextMenu/BinContextMenu.css'
 
-// Desktop (background) context menu with New submenu
+
 export function DesktopContextMenu({ x, y, open, onNewFolder, onRefresh, onCleanUp, onPaste, canPaste }) {
   const [showNew, setShowNew] = useState(false)
   if (!open) return null
-  const submenuX = x + 160 // offset to right of main menu
-  const submenuY = y // align directly with the "New" item row
+  const submenuX = x + 160 
+  const submenuY = y 
   return (
     <>
       <ul

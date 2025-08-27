@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { getClampedBinPosition, isIconDroppedOnTarget } from '../hooks/useDesktop.js'
-import myComputerIcon from '../assets/win7/mycomputer.svg'
+import myComputerIcon from '../assets/win7/icons/mycomputer.svg'
 
 export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, getExtraFolderTargets, onDroppedIntoExtraFolder) {
   const [pos, setPos] = useState({ x: null, y: null })
@@ -32,8 +32,8 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
     const vw = window.innerWidth
     const vh = window.innerHeight
   const menuWidth = 140
-  const baseItems = 2 // Open, Delete
-  const extraItems = 2 // Rename, Copy
+  const baseItems = 2 
+  const extraItems = 2 
   const menuHeight = (baseItems + extraItems) * 26
     return {
       x: Math.min(x, vw - menuWidth - 4),
@@ -131,7 +131,6 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
     if (!movedRef.current) setModalOpen(true)
   }, [isTouchOrCoarse, visible])
 
-  // My Computer: base zIndex 50; elevate while dragging so it floats above folder (55)
   const baseZ = 50
   const dragZ = 70
   const style = pos.x !== null && pos.y !== null
@@ -212,7 +211,6 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
     systemInfo,
     extra,
     restore: () => {
-      // Restore icon to its original default position
       setVisible(true)
       setModalOpen(false)
       setPos({ x: null, y: null })

@@ -1,6 +1,5 @@
 import React from 'react'
 import '../../recycle-bin/BinContextMenu/BinContextMenu.css'
-import './MyComputerContextMenu.css'
 
 export function MyComputerContextMenu({ x, y, open, onOpen, onDelete, onRename, onCopy }) {
   if (!open) return null

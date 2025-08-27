@@ -1,12 +1,10 @@
 import React from 'react'
 import ModalWindow from '../../modal/ModalWindow.jsx'
 
-// Renders one extra folder modal and its items (including nested folders, system icons, and base folder)
 export function ExtraFolderModal({ f, zIndex, bring, bringExtraFolder, setExtraFolders, email, setCompModalOpen, restoreComputer, folder, addItemToBin, extraFolderIcon, onClose, minesweeper, internet }) {
   if (!f.modalOpen) return null
 
   function openItem(item) {
-    // Open logic for all supported types
     if (item.id.startsWith('new-folder-')) {
       setExtraFolders(list => list.map(fl => fl.id === item.id ? { ...fl, modalOpen: true } : fl))
       bringExtraFolder && bringExtraFolder(item.id)
@@ -17,7 +15,6 @@ export function ExtraFolderModal({ f, zIndex, bring, bringExtraFolder, setExtraF
     if (item.id === 'ghost-folder') { folder.setModalOpen(true); bring('folder'); return }
     if (item.id === 'internet') { internet.setModalOpen(true); bring('internet'); return }
     if (item.id === 'minesweeper') { minesweeper.setModalOpen(true); bring('minesweeper'); return }
-    // Support cloned instances
     if (item.id.startsWith('clone-email')) { email.setModalOpen(true); bring('email'); return }
     if (item.id.startsWith('clone-mycomputer')) { setCompModalOpen(true); bring('comp'); return }
     if (item.id.startsWith('clone-ghost')) { folder.setModalOpen(true); bring('folder'); return }
@@ -26,7 +23,6 @@ export function ExtraFolderModal({ f, zIndex, bring, bringExtraFolder, setExtraF
   }
 
   function deleteItem(item) {
-    // Delete logic for all supported types
     addItemToBin({ id: item.id, name: item.name, icon: item.icon })
     setExtraFolders(list => list.map(fl => fl.id === f.id ? { ...fl, items: fl.items.filter(it => it.id !== item.id) } : fl))
     if (item.id.startsWith('new-folder-')) {
@@ -42,7 +38,6 @@ export function ExtraFolderModal({ f, zIndex, bring, bringExtraFolder, setExtraF
   }
 
   function toDesktop(item) {
-    // Move logic for all supported types
     if (item.id === 'email') email.restore()
     else if (item.id === 'mycomputer') restoreComputer()
     else if (item.id === 'ghost-folder') folder.restore()

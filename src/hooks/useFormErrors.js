@@ -12,7 +12,6 @@ import { useState } from 'react'
 export function useFormErrors(fields) {
   const [errors, setErrors] = useState({})
 
-  // Validate fields with a map of validators
   function validate(validators) {
     const newErrors = {}
     for (const key in validators) {

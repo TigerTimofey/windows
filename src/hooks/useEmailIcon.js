@@ -74,8 +74,8 @@ export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoF
     const vw = window.innerWidth
     const vh = window.innerHeight
     const menuWidth = 140
-    const baseItems = 2 // Open, Delete
-    const extraItems = 2 // Rename, Copy
+    const baseItems = 2 
+    const extraItems = 2 
     const menuHeight = (baseItems + extraItems) * 26
     return { x: Math.min(x, vw - menuWidth - 4), y: Math.min(y, vh - menuHeight - 4) }
   }, [])

@@ -1,4 +1,4 @@
-// Checks if the center of dragged icon is inside the target icon (e.g., bin)
+
 export function isIconDroppedOnTarget(dragRef, targetRef) {
   if (!dragRef.current || !targetRef.current) return false;
   const dragRect = dragRef.current.getBoundingClientRect();
@@ -14,7 +14,6 @@ export function isIconDroppedOnTarget(dragRef, targetRef) {
     dragCenter.y < targetRect.bottom
   );
 }
-// Utility functions for desktop drag logic
 
 export function clamp(val, min, max) {
   return Math.max(min, Math.min(val, max));

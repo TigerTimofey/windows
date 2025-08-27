@@ -1,4 +1,4 @@
-/* Windows 2000 Modal Window Styles */
+
 .windows2000-modal {
   position: fixed;
   left: 50%;
@@ -138,7 +138,6 @@ body, .windows-bg {
   box-shadow: 0 0 0 1px #2C628B;
   background: linear-gradient(to bottom, #E5F4FC 0%, #C4E5F6 50%, #98D1EF 51%, #68B3DB 100%);
 }
-/* Background */
 body, .windows-bg {
   background: linear-gradient(135deg, #008080 0%, #3a6ea5 100%);
   min-height: 100vh;
@@ -150,7 +149,6 @@ body, .windows-bg {
   font-family: Tahoma, Verdana, sans-serif;
 }
 
-/* Taskbar */
 .windows-taskbar {
   position: fixed;
   left: 0;
@@ -166,7 +164,6 @@ body, .windows-bg {
   z-index: 100;
 }
 
-/* Start Button */
 .windows-start {
   display: flex;
   align-items: center;
@@ -188,7 +185,6 @@ body, .windows-bg {
   background: #dcdcdc;
 }
 
-/* Windows Logo */
 .windows-logo {
   display: inline-block;
   width: 20px;
@@ -198,7 +194,6 @@ body, .windows-bg {
   background-size: contain;
 }
 
-/* Start Menu */
 .start-menu {
   position: fixed;
   bottom: 40px;
@@ -236,16 +231,13 @@ body, .windows-bg {
   padding-top: 6px;
 }
 
-/* Modal content & lists */
 .computer-info { font-size: 14px; line-height: 1.45; width: 100%; }
 .computer-info-list { list-style: none; padding: 0; margin: 0; }
 
-/* Confirm empty dialog */
 .modal-confirm { text-align: center; width: 100%; }
 .modal-confirm-message { margin-bottom: 30px; font-size: 15px; }
 .modal-btn-row { display: flex; gap: 12px; justify-content: center; }
 
-/* Text buttons inside confirm dialog */
 .modal-btn-text {
 
   padding: 3px 20px;
