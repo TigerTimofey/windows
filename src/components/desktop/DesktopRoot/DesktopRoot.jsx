@@ -363,6 +363,15 @@ export function DesktopRoot({ onShutdown }) {
           (navigator && navigator.maxTouchPoints > 0) ||
           (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
         )
+        // Double click handler for minesweeper clones
+        const handleCloneDoubleClick = () => {
+          if (clone.type === 'minesweeper') {
+            minesweeper.setModalOpen(true)
+            cloned.openClone(clone)
+          } else {
+            cloned.openClone(clone)
+          }
+        }
         return (
           <React.Fragment key={clone.id}>
             <IconComponent
@@ -375,7 +384,11 @@ export function DesktopRoot({ onShutdown }) {
               onRenameCommit={newName => cloned.rename(clone.id, newName)}
               onRenameCancel={() => cloned.startRename(clone.id)}
               onClick={clone.type === 'internet' && isTouchOrCoarse ? openGitHub : undefined}
-              onDoubleClick={clone.type === 'internet' && !isTouchOrCoarse ? openGitHub : undefined}
+              onDoubleClick={
+                clone.type === 'internet'
+                  ? (!isTouchOrCoarse ? openGitHub : undefined)
+                  : handleCloneDoubleClick
+              }
             />
             <ContextMenuComponent
               x={clone.context.x}
