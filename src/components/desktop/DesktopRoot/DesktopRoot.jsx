@@ -360,10 +360,8 @@ export function DesktopRoot({ onShutdown }) {
               renaming={clone.renaming}
               onRenameCommit={newName => cloned.rename(clone.id, newName)}
               onRenameCancel={() => cloned.startRename(clone.id)}
-              // For internet clones, use openGitHub for open
               onClick={clone.type === 'internet' && isTouchOrCoarse ? openGitHub : undefined}
               onDoubleClick={clone.type === 'internet' && !isTouchOrCoarse ? openGitHub : undefined}
-
             />
             <ContextMenuComponent
               x={clone.context.x}
@@ -381,10 +379,21 @@ export function DesktopRoot({ onShutdown }) {
                 } else {
                   cloned.openClone(clone)
                 }
+                // Close context menu after action
+                cloned.closeAllContexts(clone.id)
               }}
-              onDelete={() => cloned.deleteClone(clone.id)}
-              onRename={() => cloned.startRename(clone.id)}
-              onCopy={() => cloned.copyDescriptor(clone.id)}
+              onDelete={() => {
+                cloned.deleteClone(clone.id)
+                cloned.closeAllContexts(clone.id)
+              }}
+              onRename={() => {
+                cloned.startRename(clone.id)
+                cloned.closeAllContexts(clone.id)
+              }}
+              onCopy={() => {
+                cloned.copyDescriptor(clone.id)
+                cloned.closeAllContexts(clone.id)
+              }}
             />
           </React.Fragment>
         )
