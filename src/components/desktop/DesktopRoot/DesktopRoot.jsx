@@ -185,8 +185,8 @@ export function DesktopRoot({ onShutdown }) {
         modalOpen: false,
         renaming: false,
         context: { open: false, x:0,y:0 },
-        pos: { x: 100 + list.length * 40, y: 100 + list.length * 40 },
-        z: 55 // less than minesweeper modal
+        pos: { x: 18, y: 300 + list.filter(f => f.visible).length * 90 },
+        z: 55
       }
     ])
   }

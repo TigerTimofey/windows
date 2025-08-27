@@ -21,10 +21,15 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
     while (existingNames.has(proposed)) { n += 1; proposed = `New Folder ${n}` }
     nextFolderNumRef.current = n + 1
     const id = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
-    const baseY = 300
+    // Position under Minesweeper, offset by 90px for each visible folder
+    const baseX = 18
+    const baseY = 400
     const offset = extraFoldersRef.current.filter(f => f.visible).length * 90
+    const posX = baseX
+    const posY = baseY + offset
+    console.log('New Folder position:', posX, posY)
     const z = ++zCounterRef.current
-    setExtraFolders(list => [...list, { id, name: proposed, renaming: true, visible: true, pos: { x: 18, y: baseY + offset }, context: { open: false, x: 0, y: 0 }, modalOpen: false, items: [], z }])
+    setExtraFolders(list => [...list, { id, name: proposed, renaming: true, visible: true, pos: { x: posX, y: posY }, context: { open: false, x: 0, y: 0 }, modalOpen: false, items: [], z }])
   }
 
   const registerRef = useCallback((id, el) => { if (el) folderRefs.current[id] = el }, [])
@@ -121,9 +126,15 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
         return list.map(f => f.id === descriptor.id ? { ...f, visible: true, name: descriptor.name || f.name } : f)
       }
       const id = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
-  const z = ++zCounterRef.current
-  const items = descriptor.items ? descriptor.items.map(it => ({ ...it })) : []
-  return [...list, { id, name: descriptor.name || 'New Folder', renaming: false, visible: true, pos: { x: 18, y: 300 + list.filter(fl => fl.visible).length * 90 }, context: { open: false, x: 0, y: 0 }, modalOpen: false, items, z }]
+      // Position under Minesweeper, offset by 90px for each visible folder
+      const baseX = 18
+      const baseY = 480
+      const offset = list.filter(fl => fl.visible).length * 90
+      const posX = baseX
+      const posY = baseY + offset
+      const z = ++zCounterRef.current
+      const items = descriptor.items ? descriptor.items.map(it => ({ ...it })) : []
+      return [...list, { id, name: descriptor.name || 'New Folder', renaming: false, visible: true, pos: { x: posX, y: posY }, context: { open: false, x: 0, y: 0 }, modalOpen: false, items, z }]
     })
   }
 
