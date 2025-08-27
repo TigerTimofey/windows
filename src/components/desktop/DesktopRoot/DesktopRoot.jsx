@@ -201,12 +201,17 @@ export function DesktopRoot({ onShutdown }) {
     folder.restore();
     email.restore();
     restoreComputer();
-    internet.restore(); // <-- move GitHub icon to its default position
-    minesweeper.restore(); // <-- move Minesweeper icon to its default position
-    const startX=18,startY=300,gapY=90;
-    setExtraFolders(list=>{
-      let idx=0;
-      return list.map(f=> !f.visible?f:{ ...f, pos:{ x:startX, y:startY+idx++*gapY } })
+    internet.restore();
+    minesweeper.restore();
+    // Move all visible extra folders (new and copied) to their default positions
+    const startX = 18, startY = 480, gapY = 100;
+    setExtraFolders(list => {
+      let idx = 0;
+      return list.map(f =>
+        !f.visible
+          ? f
+          : { ...f, pos: { x: startX, y: startY + idx++ * gapY } }
+      )
     })
   }
   function handlePaste(){ if(!copiedItem) return; closeDesktopMenu(); paste() }
