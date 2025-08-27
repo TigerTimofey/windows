@@ -321,8 +321,45 @@ export function DesktopRoot({ onShutdown }) {
         </div>
       ))}
       {/* Render cloned/pasted icons with zIndex 56 (less than modal zIndex 130) */}
-      {cloned.clones.map(c => (
-        <div key={c.id} className="windows-icon" style={{ left:c.pos.x, top:c.pos.y, position:'fixed', zIndex:56 }} ref={el=>{ if(el) cloned.cloneRefs.current[c.id]=el }} onMouseDown={(e)=>cloned.handleMouseDown(c.id,e)} onDoubleClick={()=>{
+      {cloned.clones.map(c => {
+        // Use the same openGitHub logic as InternetIcon
+        if (c.type === 'internet') {
+          const openGitHub = (e) => {
+            if (e) e.preventDefault()
+            window.open('https://github.com/TigerTimofey/windows', '_blank', 'noopener,noreferrer')
+          }
+          const isTouchOrCoarse = typeof window !== 'undefined' && (
+            'ontouchstart' in window ||
+            (navigator && navigator.maxTouchPoints > 0) ||
+            (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+          )
+          return (
+            <div key={c.id} className="windows-icon" style={{ left:c.pos.x, top:c.pos.y, position:'fixed', zIndex:56 }}
+              ref={el => { if(el) cloned.cloneRefs.current[c.id]=el }}
+              onMouseDown={e => cloned.handleMouseDown(c.id, e)}
+              onContextMenu={e => cloned.contextMenu(c.id, e)}
+              onClick={isTouchOrCoarse ? openGitHub : undefined}
+              onDoubleClick={!isTouchOrCoarse ? openGitHub : undefined}
+            >
+              <img src={c.icon} alt={c.name} className="icon-img" draggable={false} />
+              {c.renaming ? (
+                <input className="icon-label" style={{ width:'100%', boxSizing:'border-box', color:'#333' }}
+                  defaultValue={c.name}
+                  autoFocus
+                  onBlur={e => cloned.rename(c.id, e.target.value || c.name)}
+                  onKeyDown={e => {
+                    if(e.key==='Enter') cloned.rename(c.id, e.target.value||c.name)
+                    if(e.key==='Escape') cloned.rename(c.id,c.name)
+                  }}
+                />
+              ) : (
+                <div className="icon-label">{c.name}</div>
+              )}
+            </div>
+          )
+        }
+        return (
+          <div key={c.id} className="windows-icon" style={{ left:c.pos.x, top:c.pos.y, position:'fixed', zIndex:56 }} ref={el=>{ if(el) cloned.cloneRefs.current[c.id]=el }} onMouseDown={(e)=>cloned.handleMouseDown(c.id,e)} onDoubleClick={()=>{
           cloned.openClone(c)
           if (c.type === 'minesweeper') {
             minesweeper.setModalOpen(true)
@@ -331,15 +368,59 @@ export function DesktopRoot({ onShutdown }) {
           <img src={c.icon} alt={c.name} className="icon-img" draggable={false} />
           {c.renaming ? <input className="icon-label" style={{ width:'100%', boxSizing:'border-box', color:'#333' }} defaultValue={c.name} autoFocus onBlur={(e)=>cloned.rename(c.id, e.target.value || c.name)} onKeyDown={(e)=>{ if(e.key==='Enter') cloned.rename(c.id, e.target.value||c.name); if(e.key==='Escape') cloned.rename(c.id,c.name) }} /> : <div className="icon-label">{c.name}</div>}
         </div>
-      ))}
+        )
+      })}
       <EmailContextMenu x={email.context?.x} y={email.context?.y} open={email.context?.open} onOpen={()=>{ email.setModalOpen(true); email.closeContext(); bring('email') }} onDelete={()=>{ email.deleteSelf(); email.closeContext() }} onRename={()=>{ email.startRename() }} onCopy={()=>{ copyHandlers.copyEmail(); email.closeContext() }} />
       <FolderContextMenu x={folder.context?.x} y={folder.context?.y} open={folder.context?.open} onOpen={()=>{ folder.setModalOpen(true); folder.closeContext(); bring('folder') }} onDelete={()=>{ folder.deleteSelf(); folder.closeContext() }} onRename={()=>{ folder.startRename() }} onCopy={()=>{ copyHandlers.copyFolder(); folder.closeContext() }} />
       {extraFolders.map(f=> f.context.open && (
         <ul key={f.id} className="context-menu" style={{ left:f.context.x, top:f.context.y }} onClick={e=>e.stopPropagation()}>
-          <li className="context-menu-item" onClick={()=>setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,modalOpen:true,context:{...fl.context,open:false}}:fl))}>Open</li>
-          <li className="context-menu-item" onClick={()=>{ setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,visible:false,modalOpen:false,context:{...fl.context,open:false}}:fl)); const tgt = extraFolders.find(fl=>fl.id===f.id); if(tgt) addItemToBin({ id:tgt.id, name:tgt.name, icon:extraFolderIcon }) }}>Delete</li>
-          <li className="context-menu-item" onClick={()=>setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,renaming:true,context:{...fl.context,open:false}}:fl))}>Rename</li>
-          <li className="context-menu-item" onClick={()=>{ const tgt = extraFolders.find(fl=>fl.id===f.id); if(tgt) copyHandlers.copyExtraFolder(tgt); setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,context:{...fl.context,open:false}}:fl)) }}>Copy</li>
+          <li className="context-menu-item" onClick={() =>
+    setExtraFolders(list => list.map(fl =>
+      fl.id === f.id
+        ? { ...fl, modalOpen: true, context: { ...fl.context, open: false } }
+        : fl
+    ))
+  }>Open</li>
+  <li className="context-menu-item" onClick={() => {
+    setExtraFolders(list => list.map(fl =>
+      fl.id === f.id
+        ? { ...fl, visible: false, modalOpen: false, context: { ...fl.context, open: false } }
+        : fl
+    ))
+    const tgt = extraFolders.find(fl => fl.id === f.id)
+    if (tgt) addItemToBin({ id: tgt.id, name: tgt.name, icon: extraFolderIcon })
+  }}>Delete</li>
+  <li className="context-menu-item" onClick={() =>
+    setExtraFolders(list => list.map(fl =>
+      fl.id === f.id
+        ? { ...fl, renaming: true, context: { ...fl.context, open: false } }
+        : fl
+    ))
+  }>Rename</li>
+  <li className="context-menu-item" onClick={() => {
+    const tgt = extraFolders.find(fl => fl.id === f.id)
+    if (tgt) {
+      if (['email', 'mycomputer', 'ghost-folder', 'internet', 'minesweeper'].includes(tgt.type)) {
+        cloned.addClone({
+          type: tgt.type,
+          name: tgt.name,
+          icon: tgt.icon,
+          baseNames: extraFolders.map(fl => fl.name)
+        })
+        // If it's a GitHub/internet icon, open the link after copy
+        if (tgt.type === 'internet') {
+          window.open('https://github.com/TigerTimofey/windows', '_blank', 'noopener,noreferrer')
+        }
+      } else {
+        copyHandlers.copyExtraFolder(tgt)
+      }
+    }
+    setExtraFolders(list => list.map(fl =>
+      fl.id === f.id
+        ? { ...fl, context: { ...fl.context, open: false } }
+        : fl
+    ))
+  }}>Copy</li>
         </ul>
       ))}
       <BinContextMenu x={recycle.context.x} y={recycle.context.y} open={recycle.context.open} hasItems={recycle.items.length>0} onOpen={()=>{ recycle.closeContext(); handleBinDoubleClick() }} onEmpty={()=>{ recycle.closeContext(); handleEmptyRequest() }} onRestoreAll={()=>{ recycle.closeContext(); handleRestoreAll() }} onRename={()=>{ recycle.startRename && recycle.startRename() }} onCopy={()=>{ copyHandlers.copyBin(); recycle.closeContext() }} />
