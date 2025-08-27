@@ -301,7 +301,21 @@ export function DesktopRoot({ onShutdown }) {
   }
 
   return (
-    <div className="windows-bg" onContextMenu={handleDesktopContextMenu}>
+    <div
+      className="windows-bg"
+      onContextMenu={handleDesktopContextMenu}
+      onClick={() => {
+        // Close all context menus for all icons (including clones, folders, etc.)
+        cloned.closeAllContexts()
+        folder.closeContext && folder.closeContext()
+        email.closeContext && email.closeContext()
+        recycle.closeContext && recycle.closeContext()
+        internet.closeContext && internet.closeContext()
+        minesweeper.closeContext && minesweeper.closeContext()
+        setExtraFolders(list => list.map(f => f.context && f.context.open ? { ...f, context: { ...f.context, open: false } } : f))
+        closeDesktopMenu()
+      }}
+    >
       <Taskbar
         startOpen={menuOpen}
         onToggleStart={() => setMenuOpen(!menuOpen)}
@@ -704,7 +718,7 @@ export function DesktopRoot({ onShutdown }) {
       <MinesweeperGameModal
         open={minesweeper.modalOpen && !minimizedModals.some(m => m.id === 'minesweeper')}
         onClose={() => minesweeper.setModalOpen(false)}
-        zIndex={130}
+        zIndex={200}
         onActivate={() => bring('minesweeper')}
         onMinimize={() => { minesweeper.setModalOpen(false); minimizeModal('minesweeper', minesweeper.name, minesweeperIcon) }}
       />
