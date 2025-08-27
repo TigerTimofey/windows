@@ -131,5 +131,28 @@ export function useClonedIcons({ zCounterRef, recycleBinRef, addItemToBin, openH
     return { id: clone.id, name: clone.name, icon: clone.icon, type: clone.type }
   }
 
-  return { clones, addClone, handleMouseDown, openClone, contextMenu, closeAllContexts, rename, startRename, deleteClone, copyDescriptor, cloneRefs }
+  // Add a restoreClone method to restore a clone to the desktop
+  function restoreClone(cloneDescriptor) {
+    // Place the clone back on the desktop at a default or previous position
+    setClones(prev => {
+      // Avoid duplicate clones
+      if (prev.some(c => c.id === cloneDescriptor.id)) return prev
+      return [
+        ...prev,
+        {
+          ...cloneDescriptor,
+          pos: { x: 100, y: 100 }, // or use previous pos if available
+          z: 56,
+          modalOpen: false,
+          renaming: false,
+          context: { open: false, x: 0, y: 0 }
+        }
+      ]
+    })
+  }
+
+  // Export restoreClone so DesktopRoot can use it
+  return {
+    clones, addClone, handleMouseDown, openClone, contextMenu, closeAllContexts, rename, startRename, deleteClone, copyDescriptor, cloneRefs, restoreClone
+  }
 }

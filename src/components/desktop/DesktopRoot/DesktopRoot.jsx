@@ -291,11 +291,36 @@ export function DesktopRoot({ onShutdown }) {
       return
     }
     // Support cloned instances
-    if (id.startsWith('clone-email')) { folder.removeItem(id); email.restore(); return }
-    if (id.startsWith('clone-mycomputer')) { folder.removeItem(id); restoreComputer(); return }
-    if (id.startsWith('clone-ghost')) { folder.removeItem(id); folder.restore(); return }
-    if (id.startsWith('clone-internet')) { folder.removeItem(id); internet.restore(); return }
-    if (id.startsWith('clone-minesweeper')) { folder.removeItem(id); minesweeper.restore(); return }
+    if (id.startsWith('clone-email')) {
+      folder.removeItem(id)
+      const item = folder.items.find(it => it.id === id)
+      if (item) cloned.restoreClone(item)
+      return
+    }
+    if (id.startsWith('clone-mycomputer')) {
+      folder.removeItem(id)
+      const item = folder.items.find(it => it.id === id)
+      if (item) cloned.restoreClone(item)
+      return
+    }
+    if (id.startsWith('clone-ghost')) {
+      folder.removeItem(id)
+      const item = folder.items.find(it => it.id === id)
+      if (item) cloned.restoreClone(item)
+      return
+    }
+    if (id.startsWith('clone-internet')) {
+      folder.removeItem(id)
+      const item = folder.items.find(it => it.id === id)
+      if (item) cloned.restoreClone(item)
+      return
+    }
+    if (id.startsWith('clone-minesweeper')) {
+      folder.removeItem(id)
+      const item = folder.items.find(it => it.id === id)
+      if (item) cloned.restoreClone(item)
+      return
+    }
     // Fallback to base logic
     moveItemFromBaseFolderToDesktop(id,{ folder, email, restoreComputer, setExtraFolders })
   }
