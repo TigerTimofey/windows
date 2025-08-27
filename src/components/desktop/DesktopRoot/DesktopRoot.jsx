@@ -283,6 +283,14 @@ export function DesktopRoot({ onShutdown }) {
   }
 
   function handleFolderItemToDesktop(id){
+    // Remove item from all extra folder modals if present
+    setExtraFolders(list =>
+      list.map(fl =>
+        fl.items && fl.items.some(it => it.id === id)
+          ? { ...fl, items: fl.items.filter(it => it.id !== id) }
+          : fl
+      )
+    )
     // Move logic for all supported types
     if (id === 'internet') { folder.removeItem('internet'); internet.restore(); return }
     if (id === 'minesweeper') { folder.removeItem('minesweeper'); minesweeper.restore(); return }
@@ -291,11 +299,21 @@ export function DesktopRoot({ onShutdown }) {
     if (id === 'ghost-folder') { folder.removeItem('ghost-folder'); folder.restore(); return }
     if (id.startsWith('new-folder-')) {
       folder.removeItem(id)
-      setExtraFolders(list => list.map(fl =>
-        fl.id === id
-          ? { ...fl, visible: true, pos: { x: 18, y: 300 + list.filter(x => x.visible && x.id !== id).length * 90 } }
-          : fl
-      ))
+      // Restore to desktop at clean-up position
+      setExtraFolders(list => {
+        // Calculate position as in handleCleanUp
+        const startX = 18, startY = 480, gapY = 100
+        let idx = 0
+        return list.map(fl =>
+          fl.visible && fl.id !== id
+            ? { ...fl, pos: { x: startX, y: startY + idx++ * gapY } }
+            : fl
+        ).map(fl =>
+          fl.id === id
+            ? { ...fl, visible: true, pos: { x: startX, y: startY + idx * gapY } }
+            : fl
+        )
+      })
       return
     }
     // Support cloned instances
