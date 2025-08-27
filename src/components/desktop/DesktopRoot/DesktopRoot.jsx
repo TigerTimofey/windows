@@ -321,53 +321,72 @@ export function DesktopRoot({ onShutdown }) {
         </div>
       ))}
       {/* Render cloned/pasted icons with zIndex 56 (less than modal zIndex 130) */}
-      {cloned.clones.map(c => {
-        // Use the same openGitHub logic as InternetIcon
-        if (c.type === 'internet') {
-          const openGitHub = (e) => {
-            if (e) e.preventDefault()
-            window.open('https://github.com/TigerTimofey/windows', '_blank', 'noopener,noreferrer')
-          }
-          const isTouchOrCoarse = typeof window !== 'undefined' && (
-            'ontouchstart' in window ||
-            (navigator && navigator.maxTouchPoints > 0) ||
-            (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
-          )
-          return (
-            <div key={c.id} className="windows-icon" style={{ left:c.pos.x, top:c.pos.y, position:'fixed', zIndex:56 }}
-              ref={el => { if(el) cloned.cloneRefs.current[c.id]=el }}
-              onMouseDown={e => cloned.handleMouseDown(c.id, e)}
-              onContextMenu={e => cloned.contextMenu(c.id, e)}
-              onClick={isTouchOrCoarse ? openGitHub : undefined}
-              onDoubleClick={!isTouchOrCoarse ? openGitHub : undefined}
-            >
-              <img src={c.icon} alt={c.name} className="icon-img" draggable={false} />
-              {c.renaming ? (
-                <input className="icon-label" style={{ width:'100%', boxSizing:'border-box', color:'#333' }}
-                  defaultValue={c.name}
-                  autoFocus
-                  onBlur={e => cloned.rename(c.id, e.target.value || c.name)}
-                  onKeyDown={e => {
-                    if(e.key==='Enter') cloned.rename(c.id, e.target.value||c.name)
-                    if(e.key==='Escape') cloned.rename(c.id,c.name)
-                  }}
-                />
-              ) : (
-                <div className="icon-label">{c.name}</div>
-              )}
-            </div>
-          )
+      {cloned.clones.map(clone => {
+        let IconComponent, ContextMenuComponent
+        if (clone.type === 'email') {
+          IconComponent = EmailIcon
+          ContextMenuComponent = EmailContextMenu
+        } else if (clone.type === 'folder') {
+          IconComponent = FolderIcon
+          ContextMenuComponent = FolderContextMenu
+        } else if (clone.type === 'internet') {
+          IconComponent = InternetIcon
+          ContextMenuComponent = InternetContextMenu
+        } else if (clone.type === 'minesweeper') {
+          IconComponent = MinesweeperIcon
+          ContextMenuComponent = MinesweeperContextMenu
+        } else if (clone.type === 'mycomputer') {
+          IconComponent = MyComputerIcon
+          ContextMenuComponent = MyComputerContextMenu
         }
+        // Special open logic for internet (GitHub) clones
+        const openGitHub = (e) => {
+          if (e) e.preventDefault()
+          window.open('https://github.com/TigerTimofey/windows', '_blank', 'noopener,noreferrer')
+        }
+        const isTouchOrCoarse = typeof window !== 'undefined' && (
+          'ontouchstart' in window ||
+          (navigator && navigator.maxTouchPoints > 0) ||
+          (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+        )
         return (
-          <div key={c.id} className="windows-icon" style={{ left:c.pos.x, top:c.pos.y, position:'fixed', zIndex:56 }} ref={el=>{ if(el) cloned.cloneRefs.current[c.id]=el }} onMouseDown={(e)=>cloned.handleMouseDown(c.id,e)} onDoubleClick={()=>{
-          cloned.openClone(c)
-          if (c.type === 'minesweeper') {
-            minesweeper.setModalOpen(true)
-          }
-        }} onContextMenu={(e)=>cloned.contextMenu(c.id,e)}>
-          <img src={c.icon} alt={c.name} className="icon-img" draggable={false} />
-          {c.renaming ? <input className="icon-label" style={{ width:'100%', boxSizing:'border-box', color:'#333' }} defaultValue={c.name} autoFocus onBlur={(e)=>cloned.rename(c.id, e.target.value || c.name)} onKeyDown={(e)=>{ if(e.key==='Enter') cloned.rename(c.id, e.target.value||c.name); if(e.key==='Escape') cloned.rename(c.id,c.name) }} /> : <div className="icon-label">{c.name}</div>}
-        </div>
+          <React.Fragment key={clone.id}>
+            <IconComponent
+              iconRef={el => cloned.cloneRefs.current[clone.id] = el}
+              style={{ position: 'fixed', left: clone.pos.x, top: clone.pos.y, zIndex: clone.z }}
+              onMouseDown={e => cloned.handleMouseDown(clone.id, e)}
+              onContextMenu={e => cloned.contextMenu(clone.id, e)}
+              name={clone.name}
+              renaming={clone.renaming}
+              onRenameCommit={newName => cloned.rename(clone.id, newName)}
+              onRenameCancel={() => cloned.startRename(clone.id)}
+              // For internet clones, use openGitHub for open
+              onClick={clone.type === 'internet' && isTouchOrCoarse ? openGitHub : undefined}
+              onDoubleClick={clone.type === 'internet' && !isTouchOrCoarse ? openGitHub : undefined}
+
+            />
+            <ContextMenuComponent
+              x={clone.context.x}
+              y={clone.context.y}
+              open={clone.context.open}
+              onOpen={() => {
+                if (clone.type === 'internet') {
+                  openGitHub()
+                } else if (clone.type === 'minesweeper') {
+                  minesweeper.setModalOpen(true)
+                  cloned.openClone(clone)
+                } else if (clone.type === 'mycomputer') {
+                  setCompModalOpen(true)
+                  cloned.openClone(clone)
+                } else {
+                  cloned.openClone(clone)
+                }
+              }}
+              onDelete={() => cloned.deleteClone(clone.id)}
+              onRename={() => cloned.startRename(clone.id)}
+              onCopy={() => cloned.copyDescriptor(clone.id)}
+            />
+          </React.Fragment>
         )
       })}
       <EmailContextMenu x={email.context?.x} y={email.context?.y} open={email.context?.open} onOpen={()=>{ email.setModalOpen(true); email.closeContext(); bring('email') }} onDelete={()=>{ email.deleteSelf(); email.closeContext() }} onRename={()=>{ email.startRename() }} onCopy={()=>{ copyHandlers.copyEmail(); email.closeContext() }} />
