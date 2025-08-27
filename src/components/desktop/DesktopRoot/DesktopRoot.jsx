@@ -380,7 +380,25 @@ export function DesktopRoot({ onShutdown }) {
       {folder.visible && <FolderIcon iconRef={folder.ref} style={folder.style} onMouseDown={(e)=>{ bring('folder'); folder.handleMouseDown(e) }} onContextMenu={folder.handleContextMenu} onClick={folder.handleClick} onDoubleClick={folder.handleDoubleClick} name={folder.name} renaming={folder.renaming} onRenameCommit={folder.commitRename} onRenameCancel={folder.cancelRename} />}
       {/* Render extra folders with zIndex 55 */}
       {extraFolders.filter(f=>f.visible).map(f=> (
-        <div key={f.id} className="windows-icon" style={{ left:f.pos.x, top:f.pos.y, position:'fixed', zIndex:55 }} ref={el=>registerExtraFolderRef(f.id, el)} onMouseDown={(e)=>handleExtraFolderMouseDown(f.id,e)} onDoubleClick={()=>setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,modalOpen:true}:fl))} onContextMenu={(e)=>openExtraFolderContext(f.id,e)} onClick={()=>{ if(!isTouchOrCoarse) return; setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,modalOpen:true}:fl)); bringExtraFolder(f.id) }}>
+        <div
+          key={f.id}
+          className="windows-icon"
+          style={{ left:f.pos.x, top:f.pos.y, position:'fixed', zIndex:55 }}
+          ref={el=>registerExtraFolderRef(f.id, el)}
+          onMouseDown={(e)=>handleExtraFolderMouseDown(f.id,e)}
+          onDoubleClick={()=>setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,modalOpen:true}:fl))}
+          onContextMenu={(e)=>openExtraFolderContext(f.id,e)}
+          onClick={()=>{
+            // Always open modal on mobile/touch for new-folder-* and extra-folder types
+            if (!isTouchOrCoarse) return
+            setExtraFolders(list => list.map(fl =>
+              fl.id === f.id
+                ? { ...fl, modalOpen: true }
+                : fl
+            ))
+            bringExtraFolder(f.id)
+          }}
+        >
           <img src={extraFolderIcon} alt={f.name} className="icon-img" draggable={false} />
           {f.renaming ? <input className="icon-label" style={{ width:'100%', boxSizing:'border-box', color:'#333' }} defaultValue={f.name} autoFocus onBlur={(e)=>setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,name:e.target.value?e.target.value.slice(0,32):fl.name, renaming:false}:fl))} onKeyDown={(e)=>{ if(e.key==='Enter') setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,name:e.target.value?e.target.value.slice(0,32):fl.name, renaming:false}:fl)); if(e.key==='Escape') setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,renaming:false}:fl)) }} /> : <div className="icon-label">{f.name}</div>}
         </div>
