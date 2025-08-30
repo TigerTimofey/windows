@@ -126,13 +126,16 @@ export function useInternetIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIn
     context,
     closeContext,
     deleteSelf: () => { if (!visible) return; setVisible(false); closeContext(); onDroppedIntoBin && onDroppedIntoBin({ id: 'internet', name, icon: internetIcon }) },
-    restore: () => { setVisible(true); setPos({ x: 18, y: 300 }); closeContext() },
+    restore: () => {
+      setVisible(true)
+      setPos({ x: 18, y: 300 })
+      closeContext()
+    },
     setPosition: (x, y) => setPos({ x, y }),
     name,
     renaming,
     startRename: () => { setRenaming(true); closeContext() },
     commitRename: (val) => { if (val) setName(val.slice(0,32)); setRenaming(false) },
     cancelRename: () => setRenaming(false),
-    copyDescriptor: () => ({ id: 'GitHub', name, icon: internetIcon })
   }
 }

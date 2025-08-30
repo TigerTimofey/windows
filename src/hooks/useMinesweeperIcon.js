@@ -122,13 +122,6 @@ export function useMinesweeperIcon(binRef, onDroppedIntoBin, folderRef, onDroppe
     closeContext()
   }, [closeContext])
 
-  const copyDescriptor = useCallback(() => ({
-    id: 'minesweeper',
-    name,
-    icon: minesweeperIcon,
-    type: 'minesweeper'
-  }), [name])
-
   return {
     ref,
     visible,
@@ -147,9 +140,7 @@ export function useMinesweeperIcon(binRef, onDroppedIntoBin, folderRef, onDroppe
     startRename: () => { setRenaming(true); closeContext() },
     commitRename: (val) => { if (val) setName(val.slice(0,32)); setRenaming(false) },
     cancelRename: () => setRenaming(false),
-    copyDescriptor,
     modalOpen,
     setModalOpen
   }
 }
-

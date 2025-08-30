@@ -1,7 +1,7 @@
 import React from 'react'
 import '../recycle-bin/BinContextMenu/BinContextMenu.css'
 
-export function BlogContextMenu({ x, y, open, onOpen, onDelete, onRename, onCopy }) {
+export function BlogContextMenu({ x, y, open, onOpen, onDelete, onRename }) {
   if (!open) return null
   return (
     <ul
@@ -12,7 +12,6 @@ export function BlogContextMenu({ x, y, open, onOpen, onDelete, onRename, onCopy
       <li className="context-menu-item" onClick={onOpen}>Open</li>
       <li className="context-menu-item" onClick={onDelete}>Delete</li>
       <li className="context-menu-item" onClick={onRename}>Rename</li>
-      <li className="context-menu-item" onClick={onCopy}>Copy</li>
     </ul>
   )
 }

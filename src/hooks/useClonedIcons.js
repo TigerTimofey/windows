@@ -25,12 +25,24 @@ export function useClonedIcons({ zCounterRef, recycleBinRef, addItemToBin, openH
 
   function addClone({ type, name, icon, baseNames }) {
     const id = `clone-${type}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`
+    const taskbar = document.querySelector('.windows-taskbar')
+    const taskbarHeight = taskbar ? taskbar.offsetHeight : 40
+    const maxY = window.innerHeight - taskbarHeight - 100 - 10
+    const maxX = window.innerWidth - 64
+    const iconsPerRow = 5
+    const iconSpacingX = 100
+    const iconSpacingY = 90
+    const baseX = 120
     const baseY = 120
-    const offset = clonesRef.current.length * 90
-    const pos = { x: 120, y: baseY + offset }
+    const cloneCount = clonesRef.current.length
+    let posX = baseX + (cloneCount % iconsPerRow) * iconSpacingX
+    let posY = baseY + Math.floor(cloneCount / iconsPerRow) * iconSpacingY
+    if (posY > maxY) posY = maxY
+    if (posX > maxX) posX = maxX
+    console.log(`Pasting item at x: ${posX}, y: ${posY}, windowHeight: ${window.innerHeight}, taskbarHeight: ${taskbarHeight}, maxY: ${maxY}, maxX: ${maxX}`)
     const z = ++zCounterRef.current
     const finalName = computeCloneName(name, baseNames)
-    setClones(list => [...list, { id, type, name: finalName, icon, pos, renaming: false, context: { open: false, x:0, y:0 }, z }])
+    setClones(list => [...list, { id, type, name: finalName, icon, pos: { x: posX, y: posY }, renaming: false, context: { open: false, x:0, y:0 }, z }])
   }
 
   function handleMouseDown(id, e) {
@@ -45,7 +57,10 @@ export function useClonedIcons({ zCounterRef, recycleBinRef, addItemToBin, openH
     function onMove(e){
       const id = draggingIdRef.current
       if(!id) return
-      setClones(list => list.map(c => c.id === id ? { ...c, pos: { x: Math.max(0, Math.min(e.clientX - dragOffsetRef.current.x, window.innerWidth - 64)), y: Math.max(0, Math.min(e.clientY - dragOffsetRef.current.y, window.innerHeight - 90)) } } : c))
+      const taskbar = document.querySelector('.windows-taskbar')
+      const taskbarHeight = taskbar ? taskbar.offsetHeight : 40
+      const maxY = window.innerHeight - taskbarHeight - 150 - 10
+      setClones(list => list.map(c => c.id === id ? { ...c, pos: { x: Math.max(0, Math.min(e.clientX - dragOffsetRef.current.x, window.innerWidth - 64)), y: Math.max(0, Math.min(e.clientY - dragOffsetRef.current.y, maxY)) } } : c))
     }
     function intersects(a,b){ return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom) }
     function onUp(){

@@ -19,14 +19,24 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
     while (existingNames.has(proposed)) { n += 1; proposed = `New Folder ${n}` }
     nextFolderNumRef.current = n + 1
     const id = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
+    const taskbar = document.querySelector('.windows-taskbar')
+    const taskbarHeight = taskbar ? taskbar.offsetHeight : 40
+    const maxY = window.innerHeight - taskbarHeight - 150 - 10
+    const maxX = window.innerWidth - 64
+    const iconsPerRow = 5
+    const iconSpacingX = 100
+    const iconSpacingY = 90
     const baseX = 18
     const baseY = 400
-    const offset = extraFoldersRef.current.filter(f => f.visible).length * 90
-    const posX = baseX
-    const posY = baseY + offset
-    console.log('New Folder position:', posX, posY)
+    const visibleCount = extraFoldersRef.current.filter(f => f.visible).length
+    let posX = baseX + (visibleCount % iconsPerRow) * iconSpacingX
+    let posY = baseY + Math.floor(visibleCount / iconsPerRow) * iconSpacingY
+    if (posY > maxY) posY = maxY
+    if (posX > maxX) posX = maxX
+    const posX_final = posX
+    console.log(`Creating new folder at x: ${posX_final}, y: ${posY}, windowHeight: ${window.innerHeight}, taskbarHeight: ${taskbarHeight}, maxY: ${maxY}, maxX: ${maxX}`)
     const z = ++zCounterRef.current
-    setExtraFolders(list => [...list, { id, name: proposed, renaming: true, visible: true, pos: { x: posX, y: posY }, context: { open: false, x: 0, y: 0 }, modalOpen: false, items: [], z }])
+    setExtraFolders(list => [...list, { id, name: proposed, renaming: true, visible: true, pos: { x: posX_final, y: posY }, context: { open: false, x: 0, y: 0 }, modalOpen: false, items: [], z }])
   }
 
   const registerRef = useCallback((id, el) => { if (el) folderRefs.current[id] = el }, [])
@@ -38,16 +48,19 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
     dragOffsetRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
   setExtraFolders(list => list.map(f => f.id === id ? { ...f, z: ++zCounterRef.current } : f))
   }
-
+ 
   useEffect(() => {
     function onMove(e) {
       const id = draggingIdRef.current
       if (!id) return
+      const taskbar = document.querySelector('.windows-taskbar')
+      const taskbarHeight = taskbar ? taskbar.offsetHeight : 40
+      const maxY = window.innerHeight - taskbarHeight - 150 - 10
       setExtraFolders(list => list.map(f => {
         if (f.id !== id) return f
         const nx = e.clientX - dragOffsetRef.current.x
         const ny = e.clientY - dragOffsetRef.current.y
-        return { ...f, pos: { x: Math.max(0, Math.min(nx, window.innerWidth - 64)), y: Math.max(0, Math.min(ny, window.innerHeight - 90)) } }
+        return { ...f, pos: { x: Math.max(0, Math.min(nx, window.innerWidth - 64)), y: Math.max(0, Math.min(ny, maxY)) } }
       }))
     }
     function intersects(a, b) { return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom) }
@@ -117,12 +130,21 @@ export function useExtraFolders({ baseFolderRef, recycleBinRef, addItemToBin, ex
       if (existing) {
         return list.map(f => f.id === descriptor.id ? { ...f, visible: true, name: descriptor.name || f.name } : f)
       }
-      const id = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
+      const taskbar = document.querySelector('.windows-taskbar')
+      const taskbarHeight = taskbar ? taskbar.offsetHeight : 40
+      const maxY = window.innerHeight - taskbarHeight - 100 - 10
+      const maxX = window.innerWidth - 64
+      const iconsPerRow = 5
+      const iconSpacingX = 100
+      const iconSpacingY = 90
       const baseX = 18
       const baseY = 480
-      const offset = list.filter(fl => fl.visible).length * 90
-      const posX = baseX
-      const posY = baseY + offset
+      const visibleCount = list.filter(fl => fl.visible).length
+      let posX = baseX + (visibleCount % iconsPerRow) * iconSpacingX
+      let posY = baseY + Math.floor(visibleCount / iconsPerRow) * iconSpacingY
+      if (posY > maxY) posY = maxY
+      if (posX > maxX) posX = maxX
+      const id = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
       const z = ++zCounterRef.current
       const items = descriptor.items ? descriptor.items.map(it => ({ ...it })) : []
       return [...list, { id, name: descriptor.name || 'New Folder', renaming: false, visible: true, pos: { x: posX, y: posY }, context: { open: false, x: 0, y: 0 }, modalOpen: false, items, z }]

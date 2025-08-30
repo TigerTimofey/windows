@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import folderIcon from '../assets/win7/icons/folder.ico'
-import { getClampedBinPosition, isIconDroppedOnTarget } from '../hooks/useDesktop.js'
+import { getClampedBinPosition, isIconDroppedOnTarget } from './useDesktop.js'
 
 export function useFolderIcon(binRef, onDroppedIntoBin, getExtraFolderTargets, onDroppedIntoExtraFolder) {
   const [pos, setPos] = useState({ x: null, y: null })

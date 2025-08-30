@@ -11,8 +11,8 @@ export function FolderContextMenu({ x, y, open, onOpen, onDelete, onRename, onCo
     >
       <li className="context-menu-item" onClick={onOpen}>Open</li>
       <li className="context-menu-item" onClick={onDelete}>Delete</li>
-  <li className="context-menu-item" onClick={onRename}>Rename</li>
-  <li className="context-menu-item" onClick={onCopy}>Copy</li>
+      <li className="context-menu-item" onClick={onRename}>Rename</li>
+      <li className="context-menu-item" onClick={onCopy}>Copy</li>
     </ul>
   )
 }

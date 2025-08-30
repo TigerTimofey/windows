@@ -188,12 +188,23 @@ export function DesktopRoot({ onShutdown }) {
   function closeDesktopMenu() { setDeskMenu(m => ({ ...m, open: false })) }
   useEffect(() => { if (!deskMenu.open) return; function onDoc(ev){ if(!(ev.target.closest&&ev.target.closest('.context-menu'))) closeDesktopMenu() } function onKey(ev){ if(ev.key==='Escape') closeDesktopMenu() } document.addEventListener('mousedown', onDoc, true); document.addEventListener('keydown', onKey); window.addEventListener('resize', closeDesktopMenu); return ()=>{ document.removeEventListener('mousedown', onDoc, true); document.removeEventListener('keydown', onKey); window.removeEventListener('resize', closeDesktopMenu) } }, [deskMenu.open])
 
-  // When creating new folders, set z to 55 (always less than modal zIndex 130)
+    // When creating new folders, set z to 55 (always less than modal zIndex 130)
   function createNewFolder() {
-    const id = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
-    // Use same positioning logic as useExtraFolders.js
+    const taskbar = document.querySelector('.windows-taskbar')
+    const taskbarHeight = taskbar ? taskbar.offsetHeight : 40
+    const maxY = window.innerHeight - taskbarHeight - 100 - 10
+    const maxX = window.innerWidth - 64
+    const iconsPerRow = 5
+    const iconSpacingX = 100
+    const iconSpacingY = 90
     const baseX = 18
     const baseY = 480
+    const visibleCount = extraFolders.filter(f => f.visible).length
+    let posX = baseX + (visibleCount % iconsPerRow) * iconSpacingX
+    let posY = baseY + Math.floor(visibleCount / iconsPerRow) * iconSpacingY
+    if (posY > maxY) posY = maxY
+    if (posX > maxX) posX = maxX
+    const id = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
     setExtraFolders(list => [
       ...list,
       {
@@ -205,12 +216,12 @@ export function DesktopRoot({ onShutdown }) {
         modalOpen: false,
         renaming: false,
         context: { open: false, x:0,y:0 },
-        pos: { x: baseX, y: baseY + list.filter(f => f.visible).length * 90 },
+        pos: { x: posX, y: posY },
         z: 55
       }
     ])
   }
-  function handleNewFolder(){ closeDesktopMenu(); createNewFolder() }
+  function handleNewFolder(){ closeDesktopMenu(); createNewFolder(); }
   function handleRefresh(){ closeDesktopMenu(); setRefreshTick(t=>t+1) }
   function handleCleanUp(){
     closeDesktopMenu();
@@ -232,7 +243,7 @@ export function DesktopRoot({ onShutdown }) {
       )
     })
   }
-  function handlePaste(){ if(!copiedItem) return; closeDesktopMenu(); paste() }
+  function handlePaste(){ if(!copiedItem) return;closeDesktopMenu(); paste() }
   function handleDeleteBinItem(id){ recycle.setItems(items=>items.filter(i=>i.id!==id)); playTrash() }
 
   // Folder modal item handlers (wrappers over folderActions for readability here)
@@ -416,7 +427,7 @@ export function DesktopRoot({ onShutdown }) {
         <div
           key={f.id}
           className="windows-icon"
-          style={{ left:f.pos.x, top:f.pos.y, position:'fixed', zIndex:55 }}
+          style={{ left:f.pos.x, top: f.pos.y, position:'fixed', zIndex:55 }}
           ref={el=>registerExtraFolderRef(f.id, el)}
           onMouseDown={(e)=>handleExtraFolderMouseDown(f.id,e)}
           onDoubleClick={()=>setExtraFolders(list=>list.map(fl=>fl.id===f.id?{...fl,modalOpen:true}:fl))}

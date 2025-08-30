@@ -3,7 +3,7 @@ import blogIcon from '../assets/win7/icons/blog.ico'
 import { getClampedBinPosition, isIconDroppedOnTarget } from './useDesktop.js'
 
 export function useBlogIcon(binRef, addItemToBin, folderRef, onDroppedIntoFolder, getExtraFolderTargets, onDroppedIntoExtraFolder) {
-  const [pos, setPos] = useState({ x: null, y: null })
+  const [pos, setPos] = useState({ x: 110, y: 18 })
   const [dragging, setDragging] = useState(false)
   const [visible, setVisible] = useState(true)
   const ref = useRef(null)
@@ -112,7 +112,7 @@ export function useBlogIcon(binRef, addItemToBin, folderRef, onDroppedIntoFolder
   const dragZ = 72
   const style = pos.x !== null && pos.y !== null
     ? { left: pos.x, top: pos.y, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
-    : { left: 18, top: 480, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
+    : { left: 110, top: 18, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
 
   return {
     ref,
@@ -125,7 +125,11 @@ export function useBlogIcon(binRef, addItemToBin, folderRef, onDroppedIntoFolder
     context,
     closeContext,
     deleteSelf: () => { if (!visible) return; setVisible(false); closeContext(); addItemToBin && addItemToBin({ id: 'blog', name, icon: blogIcon }) },
-    restore: () => { setVisible(true); setPos({ x: null, y: null }); closeContext() },
+    restore: () => {
+      setVisible(true)
+      setPos({ x: null, y: null })
+      closeContext()
+    },
     modalOpen,
     setModalOpen,
     setPosition: (x, y) => setPos({ x, y }),
@@ -134,6 +138,6 @@ export function useBlogIcon(binRef, addItemToBin, folderRef, onDroppedIntoFolder
     startRename: () => { setRenaming(true); closeContext() },
     commitRename: (val) => { if (val) setName(val.slice(0,32)); setRenaming(false) },
     cancelRename: () => setRenaming(false),
-    copyDescriptor: () => ({ id: 'blog', name, icon: blogIcon })
   }
 }
+

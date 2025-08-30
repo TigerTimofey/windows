@@ -27,7 +27,7 @@ export function DesktopContextMenu({ x, y, open, onNewFolder, onRefresh, onClean
         <li className="context-menu-item" onClick={onCleanUp}>Clean Up</li>
         <li
           className={"context-menu-item" + (canPaste ? '' : ' disabled')}
-          onClick={canPaste ? onPaste : undefined}
+          onClick={canPaste ? () => { onPaste() } : undefined}
           style={!canPaste ? { opacity: 0.5, pointerEvents: 'none' } : undefined}
         >Paste</li>
       </ul>
