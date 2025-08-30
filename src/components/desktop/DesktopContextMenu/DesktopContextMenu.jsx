@@ -5,8 +5,8 @@ import '../../recycle-bin/BinContextMenu/BinContextMenu.css'
 export function DesktopContextMenu({ x, y, open, onNewFolder, onRefresh, onCleanUp, onPaste, canPaste }) {
   const [showNew, setShowNew] = useState(false)
   if (!open) return null
-  const submenuX = x + 160 
-  const submenuY = y 
+  const submenuX = x + 105
+  const submenuY = y + 0
   return (
     <>
       <ul
@@ -33,12 +33,20 @@ export function DesktopContextMenu({ x, y, open, onNewFolder, onRefresh, onClean
       </ul>
       {showNew && (
         <ul
-          className="context-menu"
-          style={{ left: submenuX-72, top: submenuY, maxWidth: 150, height: 28 }}
+          className="context-menu context-menu-submenu"
+          style={{ 
+            left: submenuX, 
+            top: submenuY, 
+            minWidth: '120px',
+            width: 'auto',
+            whiteSpace: 'nowrap'
+          }}
           onMouseEnter={() => setShowNew(true)}
           onMouseLeave={() => setShowNew(false)}
         >
-          <li className="context-menu-item" onClick={() => { onNewFolder(); setShowNew(false) }}>Folder</li>
+          <li className="context-menu-item" onClick={() => { onNewFolder(); setShowNew(false) }}>
+            Folder
+          </li>
         </ul>
       )}
     </>

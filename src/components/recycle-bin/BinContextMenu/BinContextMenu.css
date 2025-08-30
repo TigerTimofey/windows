@@ -27,3 +27,33 @@
 	opacity: 0.5;
 	pointer-events: none;
 }
+
+/* Submenu styles for better positioning and appearance */
+.context-menu-submenu {
+	position: fixed;
+	background: #c0c0c0; 
+	border: 2px solid #808080; 
+	box-shadow: 4px 4px 8px rgba(0,0,0,0.4); 
+	padding: 2px 0;
+	margin: 0;
+	list-style: none;
+	z-index: 301;
+	font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
+	font-size: 14px; 
+	min-width: 120px;
+}
+
+.context-menu-submenu .context-menu-item {
+	padding: 3px 16px 3px 8px;
+	cursor: pointer;
+	white-space: nowrap;
+	user-select: none;
+	border-left: 2px solid transparent;
+	border-right: 2px solid transparent;
+	position: relative;
+}
+
+.context-menu-submenu .context-menu-item:hover:not(.disabled) {
+	background: #000080; 
+	color: #fff;
+}
