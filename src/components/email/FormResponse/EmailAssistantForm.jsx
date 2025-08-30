@@ -4,6 +4,7 @@ import { normalizeSpacing } from '../utils/normalizeSpacing'
 
 const maxWordsOptions = [50, 100, 120, 150, 200]
 const complexityOptions = ['simple', 'moderate', 'advanced']
+const presentationOptions = ['clear paragraphs', 'bullet points', 'numbered list', 'concise']
 const temperatureOptions = [0.3, 0.5, 0.7, 1.0]
 const maxTokensOptions = [128, 256, 512, 1024]
 
@@ -35,6 +36,7 @@ export function EmailAssistantForm({
         if (!form.receiver || !form.receiver.trim()) newErrors.receiver = 'Please provide the receiver name.';
         if (!form.maxWords) newErrors.maxWords = 'Please select max words.';
         if (!form.complexity) newErrors.complexity = 'Please select complexity.';
+        if (!form.presentation) newErrors.presentation = 'Please select presentation.';
         if (!form.temperature) newErrors.temperature = 'Please select temperature.';
         if (!form.maxTokens) newErrors.maxTokens = 'Please select max tokens.';
         setErrors(newErrors);
@@ -75,7 +77,9 @@ export function EmailAssistantForm({
                   if (!theme) {
                     theme = inferThemeFromMessage(message)
                   }
-                  const final = { theme, message: cleanMessage(removeDuplicates(message)) }
+                  // Clean up the message - remove extra spaces and normalize
+                  const cleanedMessage = message.replace(/\s+/g, ' ').trim()
+                  const final = { theme, message: cleanedMessage }
                   setEmailResult(final)
                   setLoading(false)
                 }
@@ -88,18 +92,9 @@ export function EmailAssistantForm({
               lines.forEach(line => {
                 if (line.startsWith('data: ')) {
                   const data = line.replace('data: ', '')
-                  const themeMatch = data.match(/Theme:(.*)/i)
-                  const subjectMatch = data.match(/Subject:(.*)/i)
-                  if (themeMatch) {
-                    theme = themeMatch[1].trim()
-                  } else if (subjectMatch && !theme) {
-                    theme = subjectMatch[1].trim()
-                  }
-                  const messageMatch = data.match(/Message:(.*)/is)
-                  if (messageMatch) {
-                    message += messageMatch[1].trim() + '\n'
-                  } else {
-                    message += data.trim() + '\n'
+                  // Collect raw chunks without adding extra spaces
+                  if (data.trim()) {
+                    message += data
                   }
                 } else if (line.startsWith('event: error')) {
                   const errMsg = line.replace(/event: error\\ndata: /, '')
@@ -108,6 +103,7 @@ export function EmailAssistantForm({
                   if (!streamEnded) {
                     streamEnded = true
                     if (!theme) theme = inferThemeFromMessage(message)
+                    // Apply comprehensive cleaning and normalization
                     const final = { theme, message: normalizeSpacing(cleanMessage(removeDuplicates(message))) }
                     setEmailResult(final)
                   }
@@ -150,7 +146,7 @@ export function EmailAssistantForm({
         </label>
       </div>
       <label className="email-form-field">
-        Email Content 
+        Email Content
         <textarea
           id="content-message"
           name="content"
@@ -192,11 +188,28 @@ export function EmailAssistantForm({
           </select>
           {renderErrorTooltip('complexity', errors)}
         </label>
+        <label className="email-form-field" style={{ flex: 1 }}>
+          Presentation
+          <select
+            id="presentation"
+            name="presentation"
+            value={form.presentation || ''}
+            onChange={e => setForm(f => ({ ...f, presentation: e.target.value }))}
+          >
+            <option value="">Select presentation</option>
+            {presentationOptions.map(opt => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+          {renderErrorTooltip('presentation', errors)}
+        </label>
       </div>
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <label className="email-form-field" style={{ flex: 1 }}>
           Temperature
           <select
+            id="temperature"
+            name="temperature"
             value={form.temperature || ''}
             onChange={e => setForm(f => ({ ...f, temperature: e.target.value }))}
           >
@@ -210,6 +223,8 @@ export function EmailAssistantForm({
         <label className="email-form-field" style={{ flex: 1 }}>
           Max Tokens
           <select
+            id="maxTokens"
+            name="maxTokens"
             value={form.maxTokens || ''}
             onChange={e => setForm(f => ({ ...f, maxTokens: e.target.value }))}
           >

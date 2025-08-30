@@ -10,8 +10,6 @@ router.post('/generate-stream', async (req, res) => {
   console.log('[Backend] /generate-stream called with prompt:', prompt)
   if (!prompt) return res.status(400).json({ error: 'Missing prompt' })
 
-  prompt += '\n\nPlease write a very short, direct email (max 3 sentences). Only include the most essential information.'
-
   // Check ollama and model
   const ollamaCheck = checkOllama()
   if (ollamaCheck.error) return res.status(500).json(ollamaCheck)

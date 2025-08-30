@@ -31,10 +31,10 @@ export function EditBlogModal({
         onSubmit={e => {
           e.preventDefault()
           onSave && onSave({
-            title,
-            intro,
-            body,
-            conclusion
+            title: title.trim(),
+            intro: intro.trim(),
+            body: body.trim(),
+            conclusion: conclusion.trim()
           })
           onClose && onClose()
         }}

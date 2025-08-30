@@ -48,7 +48,7 @@ import { BlogModal } from '../../blog/BlogModal.jsx'
 import blogIcon from '../../../assets/win7/icons/blog.ico'
 
 export function DesktopRoot({ onShutdown }) {
-  const { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ } = useZLayers(150)
+  const { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ, blogZ, minesweeperZ } = useZLayers(150)
   const clock = useClock()
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
   const recycle = useRecycleBin()
@@ -868,15 +868,14 @@ export function DesktopRoot({ onShutdown }) {
           />
         </>
       )}
-      {/* Minesweeper modal */}
       <MinesweeperGameModal
         open={minesweeper.modalOpen && !minimizedModals.some(m => m.id === 'minesweeper')}
         onClose={() => minesweeper.setModalOpen(false)}
-        zIndex={200}
+        zIndex={minesweeperZ}
         onActivate={() => bring('minesweeper')}
         onMinimize={() => { minesweeper.setModalOpen(false); minimizeModal('minesweeper', minesweeper.name, minesweeperIcon) }}
       />
-      <BlogModal open={blog.modalOpen && !minimizedModals.some(m => m.id === 'blog')} onClose={() => blog.setModalOpen(false)} zIndex={200} onActivate={() => bring('blog')} onMinimize={() => { blog.setModalOpen(false); minimizeModal('blog', blog.name, blogIcon) }} />
+      <BlogModal open={blog.modalOpen && !minimizedModals.some(m => m.id === 'blog')} onClose={() => blog.setModalOpen(false)} zIndex={blogZ} onActivate={() => bring('blog')} onMinimize={() => { blog.setModalOpen(false); minimizeModal('blog', blog.name, blogIcon) }} />
     </div>
   )
 }

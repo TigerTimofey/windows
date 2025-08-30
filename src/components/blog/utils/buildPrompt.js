@@ -1,22 +1,26 @@
 export function buildPrompt(form) {
-  return `
-You are an expert AI writing assistant specialized in crafting professional blog posts.
+  return `You are an expert AI writing assistant specialized in crafting professional blog posts.
+
+WRITE A STRUCTURED BLOG POST with these specifications:
 
 Topic: ${form.topic}
 Target Audience: ${form.targetAudience}
-Word Count: ${form.wordCount}
+Word Count: Approximately ${form.wordCount} words
 Tone: ${form.tone}
-SEO Focus: ${form.seoFocus}
+SEO Focus: ${form.seoFocus ? 'Yes' : 'No'}
 Expertise Level: ${form.expertiseLevel}
 
-TASK:
-Generate a structured blog post according to the above details.
-- Include a compelling title.
-- An engaging introduction.
-- A detailed body with relevant sections.
-- A strong conclusion.
-- Ensure the total word count is around ${form.wordCount}.
-- Optimize for SEO if specified.
-- Do not add explanations or extra information outside the blog post structure.
-  `.trim();
+IMPORTANT: Structure your response exactly like this:
+TITLE: [Compelling title here]
+
+INTRODUCTION:
+[Engaging introduction paragraph]
+
+BODY:
+[Detailed body content with sections]
+
+CONCLUSION:
+[Strong conclusion paragraph]
+
+Write only the blog post content in the format above. Do not include any explanations or additional text.`.trim();
 }

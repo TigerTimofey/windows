@@ -94,26 +94,26 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
               renderErrorTooltip={renderErrorTooltip}
               onStartGenerate={() => setGenerating(true)} 
             />
-            {resultModalOpen && emailResult && emailResult.theme && emailResult.message && emailResult.message !== '(none)' && (
-              <EmailResultModal
-                open={resultModalOpen}
-                onClose={() => setResultModalOpen(false)}
-                theme={editableTheme}
-                setTheme={setEditableTheme}
-                message={editableMessage}
-                setMessage={setEditableMessage}
-                onSave={({ theme, message }) => {
-                  setEmailResult({ theme, message })
-                  setResultModalOpen(false)
-                }}
-                zIndex={zIndex + 10}
-                onActivate={onActivate}
-                sender={form.sender}
-              />
-            )}
           </>
         )}
       </ModalWindow>
+      {resultModalOpen && emailResult && emailResult.theme && emailResult.message && emailResult.message !== '(none)' && (
+        <EmailResultModal
+          open={resultModalOpen}
+          onClose={() => setResultModalOpen(false)}
+          theme={editableTheme}
+          setTheme={setEditableTheme}
+          message={editableMessage}
+          setMessage={setEditableMessage}
+          onSave={({ theme, message }) => {
+            setEmailResult({ theme, message })
+            setResultModalOpen(false)
+          }}
+          zIndex={zIndex + 10}
+          onActivate={onActivate}
+          sender={form.sender}
+        />
+      )}
       {errorModalOpen && (
         <ErrorModal
           open={errorModalOpen}
