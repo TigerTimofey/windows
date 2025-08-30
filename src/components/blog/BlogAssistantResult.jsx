@@ -9,13 +9,6 @@ export function BlogAssistantResult({ blogResult }) {
         <div className="blog-assistant-error">{blogResult.error}</div>
       ) : (
         <>
-          <div className="blog-assistant-title"><b>Title:</b> {blogResult.title || '(none)'}</div>
-          <div><b>Introduction:</b></div>
-          <pre className="blog-assistant-intro">{blogResult.intro || '(none)'}</pre>
-          <div><b>Body:</b></div>
-          <pre className="blog-assistant-body">{blogResult.body || '(none)'}</pre>
-          <div><b>Conclusion:</b></div>
-          <pre className="blog-assistant-conclusion">{blogResult.conclusion || '(none)'}</pre>
         </>
       )}
     </div>
