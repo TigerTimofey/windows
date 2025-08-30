@@ -55,7 +55,7 @@ import { useSocialIcon } from '../../../hooks/useSocialIcon.js'
 import { SocialIcon } from '../../social/SocialIcon.jsx'
 import { SocialContextMenu } from '../../social/SocialContextMenu.jsx'
 import { SocialModal } from '../../social/SocialModal.jsx'
-import socialIcon from '../../../assets/win7/icons/social.svg'
+import socialIcon from '../../../assets/win7/icons/social.ico'
 
 export function DesktopRoot({ onShutdown }) {
   const { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ, blogZ, minesweeperZ, storyZ, socialZ } = useZLayers(150)
@@ -292,6 +292,7 @@ export function DesktopRoot({ onShutdown }) {
     if (id === 'minesweeper') { minesweeper.setModalOpen(true); bring('minesweeper'); return }
     if (id === 'blog') { blog.setModalOpen(true); bring('blog'); return }
     if (id === 'story') { story.setModalOpen(true); bring('story'); return }
+    if (id === 'social') { social.setModalOpen(true); bring('social'); return }
     // Support cloned instances stored with clone-* ids
     if (id.startsWith('clone-email')) { email.setModalOpen(true); bring('email'); return }
     if (id.startsWith('clone-mycomputer')) { setCompModalOpen(true); bring('comp'); return }
@@ -300,6 +301,7 @@ export function DesktopRoot({ onShutdown }) {
     if (id.startsWith('clone-minesweeper')) { minesweeper.setModalOpen(true); bring('minesweeper'); return }
     if (id.startsWith('clone-blog')) { blog.setModalOpen(true); bring('blog'); return }
     if (id.startsWith('clone-story')) { story.setModalOpen(true); bring('story'); return }
+    if (id.startsWith('clone-social')) { social.setModalOpen(true); bring('social'); return }
     // Support nested extra folders
     if (id.startsWith('new-folder-')) {
       setExtraFolders(list => list.map(fl => fl.id === id ? { ...fl, modalOpen: true } : fl))
@@ -357,7 +359,7 @@ export function DesktopRoot({ onShutdown }) {
       return
     }
     // Support cloned instances
-    if (id.startsWith('clone-email') || id.startsWith('clone-mycomputer') || id.startsWith('clone-ghost') || id.startsWith('clone-internet') || id.startsWith('clone-minesweeper') || id.startsWith('clone-blog') || id.startsWith('clone-story')) {
+    if (id.startsWith('clone-email') || id.startsWith('clone-mycomputer') || id.startsWith('clone-ghost') || id.startsWith('clone-internet') || id.startsWith('clone-minesweeper') || id.startsWith('clone-blog') || id.startsWith('clone-story') || id.startsWith('clone-social')) {
       folder.removeItem(id)
       addItemToBin({ id, name: 'Cloned Item', icon: folderIcon })
       return
@@ -383,6 +385,7 @@ export function DesktopRoot({ onShutdown }) {
     if (id === 'ghost-folder') { folder.removeItem('ghost-folder'); folder.restore(); return }
     if (id === 'blog') { folder.removeItem('blog'); blog.restore(); return }
     if (id === 'story') { folder.removeItem('story'); story.restore(); return }
+    if (id === 'social') { folder.removeItem('social'); social.restore(); return }
     if (id.startsWith('new-folder-')) {
       folder.removeItem(id)
       // Restore to desktop at clean-up position
@@ -445,8 +448,14 @@ export function DesktopRoot({ onShutdown }) {
       if (item) cloned.restoreClone(item)
       return
     }
+    if (id.startsWith('clone-social')) {
+      folder.removeItem(id)
+      const item = folder.items.find(it => it.id === id)
+      if (item) cloned.restoreClone(item)
+      return
+    }
     // Fallback to base logic
-    moveItemFromBaseFolderToDesktop(id,{ folder, email, restoreComputer, setExtraFolders, internet, blog })
+    moveItemFromBaseFolderToDesktop(id,{ folder, email, restoreComputer, setExtraFolders, internet, blog, social })
   }
 
   return (

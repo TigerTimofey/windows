@@ -65,7 +65,7 @@ export default function ModalWindow({ title, children, onClose, onMinimize, mini
                 tabIndex={0}
               >–</button>
             )}
-            <button className="modal-btn-minimize close" title="Close" onClick={onClose}>×</button>
+            <button className="modal-btn-minimize close" title="Close" onClick={onClose}><p>×</p></button>
           </div>
         </div>
       </div>

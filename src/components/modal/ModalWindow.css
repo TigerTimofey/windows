@@ -238,13 +238,21 @@ background: linear-gradient(90deg, #0A246A 0%,  #113461d3 50%, #5d89c3d3 100%); 
   align-items: center;
   justify-content: center;
   box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080;
-  margin-left: 2px;
   transition: box-shadow 0.1s, background 0.1s;
 }
 .modal-btn-minimize:hover {
   background: #d4d4d4;
   box-shadow: inset 1px 1px 0 #808080, inset -2px -2px 0 #fff;
 }
+.modal-btn-minimize p {
+  color: #222;
+  font-size: 20px;
+  margin-left: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .modal-btn:active {
   border: 1px solid #404040;
   border-left-color: #808080;

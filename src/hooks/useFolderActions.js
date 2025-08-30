@@ -67,7 +67,7 @@ export function deleteItemFromBaseFolder(id, { folder, addItemToBin, email, setE
   }
 }
 
-export function moveItemFromBaseFolderToDesktop(id, { folder, email, restoreComputer, setExtraFolders, internet, blog }) {
+export function moveItemFromBaseFolderToDesktop(id, { folder, email, restoreComputer, setExtraFolders, internet, blog, social }) {
   if (id === 'email') { folder.removeItem('email'); email.restore(); return }
   if (id === 'mycomputer') { folder.removeItem('mycomputer'); restoreComputer(); return }
   if (id.startsWith('new-folder-')) {
@@ -77,5 +77,6 @@ export function moveItemFromBaseFolderToDesktop(id, { folder, email, restoreComp
   }
   if (id === 'ghost-folder') { folder.removeItem('ghost-folder'); folder.restore(); return }
   if (id === 'internet') { folder.removeItem('internet'); internet && internet.restore && internet.restore(); return }
-  if (id === 'blog') { folder.removeItem('blog'); blog.restore(); return }
+    if (id === 'blog') { folder.removeItem('blog'); blog.restore(); return }
+  if (id === 'social') { folder.removeItem('social'); social.restore(); return }
 }
