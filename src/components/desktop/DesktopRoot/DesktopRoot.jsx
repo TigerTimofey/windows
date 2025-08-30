@@ -51,9 +51,14 @@ import { StoryIcon } from '../../story/StoryIcon.jsx'
 import { StoryContextMenu } from '../../story/StoryContextMenu.jsx'
 import { StoryModal } from '../../story/StoryModal.jsx'
 import storyIcon from '../../../assets/win7/icons/story.ico'
+import { useSocialIcon } from '../../../hooks/useSocialIcon.js'
+import { SocialIcon } from '../../social/SocialIcon.jsx'
+import { SocialContextMenu } from '../../social/SocialContextMenu.jsx'
+import { SocialModal } from '../../social/SocialModal.jsx'
+import socialIcon from '../../../assets/win7/icons/social.svg'
 
 export function DesktopRoot({ onShutdown }) {
-  const { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ, blogZ, minesweeperZ, storyZ } = useZLayers(150)
+  const { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ, blogZ, minesweeperZ, storyZ, socialZ } = useZLayers(150)
   const clock = useClock()
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
   const recycle = useRecycleBin()
@@ -76,7 +81,7 @@ export function DesktopRoot({ onShutdown }) {
   const folder = useFolderIcon(recycle.binRef, addItemToBin, getExtraFolderTargets, (item, targetId) => addItemToExtraFolder(targetId, item))
   baseFolderRef.current = folder
   const email = useEmailIcon(recycle.binRef, folder.ref, addItemToBin, (i)=>folder.addItem(i), getExtraFolderTargets, (item, targetId) => addItemToExtraFolder(targetId, item))
-  const cloned = useClonedIcons({ zCounterRef, recycleBinRef: recycle.binRef, addItemToBin, openHandlers: { email: () => { email.setModalOpen(true); bring('email') }, mycomputer: () => { setCompModalOpen(true); bring('comp') }, ghost: () => { folder.setModalOpen(true); bring('folder') }, story: () => { story.setModalOpen(true); bring('story') } }, baseFolder: folder, getExtraFolderTargets, addItemToExtraFolder })
+  const cloned = useClonedIcons({ zCounterRef, recycleBinRef: recycle.binRef, addItemToBin, openHandlers: { email: () => { email.setModalOpen(true); bring('email') }, mycomputer: () => { setCompModalOpen(true); bring('comp') }, ghost: () => { folder.setModalOpen(true); bring('folder') }, story: () => { story.setModalOpen(true); bring('story') }, social: () => { social.setModalOpen(true); bring('social') } }, baseFolder: folder, getExtraFolderTargets, addItemToExtraFolder })
   const {
     ref: compRef, visible: compVisible, modalOpen: compModalOpen, setModalOpen: setCompModalOpen,
     handleMouseDown: handleCompMouseDown, handleClick: handleCompClick, handleDoubleClick: handleCompDoubleClick,
@@ -122,6 +127,15 @@ export function DesktopRoot({ onShutdown }) {
     (item, targetId) => addItemToExtraFolder(targetId, item)
   )
 
+  const social = useSocialIcon(
+    recycle.binRef,
+    addItemToBin,
+    folder.ref,
+    (item) => folder.addItem(item),
+    getExtraFolderTargets,
+    (item, targetId) => addItemToExtraFolder(targetId, item)
+  )
+
   const { isTouchOrCoarse } = usePointerMode()
   // Pass restoreInternet to binHandlers
   const binHandlers = useBinHandlers({
@@ -136,14 +150,15 @@ export function DesktopRoot({ onShutdown }) {
     restoreInternet: internet.restore,
     restoreMinesweeper: minesweeper.restore,
     restoreBlog: blog.restore,
-    restoreStory: story.restore
+    restoreStory: story.restore,
+    restoreSocial: social.restore
   })
   const { binModalOpen, confirmClearOpen, handleBinDoubleClick, handleBinClick, handleBinModalClose, handleEmptyRequest, handleRestoreAll, handleRestoreItem, handleConfirmEmpty, handleCancelEmpty } = binHandlers
 
   // Clipboard
   const extraFoldersRef = useRef([])
   extraFoldersRef.current = extraFolders
-  const { copiedItem, captureCopy, paste } = useDesktopClipboard({ folder, email, recycle, extraFoldersRef, cloned, revealOrCloneFromDescriptor, story })
+  const { copiedItem, captureCopy, paste } = useDesktopClipboard({ folder, email, recycle, extraFoldersRef, cloned, revealOrCloneFromDescriptor, story, social })
   const copyHandlers = buildCopyHandlers({
     email,
     folder,
@@ -154,7 +169,8 @@ export function DesktopRoot({ onShutdown }) {
     internet,
     minesweeper,
     blog,
-    story
+    story,
+    social
   })
 
   const [deskMenu, setDeskMenu] = useState({ open: false, x: 0, y: 0 })
@@ -177,6 +193,7 @@ export function DesktopRoot({ onShutdown }) {
     if (id === 'minesweeper') minesweeper.setModalOpen(true)
     if (id === 'blog') blog.setModalOpen(true)
     if (id === 'story') story.setModalOpen(true)
+    if (id === 'social') social.setModalOpen(true)
     // Restore extra folders
     setExtraFolders(list => list.map(f => f.id === id ? { ...f, modalOpen: true } : f))
     // Restore cloned items
@@ -191,6 +208,7 @@ export function DesktopRoot({ onShutdown }) {
   useEffect(() => { if (compModalOpen) bring('comp') }, [compModalOpen, bring])
   useEffect(() => { if (binModalOpen) bring('bin') }, [binModalOpen, bring])
   useEffect(() => { if (confirmClearOpen) bring('confirm') }, [confirmClearOpen, bring])
+  useEffect(() => { if (social.modalOpen) bring('social') }, [social.modalOpen, bring])
 
   const binFullState = recycle.items.length > 0
   const binStyle = recycle.binPos.x !== null && recycle.binPos.y !== null ? { left: recycle.binPos.x, top: recycle.binPos.y, position: 'fixed', zIndex: 60 } : { right: 38, bottom: 184, position: 'fixed', zIndex: 60 }
@@ -327,6 +345,11 @@ export function DesktopRoot({ onShutdown }) {
       addItemToBin({ id: 'story', name: story.name, icon: storyIcon })
       return
     }
+    if (id === 'social') {
+      folder.removeItem('social')
+      addItemToBin({ id: 'social', name: social.name, icon: socialIcon })
+      return
+    }
     if (id.startsWith('new-folder-')) {
       folder.removeItem(id)
       addItemToBin({ id, name: 'New Folder', icon: extraFolderIcon })
@@ -340,7 +363,7 @@ export function DesktopRoot({ onShutdown }) {
       return
     }
     // Fallback to base logic
-    deleteItemFromBaseFolder(id,{ folder, addItemToBin, email, setExtraFolders, extraFolderIcon, internet, blog })
+    deleteItemFromBaseFolder(id,{ folder, addItemToBin, email, setExtraFolders, extraFolderIcon, internet, blog, story, social })
   }
 
   function handleFolderItemToDesktop(id){
@@ -928,6 +951,31 @@ export function DesktopRoot({ onShutdown }) {
           />
         </>
       )}
+      {social.visible && (
+        <>
+          <SocialIcon
+            iconRef={social.ref}
+            style={social.style}
+            onMouseDown={social.handleMouseDown}
+            onContextMenu={social.handleContextMenu}
+            name={social.name}
+            renaming={social.renaming}
+            onRenameCommit={social.commitRename}
+            onRenameCancel={social.cancelRename}
+            onClick={social.handleClick}
+            onDoubleClick={social.handleDoubleClick}
+          />
+          <SocialContextMenu
+            x={social.context.x}
+            y={social.context.y}
+            open={social.context.open}
+            onOpen={() =>{ social.setModalOpen(true); social.closeContext(); bring('social') }}
+            onDelete={social.deleteSelf}
+            onRename={social.startRename}
+            onCopy={()=>{ copyHandlers.copySocial(); social.closeContext(); }}
+          />
+        </>
+      )}
       <MinesweeperGameModal
         open={minesweeper.modalOpen && !minimizedModals.some(m => m.id === 'minesweeper')}
         onClose={() => minesweeper.setModalOpen(false)}
@@ -937,6 +985,7 @@ export function DesktopRoot({ onShutdown }) {
       />
       <BlogModal open={blog.modalOpen && !minimizedModals.some(m => m.id === 'blog')} onClose={() => blog.setModalOpen(false)} zIndex={blogZ} onActivate={() => bring('blog')} onMinimize={() => { blog.setModalOpen(false); minimizeModal('blog', blog.name, blogIcon) }} />
       <StoryModal open={story.modalOpen && !minimizedModals.some(m => m.id === 'story')} onClose={() => story.setModalOpen(false)} zIndex={storyZ} onActivate={() => bring('story')} onMinimize={() => { story.setModalOpen(false); minimizeModal('story', story.name, storyIcon) }} />
+      <SocialModal open={social.modalOpen && !minimizedModals.some(m => m.id === 'social')} onClose={() => social.setModalOpen(false)} zIndex={socialZ} onActivate={() => bring('social')} onMinimize={() => { social.setModalOpen(false); minimizeModal('social', social.name, socialIcon) }} />
     </div>
   )
 }

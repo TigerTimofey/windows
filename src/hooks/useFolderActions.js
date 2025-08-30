@@ -1,4 +1,4 @@
-export function openItemFromBaseFolder(id, { email, bring, setCompModalOpen, setExtraFolders, folder, zCounterRef, bringExtraFolder, internet, minesweeper, blog }) {
+export function openItemFromBaseFolder(id, { email, bring, setCompModalOpen, setExtraFolders, folder, zCounterRef, bringExtraFolder, internet, minesweeper, blog, story, social }) {
   if (id === 'email') { email.setModalOpen(true); bring('email'); return }
   if (id === 'mycomputer') { setCompModalOpen(true); bring('comp'); return }
   if (id.startsWith('new-folder-')) {
@@ -16,11 +16,16 @@ export function openItemFromBaseFolder(id, { email, bring, setCompModalOpen, set
   if (id.startsWith('clone-mycomputer-') || id.startsWith('clone-mycomputer')) { setCompModalOpen(true); bring('comp'); return }
   if (id.startsWith('clone-ghost-') || id.startsWith('clone-ghost')) { folder.setModalOpen(true); bring('folder'); return }
   if (id.startsWith('clone-minesweeper-') || id.startsWith('clone-minesweeper')) { minesweeper.setModalOpen(true); bring('minesweeper'); return }
+  if (id.startsWith('clone-blog-') || id.startsWith('clone-blog')) { blog.setModalOpen(true); bring('blog'); return }
+  if (id.startsWith('clone-story-') || id.startsWith('clone-story')) { story.setModalOpen(true); bring('story'); return }
+  if (id.startsWith('clone-social-') || id.startsWith('clone-social')) { social.setModalOpen(true); bring('social'); return }
   if (id === 'internet') { internet && internet.restore && internet.restore(); return }
   if (id === 'blog') { blog.setModalOpen(true); bring('blog'); return }
+  if (id === 'story') { story.setModalOpen(true); bring('story'); return }
+  if (id === 'social') { social.setModalOpen(true); bring('social'); return }
 }
 
-export function deleteItemFromBaseFolder(id, { folder, addItemToBin, email, setExtraFolders, extraFolderIcon, internet, blog }) {
+export function deleteItemFromBaseFolder(id, { folder, addItemToBin, email, setExtraFolders, extraFolderIcon, internet, blog, story, social }) {
   if (id === 'email') {
     folder.removeItem('email')
     addItemToBin({ id: 'email', name: email.name, icon: email.copyDescriptor().icon })
@@ -48,6 +53,16 @@ export function deleteItemFromBaseFolder(id, { folder, addItemToBin, email, setE
   if (id === 'blog') {
     folder.removeItem('blog')
     addItemToBin({ id: 'blog', name: blog.name, icon: blog.copyDescriptor().icon })
+    return
+  }
+  if (id === 'story') {
+    folder.removeItem('story')
+    addItemToBin({ id: 'story', name: story.name, icon: story.copyDescriptor().icon })
+    return
+  }
+  if (id === 'social') {
+    folder.removeItem('social')
+    addItemToBin({ id: 'social', name: social.name, icon: social.copyDescriptor().icon })
     return
   }
 }

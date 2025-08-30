@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 
 
-export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, revealOrCloneFromDescriptor, story }) {
+export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, revealOrCloneFromDescriptor, story, social }) {
   const [copiedItem, setCopiedItem] = useState(null)
 
   const captureCopy = useCallback((descriptor) => setCopiedItem(descriptor), [])
@@ -12,6 +12,7 @@ export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, r
       email.name,
       recycle.name,
       story?.name,
+      social?.name,
       ...extraFoldersRef.current.map(f => f.name)
     ])
     if (!existingNames.has(baseName)) return baseName
@@ -22,7 +23,7 @@ export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, r
     let candidate = `${stem} copy(${idx})`
     while (existingNames.has(candidate)) { idx += 1; candidate = `${stem} copy(${idx})` }
     return candidate
-  }, [folder.name, email.name, recycle.name, story?.name, extraFoldersRef])
+  }, [folder.name, email.name, recycle.name, story?.name, social?.name, extraFoldersRef])
 
   const paste = useCallback(() => {
     if (!copiedItem) return
@@ -38,7 +39,7 @@ export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, r
   return { copiedItem, captureCopy, paste }
 }
 
-export function buildCopyHandlers({ email, folder, recycle, compName, captureCopy, extraFolderIcon, internet, minesweeper, blog, story }) {
+export function buildCopyHandlers({ email, folder, recycle, compName, captureCopy, extraFolderIcon, internet, minesweeper, blog, story, social }) {
   return {
     copyFolder: () => {
       const newId = `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
@@ -61,6 +62,10 @@ export function buildCopyHandlers({ email, folder, recycle, compName, captureCop
     copyStory: () => {
       // For now, just copy the name to clipboard
       navigator.clipboard?.writeText(story.name).catch(()=>{})
+    },
+    copySocial: () => {
+      // For now, just copy the name to clipboard
+      navigator.clipboard?.writeText(social.name).catch(()=>{})
     },
     copyComputer: () => {
       // For now, just copy the name to clipboard
