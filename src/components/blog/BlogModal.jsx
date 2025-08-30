@@ -34,7 +34,7 @@ export function BlogModal({ open, onClose, zIndex = 130, onActivate, onMinimize 
   const [editableConclusion, setEditableConclusion] = useState('')
 
   useEffect(() => {
-    if (open) setInstallStep(1)
+    if (open) setInstallStep(0)
   }, [open])
 
   useEffect(() => {
