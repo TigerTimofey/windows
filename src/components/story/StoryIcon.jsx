@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import storyIcon from '../assets/win7/icons/story.ico'
+import storyIcon from '../../assets/win7/icons/story.ico'
 
 export function StoryIcon({
   iconRef,
