@@ -1,6 +1,4 @@
-
-
-export function openItemFromBaseFolder(id, { email, bring, setCompModalOpen, setExtraFolders, folder, zCounterRef, bringExtraFolder, internet, minesweeper }) {
+export function openItemFromBaseFolder(id, { email, bring, setCompModalOpen, setExtraFolders, folder, zCounterRef, bringExtraFolder, internet, minesweeper, blog }) {
   if (id === 'email') { email.setModalOpen(true); bring('email'); return }
   if (id === 'mycomputer') { setCompModalOpen(true); bring('comp'); return }
   if (id.startsWith('new-folder-')) {
@@ -19,9 +17,10 @@ export function openItemFromBaseFolder(id, { email, bring, setCompModalOpen, set
   if (id.startsWith('clone-ghost-') || id.startsWith('clone-ghost')) { folder.setModalOpen(true); bring('folder'); return }
   if (id.startsWith('clone-minesweeper-') || id.startsWith('clone-minesweeper')) { minesweeper.setModalOpen(true); bring('minesweeper'); return }
   if (id === 'internet') { internet && internet.restore && internet.restore(); return }
+  if (id === 'blog') { blog.setModalOpen(true); bring('blog'); return }
 }
 
-export function deleteItemFromBaseFolder(id, { folder, addItemToBin, email, setExtraFolders, extraFolderIcon, internet }) {
+export function deleteItemFromBaseFolder(id, { folder, addItemToBin, email, setExtraFolders, extraFolderIcon, internet, blog }) {
   if (id === 'email') {
     folder.removeItem('email')
     addItemToBin({ id: 'email', name: email.name, icon: email.copyDescriptor().icon })
@@ -46,9 +45,14 @@ export function deleteItemFromBaseFolder(id, { folder, addItemToBin, email, setE
     addItemToBin({ id: 'internet', name: internet.name, icon: internet.copyDescriptor().icon })
     return
   }
+  if (id === 'blog') {
+    folder.removeItem('blog')
+    addItemToBin({ id: 'blog', name: blog.name, icon: blog.copyDescriptor().icon })
+    return
+  }
 }
 
-export function moveItemFromBaseFolderToDesktop(id, { folder, email, restoreComputer, setExtraFolders, internet }) {
+export function moveItemFromBaseFolderToDesktop(id, { folder, email, restoreComputer, setExtraFolders, internet, blog }) {
   if (id === 'email') { folder.removeItem('email'); email.restore(); return }
   if (id === 'mycomputer') { folder.removeItem('mycomputer'); restoreComputer(); return }
   if (id.startsWith('new-folder-')) {
@@ -58,4 +62,5 @@ export function moveItemFromBaseFolderToDesktop(id, { folder, email, restoreComp
   }
   if (id === 'ghost-folder') { folder.removeItem('ghost-folder'); folder.restore(); return }
   if (id === 'internet') { folder.removeItem('internet'); internet && internet.restore && internet.restore(); return }
+  if (id === 'blog') { folder.removeItem('blog'); blog.restore(); return }
 }

@@ -36,6 +36,8 @@ export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, c
       cloned.addClone({ type: 'internet', name: copiedItem.name, icon: copiedItem.icon, baseNames })
     } else if (copiedItem.type === 'minesweeper') {
       cloned.addClone({ type: 'minesweeper', name: copiedItem.name, icon: copiedItem.icon, baseNames })
+    } else if (copiedItem.type === 'blog') {
+      cloned.addClone({ type: 'blog', name: copiedItem.name, icon: copiedItem.icon, baseNames })
     } else if (copiedItem.type === 'extra-folder' || copiedItem.id?.startsWith('new-folder-')) {
       const clone = { ...copiedItem, id: `new-folder-${Date.now()}-${Math.random().toString(36).slice(2,8)}` }
       clone.name = makeUnique(clone.name || 'New Folder')
@@ -47,7 +49,7 @@ export function useDesktopClipboard({ folder, email, recycle, extraFoldersRef, c
   return { copiedItem, captureCopy, paste }
 }
 
-export function buildCopyHandlers({ email, folder, recycle, compName, captureCopy, extraFolderIcon, internet, minesweeper }) {
+export function buildCopyHandlers({ email, folder, recycle, compName, captureCopy, extraFolderIcon, internet, minesweeper, blog }) {
   return {
     copyEmail: () => { captureCopy({ id: 'email', name: email.name, icon: email.copyDescriptor().icon, type: 'email' }); navigator.clipboard?.writeText(email.name).catch(()=>{}) },
     copyFolder: () => {
@@ -69,6 +71,10 @@ export function buildCopyHandlers({ email, folder, recycle, compName, captureCop
     copyMinesweeper: () => {
       captureCopy({ id: 'minesweeper', name: minesweeper.name, icon: minesweeper.copyDescriptor().icon, type: 'minesweeper' })
       navigator.clipboard?.writeText(minesweeper.name).catch(()=>{})
+    },
+    copyBlog: () => {
+      captureCopy({ id: 'blog', name: blog.name, icon: blog.copyDescriptor().icon, type: 'blog' })
+      navigator.clipboard?.writeText(blog.name).catch(()=>{})
     }
   }
 }

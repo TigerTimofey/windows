@@ -41,6 +41,11 @@ import emailIcon from '../../../assets/win7/icons/email.ico'
 import folderIcon from '../../../assets/win7/icons/folder.ico'
 import computerIcon from '../../../assets/win7/icons/mycomputer.svg'
 import minesweeperIcon from '../../../assets/win7/icons/minesweeper.png'
+import { useBlogIcon } from '../../../hooks/useBlogIcon.js'
+import { BlogIcon } from '../../blog/BlogIcon.jsx'
+import { BlogContextMenu } from '../../blog/BlogContextMenu.jsx'
+import { BlogModal } from '../../blog/BlogModal.jsx'
+import blogIcon from '../../../assets/win7/icons/blog.ico'
 
 export function DesktopRoot({ onShutdown }) {
   const { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ } = useZLayers(150)
@@ -94,6 +99,15 @@ export function DesktopRoot({ onShutdown }) {
     (item, targetId) => addItemToExtraFolder(targetId, item)
   )
 
+  const blog = useBlogIcon(
+    recycle.binRef,
+    addItemToBin,
+    folder.ref,
+    (item) => folder.addItem(item),
+    getExtraFolderTargets,
+    (item, targetId) => addItemToExtraFolder(targetId, item)
+  )
+
   const { isTouchOrCoarse } = usePointerMode()
   // Pass restoreInternet to binHandlers
   const binHandlers = useBinHandlers({
@@ -106,7 +120,8 @@ export function DesktopRoot({ onShutdown }) {
     isTouchOrCoarse,
     bring,
     restoreInternet: internet.restore,
-    restoreMinesweeper: minesweeper.restore // <-- add this
+    restoreMinesweeper: minesweeper.restore,
+    restoreBlog: blog.restore
   })
   const { binModalOpen, confirmClearOpen, handleBinDoubleClick, handleBinClick, handleBinModalClose, handleEmptyRequest, handleRestoreAll, handleRestoreItem, handleConfirmEmpty, handleCancelEmpty } = binHandlers
 
@@ -122,7 +137,8 @@ export function DesktopRoot({ onShutdown }) {
     captureCopy,
     extraFolderIcon,
     internet,
-    minesweeper
+    minesweeper,
+    blog
   })
 
   const [deskMenu, setDeskMenu] = useState({ open: false, x: 0, y: 0 })
@@ -143,6 +159,7 @@ export function DesktopRoot({ onShutdown }) {
     if (id === 'bin') recycle.setBinModalOpen(true)
     if (id === 'internet') internet.setModalOpen(true)
     if (id === 'minesweeper') minesweeper.setModalOpen(true)
+    if (id === 'blog') blog.setModalOpen(true)
     // Restore extra folders
     setExtraFolders(list => list.map(f => f.id === id ? { ...f, modalOpen: true } : f))
     // Restore cloned items
@@ -203,6 +220,7 @@ export function DesktopRoot({ onShutdown }) {
     restoreComputer();
     internet.restore();
     minesweeper.restore();
+    blog.restore();
     // Move all visible extra folders (new and copied) to their default positions
     const startX = 18, startY = 480, gapY = 100;
     setExtraFolders(list => {
@@ -225,12 +243,14 @@ export function DesktopRoot({ onShutdown }) {
     if (id === 'ghost-folder') { folder.setModalOpen(true); bring('folder'); return }
     if (id === 'internet') { internet.setModalOpen(true); bring('internet'); return }
     if (id === 'minesweeper') { minesweeper.setModalOpen(true); bring('minesweeper'); return }
+    if (id === 'blog') { blog.setModalOpen(true); bring('blog'); return }
     // Support cloned instances stored with clone-* ids
     if (id.startsWith('clone-email')) { email.setModalOpen(true); bring('email'); return }
     if (id.startsWith('clone-mycomputer')) { setCompModalOpen(true); bring('comp'); return }
     if (id.startsWith('clone-ghost')) { folder.setModalOpen(true); bring('folder'); return }
     if (id.startsWith('clone-internet')) { internet.setModalOpen(true); bring('internet'); return }
     if (id.startsWith('clone-minesweeper')) { minesweeper.setModalOpen(true); bring('minesweeper'); return }
+    if (id.startsWith('clone-blog')) { blog.setModalOpen(true); bring('blog'); return }
     // Support nested extra folders
     if (id.startsWith('new-folder-')) {
       setExtraFolders(list => list.map(fl => fl.id === id ? { ...fl, modalOpen: true } : fl))
@@ -266,6 +286,11 @@ export function DesktopRoot({ onShutdown }) {
       addItemToBin({ id: 'ghost-folder', name: folder.name, icon: folderIcon })
       return
     }
+    if (id === 'blog') {
+      folder.removeItem('blog')
+      addItemToBin({ id: 'blog', name: blog.name, icon: blogIcon })
+      return
+    }
     if (id.startsWith('new-folder-')) {
       folder.removeItem(id)
       addItemToBin({ id, name: 'New Folder', icon: extraFolderIcon })
@@ -273,13 +298,13 @@ export function DesktopRoot({ onShutdown }) {
       return
     }
     // Support cloned instances
-    if (id.startsWith('clone-email') || id.startsWith('clone-mycomputer') || id.startsWith('clone-ghost') || id.startsWith('clone-internet') || id.startsWith('clone-minesweeper')) {
+    if (id.startsWith('clone-email') || id.startsWith('clone-mycomputer') || id.startsWith('clone-ghost') || id.startsWith('clone-internet') || id.startsWith('clone-minesweeper') || id.startsWith('clone-blog')) {
       folder.removeItem(id)
       addItemToBin({ id, name: 'Cloned Item', icon: folderIcon })
       return
     }
     // Fallback to base logic
-    deleteItemFromBaseFolder(id,{ folder, addItemToBin, email, setExtraFolders, extraFolderIcon })
+    deleteItemFromBaseFolder(id,{ folder, addItemToBin, email, setExtraFolders, extraFolderIcon, internet, blog })
   }
 
   function handleFolderItemToDesktop(id){
@@ -297,6 +322,7 @@ export function DesktopRoot({ onShutdown }) {
     if (id === 'email') { folder.removeItem('email'); email.restore(); return }
     if (id === 'mycomputer') { folder.removeItem('mycomputer'); restoreComputer(); return }
     if (id === 'ghost-folder') { folder.removeItem('ghost-folder'); folder.restore(); return }
+    if (id === 'blog') { folder.removeItem('blog'); blog.restore(); return }
     if (id.startsWith('new-folder-')) {
       folder.removeItem(id)
       // Restore to desktop at clean-up position
@@ -347,8 +373,14 @@ export function DesktopRoot({ onShutdown }) {
       if (item) cloned.restoreClone(item)
       return
     }
+    if (id.startsWith('clone-blog')) {
+      folder.removeItem(id)
+      const item = folder.items.find(it => it.id === id)
+      if (item) cloned.restoreClone(item)
+      return
+    }
     // Fallback to base logic
-    moveItemFromBaseFolderToDesktop(id,{ folder, email, restoreComputer, setExtraFolders })
+    moveItemFromBaseFolderToDesktop(id,{ folder, email, restoreComputer, setExtraFolders, internet, blog })
   }
 
   return (
@@ -363,6 +395,7 @@ export function DesktopRoot({ onShutdown }) {
         recycle.closeContext && recycle.closeContext()
         internet.closeContext && internet.closeContext()
         minesweeper.closeContext && minesweeper.closeContext()
+        blog.closeContext && blog.closeContext()
         setExtraFolders(list => list.map(f => f.context && f.context.open ? { ...f, context: { ...f.context, open: false } } : f))
         closeDesktopMenu()
       }}
@@ -421,6 +454,9 @@ export function DesktopRoot({ onShutdown }) {
         } else if (clone.type === 'mycomputer') {
           IconComponent = MyComputerIcon
           ContextMenuComponent = MyComputerContextMenu
+        } else if (clone.type === 'blog') {
+          IconComponent = BlogIcon
+          ContextMenuComponent = BlogContextMenu
         }
         // Special open logic for internet (GitHub) clones
         const openGitHub = (e) => {
@@ -796,6 +832,31 @@ export function DesktopRoot({ onShutdown }) {
           />
         </>
       )}
+      {blog.visible && (
+        <>
+          <BlogIcon
+            iconRef={blog.ref}
+            style={blog.style}
+            onMouseDown={blog.handleMouseDown}
+            onContextMenu={blog.handleContextMenu}
+            name={blog.name}
+            renaming={blog.renaming}
+            onRenameCommit={blog.commitRename}
+            onRenameCancel={blog.cancelRename}
+            onClick={blog.handleClick}
+            onDoubleClick={blog.handleDoubleClick}
+          />
+          <BlogContextMenu
+            x={blog.context.x}
+            y={blog.context.y}
+            open={blog.context.open}
+            onOpen={() =>{ blog.setModalOpen(true); blog.closeContext(); bring('blog') }}
+            onDelete={blog.deleteSelf}
+            onRename={blog.startRename}
+            onCopy={()=>{ copyHandlers.copyBlog(); blog.closeContext(); }}
+          />
+        </>
+      )}
       {/* Minesweeper modal */}
       <MinesweeperGameModal
         open={minesweeper.modalOpen && !minimizedModals.some(m => m.id === 'minesweeper')}
@@ -804,6 +865,7 @@ export function DesktopRoot({ onShutdown }) {
         onActivate={() => bring('minesweeper')}
         onMinimize={() => { minesweeper.setModalOpen(false); minimizeModal('minesweeper', minesweeper.name, minesweeperIcon) }}
       />
+      <BlogModal open={blog.modalOpen && !minimizedModals.some(m => m.id === 'blog')} onClose={() => blog.setModalOpen(false)} zIndex={200} onActivate={() => bring('blog')} onMinimize={() => { blog.setModalOpen(false); minimizeModal('blog', blog.name, blogIcon) }} />
     </div>
   )
 }
