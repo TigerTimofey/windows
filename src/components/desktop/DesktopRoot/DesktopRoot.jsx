@@ -46,9 +46,14 @@ import { BlogIcon } from '../../blog/BlogIcon.jsx'
 import { BlogContextMenu } from '../../blog/BlogContextMenu.jsx'
 import { BlogModal } from '../../blog/BlogModal.jsx'
 import blogIcon from '../../../assets/win7/icons/blog.ico'
+import { useStoryIcon } from '../../../hooks/useStoryIcon.js'
+import { StoryIcon } from '../../story/StoryIcon.jsx'
+import { StoryContextMenu } from '../../story/StoryContextMenu.jsx'
+import { StoryModal } from '../../story/StoryModal.jsx'
+import storyIcon from '../../../assets/win7/icons/story.ico'
 
 export function DesktopRoot({ onShutdown }) {
-  const { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ, blogZ, minesweeperZ } = useZLayers(150)
+  const { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ, blogZ, minesweeperZ, storyZ } = useZLayers(150)
   const clock = useClock()
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
   const recycle = useRecycleBin()
@@ -71,7 +76,7 @@ export function DesktopRoot({ onShutdown }) {
   const folder = useFolderIcon(recycle.binRef, addItemToBin, getExtraFolderTargets, (item, targetId) => addItemToExtraFolder(targetId, item))
   baseFolderRef.current = folder
   const email = useEmailIcon(recycle.binRef, folder.ref, addItemToBin, (i)=>folder.addItem(i), getExtraFolderTargets, (item, targetId) => addItemToExtraFolder(targetId, item))
-  const cloned = useClonedIcons({ zCounterRef, recycleBinRef: recycle.binRef, addItemToBin, openHandlers: { email: () => { email.setModalOpen(true); bring('email') }, mycomputer: () => { setCompModalOpen(true); bring('comp') }, ghost: () => { folder.setModalOpen(true); bring('folder') } }, baseFolder: folder, getExtraFolderTargets, addItemToExtraFolder })
+  const cloned = useClonedIcons({ zCounterRef, recycleBinRef: recycle.binRef, addItemToBin, openHandlers: { email: () => { email.setModalOpen(true); bring('email') }, mycomputer: () => { setCompModalOpen(true); bring('comp') }, ghost: () => { folder.setModalOpen(true); bring('folder') }, story: () => { story.setModalOpen(true); bring('story') } }, baseFolder: folder, getExtraFolderTargets, addItemToExtraFolder })
   const {
     ref: compRef, visible: compVisible, modalOpen: compModalOpen, setModalOpen: setCompModalOpen,
     handleMouseDown: handleCompMouseDown, handleClick: handleCompClick, handleDoubleClick: handleCompDoubleClick,
@@ -108,6 +113,15 @@ export function DesktopRoot({ onShutdown }) {
     (item, targetId) => addItemToExtraFolder(targetId, item)
   )
 
+  const story = useStoryIcon(
+    recycle.binRef,
+    addItemToBin,
+    folder.ref,
+    (item) => folder.addItem(item),
+    getExtraFolderTargets,
+    (item, targetId) => addItemToExtraFolder(targetId, item)
+  )
+
   const { isTouchOrCoarse } = usePointerMode()
   // Pass restoreInternet to binHandlers
   const binHandlers = useBinHandlers({
@@ -121,14 +135,15 @@ export function DesktopRoot({ onShutdown }) {
     bring,
     restoreInternet: internet.restore,
     restoreMinesweeper: minesweeper.restore,
-    restoreBlog: blog.restore
+    restoreBlog: blog.restore,
+    restoreStory: story.restore
   })
   const { binModalOpen, confirmClearOpen, handleBinDoubleClick, handleBinClick, handleBinModalClose, handleEmptyRequest, handleRestoreAll, handleRestoreItem, handleConfirmEmpty, handleCancelEmpty } = binHandlers
 
   // Clipboard
   const extraFoldersRef = useRef([])
   extraFoldersRef.current = extraFolders
-  const { copiedItem, captureCopy, paste } = useDesktopClipboard({ folder, email, recycle, extraFoldersRef, cloned, revealOrCloneFromDescriptor })
+  const { copiedItem, captureCopy, paste } = useDesktopClipboard({ folder, email, recycle, extraFoldersRef, cloned, revealOrCloneFromDescriptor, story })
   const copyHandlers = buildCopyHandlers({
     email,
     folder,
@@ -138,7 +153,8 @@ export function DesktopRoot({ onShutdown }) {
     extraFolderIcon,
     internet,
     minesweeper,
-    blog
+    blog,
+    story
   })
 
   const [deskMenu, setDeskMenu] = useState({ open: false, x: 0, y: 0 })
@@ -160,6 +176,7 @@ export function DesktopRoot({ onShutdown }) {
     if (id === 'internet') internet.setModalOpen(true)
     if (id === 'minesweeper') minesweeper.setModalOpen(true)
     if (id === 'blog') blog.setModalOpen(true)
+    if (id === 'story') story.setModalOpen(true)
     // Restore extra folders
     setExtraFolders(list => list.map(f => f.id === id ? { ...f, modalOpen: true } : f))
     // Restore cloned items
@@ -232,6 +249,7 @@ export function DesktopRoot({ onShutdown }) {
     internet.restore();
     minesweeper.restore();
     blog.restore();
+    story.restore();
     // Move all visible extra folders (new and copied) to their default positions
     const startX = 18, startY = 480, gapY = 100;
     setExtraFolders(list => {
@@ -255,6 +273,7 @@ export function DesktopRoot({ onShutdown }) {
     if (id === 'internet') { internet.setModalOpen(true); bring('internet'); return }
     if (id === 'minesweeper') { minesweeper.setModalOpen(true); bring('minesweeper'); return }
     if (id === 'blog') { blog.setModalOpen(true); bring('blog'); return }
+    if (id === 'story') { story.setModalOpen(true); bring('story'); return }
     // Support cloned instances stored with clone-* ids
     if (id.startsWith('clone-email')) { email.setModalOpen(true); bring('email'); return }
     if (id.startsWith('clone-mycomputer')) { setCompModalOpen(true); bring('comp'); return }
@@ -262,6 +281,7 @@ export function DesktopRoot({ onShutdown }) {
     if (id.startsWith('clone-internet')) { internet.setModalOpen(true); bring('internet'); return }
     if (id.startsWith('clone-minesweeper')) { minesweeper.setModalOpen(true); bring('minesweeper'); return }
     if (id.startsWith('clone-blog')) { blog.setModalOpen(true); bring('blog'); return }
+    if (id.startsWith('clone-story')) { story.setModalOpen(true); bring('story'); return }
     // Support nested extra folders
     if (id.startsWith('new-folder-')) {
       setExtraFolders(list => list.map(fl => fl.id === id ? { ...fl, modalOpen: true } : fl))
@@ -302,6 +322,11 @@ export function DesktopRoot({ onShutdown }) {
       addItemToBin({ id: 'blog', name: blog.name, icon: blogIcon })
       return
     }
+    if (id === 'story') {
+      folder.removeItem('story')
+      addItemToBin({ id: 'story', name: story.name, icon: storyIcon })
+      return
+    }
     if (id.startsWith('new-folder-')) {
       folder.removeItem(id)
       addItemToBin({ id, name: 'New Folder', icon: extraFolderIcon })
@@ -309,7 +334,7 @@ export function DesktopRoot({ onShutdown }) {
       return
     }
     // Support cloned instances
-    if (id.startsWith('clone-email') || id.startsWith('clone-mycomputer') || id.startsWith('clone-ghost') || id.startsWith('clone-internet') || id.startsWith('clone-minesweeper') || id.startsWith('clone-blog')) {
+    if (id.startsWith('clone-email') || id.startsWith('clone-mycomputer') || id.startsWith('clone-ghost') || id.startsWith('clone-internet') || id.startsWith('clone-minesweeper') || id.startsWith('clone-blog') || id.startsWith('clone-story')) {
       folder.removeItem(id)
       addItemToBin({ id, name: 'Cloned Item', icon: folderIcon })
       return
@@ -334,6 +359,7 @@ export function DesktopRoot({ onShutdown }) {
     if (id === 'mycomputer') { folder.removeItem('mycomputer'); restoreComputer(); return }
     if (id === 'ghost-folder') { folder.removeItem('ghost-folder'); folder.restore(); return }
     if (id === 'blog') { folder.removeItem('blog'); blog.restore(); return }
+    if (id === 'story') { folder.removeItem('story'); story.restore(); return }
     if (id.startsWith('new-folder-')) {
       folder.removeItem(id)
       // Restore to desktop at clean-up position
@@ -385,6 +411,12 @@ export function DesktopRoot({ onShutdown }) {
       return
     }
     if (id.startsWith('clone-blog')) {
+      folder.removeItem(id)
+      const item = folder.items.find(it => it.id === id)
+      if (item) cloned.restoreClone(item)
+      return
+    }
+    if (id.startsWith('clone-story')) {
       folder.removeItem(id)
       const item = folder.items.find(it => it.id === id)
       if (item) cloned.restoreClone(item)
@@ -468,6 +500,9 @@ export function DesktopRoot({ onShutdown }) {
         } else if (clone.type === 'blog') {
           IconComponent = BlogIcon
           ContextMenuComponent = BlogContextMenu
+        } else if (clone.type === 'story') {
+          IconComponent = StoryIcon
+          ContextMenuComponent = StoryContextMenu
         }
         // Special open logic for internet (GitHub) clones
         const openGitHub = (e) => {
@@ -868,6 +903,31 @@ export function DesktopRoot({ onShutdown }) {
           />
         </>
       )}
+      {story.visible && (
+        <>
+          <StoryIcon
+            iconRef={story.ref}
+            style={story.style}
+            onMouseDown={story.handleMouseDown}
+            onContextMenu={story.handleContextMenu}
+            name={story.name}
+            renaming={story.renaming}
+            onRenameCommit={story.commitRename}
+            onRenameCancel={story.cancelRename}
+            onClick={story.handleClick}
+            onDoubleClick={story.handleDoubleClick}
+          />
+          <StoryContextMenu
+            x={story.context.x}
+            y={story.context.y}
+            open={story.context.open}
+            onOpen={() =>{ story.setModalOpen(true); story.closeContext(); bring('story') }}
+            onDelete={story.deleteSelf}
+            onRename={story.startRename}
+            onCopy={()=>{ copyHandlers.copyStory(); story.closeContext(); }}
+          />
+        </>
+      )}
       <MinesweeperGameModal
         open={minesweeper.modalOpen && !minimizedModals.some(m => m.id === 'minesweeper')}
         onClose={() => minesweeper.setModalOpen(false)}
@@ -876,6 +936,7 @@ export function DesktopRoot({ onShutdown }) {
         onMinimize={() => { minesweeper.setModalOpen(false); minimizeModal('minesweeper', minesweeper.name, minesweeperIcon) }}
       />
       <BlogModal open={blog.modalOpen && !minimizedModals.some(m => m.id === 'blog')} onClose={() => blog.setModalOpen(false)} zIndex={blogZ} onActivate={() => bring('blog')} onMinimize={() => { blog.setModalOpen(false); minimizeModal('blog', blog.name, blogIcon) }} />
+      <StoryModal open={story.modalOpen && !minimizedModals.some(m => m.id === 'story')} onClose={() => story.setModalOpen(false)} zIndex={storyZ} onActivate={() => bring('story')} onMinimize={() => { story.setModalOpen(false); minimizeModal('story', story.name, storyIcon) }} />
     </div>
   )
 }

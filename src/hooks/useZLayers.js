@@ -9,6 +9,7 @@ export function useZLayers(initial = 150) {
   const [confirmZ, setConfirmZ] = useState(105)
   const [blogZ, setBlogZ] = useState(125)
   const [minesweeperZ, setMinesweeperZ] = useState(130)
+  const [storyZ, setStoryZ] = useState(135)
 
   const bring = useCallback((which) => {
     const next = ++zCounterRef.current
@@ -19,7 +20,8 @@ export function useZLayers(initial = 150) {
     else if (which === 'confirm') setConfirmZ(next)
     else if (which === 'blog') setBlogZ(next)
     else if (which === 'minesweeper') setMinesweeperZ(next)
+    else if (which === 'story') setStoryZ(next)
   }, [])
 
-  return { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ, blogZ, minesweeperZ }
+  return { zCounterRef, bring, folderZ, emailZ, compZ, binZ, confirmZ, blogZ, minesweeperZ, storyZ }
 }
