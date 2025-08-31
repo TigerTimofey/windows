@@ -3,7 +3,7 @@ import socialIcon from '../assets/win7/icons/social.ico'
 import { getClampedBinPosition, isIconDroppedOnTarget } from './useDesktop.js'
 
 export function useSocialIcon(binRef, addItemToBin, folderRef, onDroppedIntoFolder, getExtraFolderTargets, onDroppedIntoExtraFolder) {
-  const [pos, setPos] = useState({ x: 110, y: 200 })
+  const [pos, setPos] = useState({ x: 110, y: 210 })
   const [dragging, setDragging] = useState(false)
   const [visible, setVisible] = useState(true)
   const ref = useRef(null)
