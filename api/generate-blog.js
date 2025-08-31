@@ -1,3 +1,5 @@
+import { spawn } from 'child_process'
+
 export default function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -8,14 +10,23 @@ export default function handler(req, res) {
     return res.status(400).json({ error: 'Missing prompt' })
   }
 
-  // Mock blog response
-  const mockText = `Mock Blog Post Title
+  const ollama = spawn('ollama', ['run', 'tinyllama:latest'], { stdio: ['pipe', 'pipe', 'pipe'] })
+  ollama.stdin.write(prompt + '\n')
+  ollama.stdin.end()
 
-Introduction: This is a mock blog post generated for study purposes.
+  let output = ''
+  ollama.stdout.on('data', data => {
+    output += data.toString()
+  })
 
-Body: The content here would normally be created by an AI model like Ollama. For now, it's just placeholder text to demonstrate the functionality.
+  ollama.stderr.on('data', data => {
+    console.error('[Backend] Ollama error:', data.toString())
+  })
 
-Conclusion: Remember, this is for educational purposes only.`
-
-  res.status(200).json({ text: mockText })
+  ollama.on('close', code => {
+    if (code !== 0) {
+      return res.status(500).json({ error: `Ollama exited with code ${code}` })
+    }
+    res.json({ text: output.trim() })
+  })
 }
