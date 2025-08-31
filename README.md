@@ -11,7 +11,7 @@
 
 *Experience the classic Windows 2000 interface while leveraging cutting-edge AI technology for professional content creation.*
 
-[🚀 Live Demo](#) • [📖 Documentation](#) • [🐛 Report Issues](https://github.com/TigerTimofey/windows/issues)
+[🚀 Live Demo](https://windows-mu-plum.vercel.app/) • [📖 Documentation](#) • [🐛 Report Issues](https://github.com/TigerTimofey/windows/issues)
 
 </div>
 
