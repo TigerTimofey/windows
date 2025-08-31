@@ -38,7 +38,7 @@ export function SocialAssistantForm({
         const prompt = buildPrompt(form)
         const controller = new AbortController()
 
-        fetch('/api/generate-social', {
+        fetch(`${import.meta.env.VITE_BACKEND_URL}:${import.meta.env.VITE_BACKEND_PORT}/generate-social`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt }),
@@ -73,7 +73,7 @@ export function SocialAssistantForm({
             const hashtagPrompt = `Generate exactly 3-5 relevant hashtags for "${form.productService}" on ${form.platform} related to "${form.goal}". Output ONLY in this format with no additional text:
 HASHTAGS: #Hashtag`
             try {
-              const hashtagRes = await fetch('/api/generate-social', {
+              const hashtagRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}:${import.meta.env.VITE_BACKEND_PORT}/generate-social`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: hashtagPrompt }),

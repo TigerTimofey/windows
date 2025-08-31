@@ -1,11 +1,17 @@
 import React from 'react'
-import { ContextMenu } from '../shared/ContextMenu.jsx'
+import '../recycle-bin/BinContextMenu/BinContextMenu.css'
 
 export function SocialContextMenu({ x, y, open, onOpen, onDelete, onRename }) {
-  const items = [
-    { label: 'Open', onClick: onOpen },
-    { label: 'Delete', onClick: onDelete },
-    { label: 'Rename', onClick: onRename }
-  ]
-  return <ContextMenu x={x} y={y} open={open} items={items} />
+  if (!open) return null
+  return (
+    <ul
+      className="context-menu"
+      style={{ left: x, top: y }}
+      onClick={e => e.stopPropagation()}
+    >
+      <li className="context-menu-item" onClick={onOpen}>Open</li>
+      <li className="context-menu-item" onClick={onDelete}>Delete</li>
+      <li className="context-menu-item" onClick={onRename}>Rename</li>
+    </ul>
+  )
 }

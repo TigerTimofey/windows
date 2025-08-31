@@ -44,7 +44,7 @@ export function BlogAssistantForm({
         let body = ''
         let conclusion = ''
 
-        fetch('/api/generate-blog', {
+        fetch(`${import.meta.env.VITE_BACKEND_URL}:${import.meta.env.VITE_BACKEND_PORT}/generate-blog`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt }),

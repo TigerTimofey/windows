@@ -1,7 +1,45 @@
 import React, { useState } from 'react'
 import ModalWindow from '../../../modal/ModalWindow.jsx'
 import './EditBlogModal.css'
-import { getPlainText, getMarkdown, getHTML, exportPDF, downloadFile } from '../../../../utils/exportUtils.js'
+
+function getPlainText(title, intro, body, conclusion) {
+  return `${title}\n\nIntroduction:\n${intro}\n\nBody:\n${body}\n\nConclusion:\n${conclusion}`
+}
+
+function getMarkdown(title, intro, body, conclusion) {
+  return `# ${title}\n\n## Introduction\n${intro}\n\n## Body\n${body}\n\n## Conclusion\n${conclusion}`
+}
+
+function getHTML(title, intro, body, conclusion) {
+  return `<h1>${title}</h1>
+<h2>Introduction</h2>
+<p>${intro.replace(/\n/g, '<br>')}</p>
+<h2>Body</h2>
+<p>${body.replace(/\n/g, '<br>')}</p>
+<h2>Conclusion</h2>
+<p>${conclusion.replace(/\n/g, '<br>')}</p>`
+}
+
+function exportPDF(title, intro, body, conclusion) {
+  const html = getHTML(title, intro, body, conclusion)
+  const win = window.open('', '_blank')
+  win.document.write(`<html><head><title>Blog Export</title></head><body>${html}</body></html>`)
+  win.document.close()
+  win.focus()
+  win.print()
+}
+
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
 
 export function EditBlogModal({
   open,
@@ -108,7 +146,7 @@ export function EditBlogModal({
                 </li>
                 <li
                   className="context-menu-item"
-                  onClick={() => exportPDF(title, intro, body, conclusion, 'Blog Export')}
+                  onClick={() => exportPDF(title, intro, body, conclusion)}
                   tabIndex={0}
                 >
                   PDF

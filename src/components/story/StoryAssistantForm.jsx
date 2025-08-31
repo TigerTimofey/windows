@@ -46,7 +46,7 @@ export function StoryAssistantForm({
         let body = ''
         let conclusion = ''
 
-        fetch('/api/generate-story', {
+        fetch(`${import.meta.env.VITE_BACKEND_URL}:${import.meta.env.VITE_BACKEND_PORT}/generate-story`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt }),
