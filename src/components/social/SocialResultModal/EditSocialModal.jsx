@@ -39,7 +39,7 @@ export function EditSocialModal({
 
   return (
     <ModalWindow
-      title="Edit Generated Social Posts"
+      title="Edit Generated Social Media Posts"
       onClose={onClose}
       zIndex={zIndex}
       onActivate={onActivate}
@@ -70,7 +70,6 @@ export function EditSocialModal({
             type="text"
             value={hashtags.join(' ')}
             onChange={e => setHashtags(e.target.value.split(/\s+/).filter(h => h.startsWith('#')))}
-            placeholder="#hashtag1 #hashtag2"
           />
         </label>
         <div className="social-assistant-btn-row">

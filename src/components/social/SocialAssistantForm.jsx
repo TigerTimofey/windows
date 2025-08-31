@@ -46,7 +46,7 @@ export function SocialAssistantForm({
         }).then(res => {
           if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
           return res.json()
-        }).then(data => {
+        }).then(async data => {
           if (data.error) {
             setSocialResult({ error: data.error })
             setLoading(false)
@@ -54,11 +54,64 @@ export function SocialAssistantForm({
             return
           }
           const text = data.text
-          const posts = extractPosts(text)
-          const hashtags = extractHashtags(text)
+          let posts = extractPosts(text)
+          let hashtags = extractHashtags(text)
+
+          // Fallback: If no posts extracted, create basic posts
+          if (!posts || posts.length === 0) {
+
+            posts = [
+              `Discover how ${form.productService || 'our service'} can help you ${form.goal?.toLowerCase() || 'achieve your goals'}. Our professional ${form.platform || 'social media'} content creation services deliver engaging posts that connect with your audience. ${form.cta || 'Learn more'}`,
+              `Elevate your ${form.platform || 'social media'} presence with ${form.productService || 'our service'}. We create ${form.tone || 'professional'} content that drives ${form.goal?.toLowerCase() || 'engagement'} and builds meaningful connections. ${form.cta || 'Learn more'}`,
+              `Transform your brand storytelling with ${form.productService || 'our service'}. Our expert team crafts compelling ${form.platform || 'social media'} posts that showcase your expertise and attract potential clients. ${form.cta || 'Learn more'}`
+            ]
+          }
+
+          // Fallback: If no hashtags extracted, generate from Ollama (try once)
+          if (!hashtags || hashtags.length === 0) {
+            console.log('No hashtags extracted, attempting to generate from Ollama...')
+            const hashtagPrompt = `Generate exactly 3-5 relevant hashtags for "${form.productService}" on ${form.platform} related to "${form.goal}". Output ONLY in this format with no additional text:
+HASHTAGS: #Hashtag`
+            try {
+              const hashtagRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}:${import.meta.env.VITE_BACKEND_PORT}/generate-social`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: hashtagPrompt }),
+                signal: controller.signal
+              })
+              if (hashtagRes.ok) {
+                const hashtagData = await hashtagRes.json()
+                if (hashtagData.text) {
+                  const extractedFromFallback = extractHashtags(hashtagData.text)
+                  if (extractedFromFallback && extractedFromFallback.length > 0) {
+                    hashtags = extractedFromFallback
+                    console.log('Successfully generated hashtags from Ollama:', hashtags)
+                  } else {
+                    console.log('Ollama hashtag generation failed, using fallback hashtags')
+                    hashtags = ['#NoHashtagsFound']
+                  }
+                } else {
+                  console.log('No text received from hashtag generation, using fallback')
+                  hashtags = ['#NoHashtagsFound']
+                }
+              } else {
+                console.log('Hashtag generation request failed, using fallback hashtags')
+                hashtags = ['#NoHashtagsFound']
+              }
+            } catch (err) {
+              console.error('Error generating hashtags from Ollama:', err)
+              console.log('Using fallback hashtags due to error')
+              hashtags = ['#NoHashtagsFound']
+            }
+          }
+
+          // Ensure we have arrays
+          posts = Array.isArray(posts) ? posts : []
+          hashtags = Array.isArray(hashtags) ? hashtags : []
+
           const final = {
-            posts: posts.map(cleanSocialText),
-            hashtags: hashtags.map(cleanSocialText)
+            posts: posts.map(cleanSocialText).filter(post => post && post !== '(none)' && post.trim().length > 0),
+            hashtags: hashtags.map(cleanSocialText).filter(tag => tag && tag !== '(none)' && tag.trim().length > 0)
           }
           setSocialResult(final)
           setLoading(false)

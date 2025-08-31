@@ -28,13 +28,13 @@ export function SocialModal({ open, onClose, zIndex = 130, onActivate, onMinimiz
   const [editableHashtags, setEditableHashtags] = useState([])
 
   useEffect(() => {
-    if (socialResult && !socialResult.error && socialResult.posts && socialResult.posts.length > 0 && socialResult.hashtags && socialResult.hashtags.length > 0) {
+    if (socialResult && !socialResult.error && socialResult.posts && socialResult.posts.length >= 1) {
       setEditablePosts(socialResult.posts)
-      setEditableHashtags(socialResult.hashtags)
+      setEditableHashtags(socialResult.hashtags || [])
       setResultModalOpen(true)
       setLoading(false)
       setGenerating(false)
-    }
+    } 
   }, [socialResult])
 
   useEffect(() => {

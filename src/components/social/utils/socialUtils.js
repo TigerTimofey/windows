@@ -1,43 +1,39 @@
 export function extractPosts(text) {
   if (!text) return []
 
-  // Look for POST lines with bracketed content
-  const postMatches = text.match(/POST \d+:\s*\[([^\]]+)\]/g)
+  // Look for POST lines with bracketed content (case insensitive)
+  const postMatches = text.match(/POST \d+:\s*\[([^\]]+)\]/gi)
   if (postMatches) {
     return postMatches.map(match => {
-      const content = match.match(/POST \d+:\s*\[([^\]]+)\]/)
+      const content = match.match(/POST \d+:\s*\[([^\]]+)\]/i)
       return content ? content[1].trim() : ''
     }).filter(post => post.length > 0)
   }
 
-  // Fallback: Look for POST lines without brackets
-  const fallbackMatches = text.match(/POST \d+:\s*(.+?)(?=POST \d+:|$)/gs)
+  // Fallback: Look for POST lines without brackets (case insensitive)
+  const fallbackMatches = text.match(/POST \d+:\s*(.+?)(?=POST \d+:|$)/gis)
   if (fallbackMatches) {
     return fallbackMatches.map(match => {
-      return match.replace(/POST \d+:\s*/, '').trim()
+      return match.replace(/POST \d+:\s*/i, '').trim()
     }).filter(post => post.length > 0)
   }
 
-  // Final fallback: Look for posts after the specifications format
-  const lines = text.split('\n').filter(line => line.trim())
-
-  // Find where the specifications end (after HASHTAGS line)
-  let specEndIndex = -1
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].toLowerCase().includes('hashtags:')) {
-      specEndIndex = i
-      break
-    }
+  // Additional fallback: Look for numbered post patterns
+  const numberedPostMatches = text.match(/\d+\.\s*POST\s*\d+:\s*(.+?)(?=\d+\.|$)/gis)
+  if (numberedPostMatches) {
+    return numberedPostMatches.map(match => {
+      return match.replace(/^\d+\.\s*POST\s*\d+:\s*/i, '').trim()
+    }).filter(post => post.length > 0)
   }
 
-  // Extract posts from lines after the specifications
+  // Final fallback: Look for any line containing "Post" followed by content
+  const lines = text.split('\n').filter(line => line.trim())
   const postLines = []
-  if (specEndIndex >= 0) {
-    for (let i = specEndIndex + 1; i < lines.length; i++) {
-      const line = lines[i].trim()
-      if (line && !line.startsWith('#') && line.length > 10) {
-        // This looks like a post (not a hashtag, reasonably long)
-        postLines.push(line)
+  for (const line of lines) {
+    if (line.match(/Post \d+:/i) && !line.includes('[Write an actual') && !line.includes('[Insert')) {
+      const content = line.replace(/Post \d+:\s*/i, '').trim()
+      if (content && content.length > 10) {
+        postLines.push(content)
       }
     }
   }
@@ -48,29 +44,44 @@ export function extractPosts(text) {
 export function extractHashtags(text) {
   if (!text) return []
 
-  // Look for HASHTAGS line with bracketed content
-  const hashtagMatch = text.match(/7\.\s*HASHTAGS:\s*\[([^\]]+)\]/i)
+  // Look for HASHTAGS line with bracketed content (case insensitive)
+  const hashtagMatch = text.match(/HASHTAGS?:\s*\[([^\]]+)\]/i)
   if (hashtagMatch) {
     return hashtagMatch[1].trim().split(/\s+/).filter(tag => tag.startsWith('#'))
   }
 
+  // Look for HashTag line with bracketed content
+  const hashTagMatch = text.match(/HashTag:\s*\[([^\]]+)\]/i)
+  if (hashTagMatch) {
+    return hashTagMatch[1].trim().split(/\s+/).filter(tag => tag.startsWith('#'))
+  }
+
   // Fallback: Look for the HASHTAGS line without brackets
-  const fallbackMatch = text.match(/7\.\s*HASHTAGS:\s*(.+?)(?:\n|$)/i)
+  const fallbackMatch = text.match(/HASHTAGS?:\s*(.+?)(?:\n|$)/i)
   if (fallbackMatch) {
     return fallbackMatch[1].trim().split(/\s+/).filter(tag => tag.startsWith('#'))
   }
 
-  // Final fallback: look for any line containing hashtags
+  // Additional fallback: look for any line containing hashtags or hashtag
   const lines = text.split('\n')
   for (const line of lines) {
-    if (line.toLowerCase().includes('hashtags:')) {
+    if (line.toLowerCase().includes('hashtag')) {
       const hashtagPart = line.split(/hashtags?:/i)[1]
       if (hashtagPart) {
         // Remove brackets if present
         const cleanPart = hashtagPart.replace(/^\s*\[|\]\s*$/g, '')
-        return cleanPart.trim().split(/\s+/).filter(tag => tag.startsWith('#'))
+        const foundTags = cleanPart.trim().split(/\s+/).filter(tag => tag.startsWith('#'))
+        if (foundTags.length > 0) {
+          return foundTags
+        }
       }
     }
+  }
+
+  // Final fallback: look for any hashtags anywhere in the text
+  const allHashtags = text.match(/#\w+/g)
+  if (allHashtags && allHashtags.length > 0) {
+    return allHashtags
   }
 
   return []

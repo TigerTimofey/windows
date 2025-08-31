@@ -19,7 +19,7 @@ Goal: ${form.goal}
 
 6. Important: Use structure exactly like this to create engaging platform-optimized posts and hashtags. Do not include any additional text or explanations.
 
-7. HASHTAGS: [Generate 3-5 relevant hashtags for ${form.productService} on ${form.platform} related to ${form.goal}]
+7. HASHTAGS: #${form.goal}, #${form.productService}, #${form.platform}, #${form.cta}
 
 POST 1: [Write an actual engaging ${form.platform} post about ${form.productService} in ${form.tone} tone that achieves the goal of ${form.goal}. Include ${form.cta} at the end.]
 
@@ -27,5 +27,5 @@ POST 2: [Write another actual engaging ${form.platform} post about ${form.produc
 
 POST 3: [Write a third actual engaging ${form.platform} post about ${form.productService} in ${form.tone} tone that achieves the goal of ${form.goal}. Include ${form.cta} at the end.]
 
-STRICT INSTRUCTIONS: Replace the bracketed text with actual content. Output ONLY the format above with real posts and AI-generated hashtags. Do NOT add any text before or after this format. Do NOT include phrases like "I don't have access to", "here are some specifications", "note:", or any other conversational content.`.trim();
+STRICT INSTRUCTIONS: Replace ALL bracketed text with actual content. Output ONLY the format above with real posts and real hashtags. Do NOT add any text before or after this format. Do NOT include phrases like "I don't have access to", "here are some specifications", "note:", or any other conversational content.`.trim();
 }
