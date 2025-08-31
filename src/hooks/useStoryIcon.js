@@ -112,7 +112,7 @@ export function useStoryIcon(binRef, addItemToBin, folderRef, onDroppedIntoFolde
   const dragZ = 72
   const style = pos.x !== null && pos.y !== null
     ? { left: pos.x, top: pos.y, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
-    : { left: 110, top: 100, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
+  : { left: 110, top: 120, position: 'fixed', zIndex: dragging ? dragZ : baseZ }
 
   return {
     ref,
