@@ -3,6 +3,32 @@ import './BlogAssistantForm.css'
 import { CustomDropdown } from '../modal/CustomDropdown.jsx'
 import { wordCountOptions, toneOptions, seoFocusOptions, expertiseLevelOptions } from '../social/utils/formOptions.js'
 
+async function query(data) {
+	const response = await fetch(
+		"https://router.huggingface.co/v1/chat/completions",
+		{
+			headers: {
+				Authorization: `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
+				"Content-Type": "application/json",
+			},
+			method: "POST",
+			body: JSON.stringify({
+				messages: [
+					{
+						role: "user",
+						content: data.prompt,
+					},
+				],
+				model: "openai/gpt-oss-20b:together",
+				max_tokens: data.max_tokens || 2000,
+				temperature: data.temperature || 0.7,
+			}),
+		}
+	);
+	const result = await response.json();
+	return result;
+}
+
 export function BlogAssistantForm({
   form, setForm, errors, setErrors, setLoading, setBlogResult,
   buildPrompt, extractTitle, extractIntro, extractBody, extractConclusion, cleanBlogText,
@@ -38,27 +64,28 @@ export function BlogAssistantForm({
         setBlogResult({ title: '', intro: '', body: '', conclusion: '' })
 
         const prompt = buildPrompt(form)
-        const controller = new AbortController()
         let title = ''
         let intro = ''
         let body = ''
         let conclusion = ''
 
-        fetch(`${import.meta.env.VITE_BACKEND_URL}:${import.meta.env.VITE_BACKEND_PORT}/generate-blog`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt }),
-          signal: controller.signal
-        }).then(res => {
-          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
-          return res.json()
+        query({ 
+          prompt,
+          max_tokens: 2000,
+          temperature: 0.7
         }).then(data => {
           if (data.error) {
             setBlogResult({ error: data.error })
             setLoading(false)
             return
           }
-          const text = data.text
+          // Handle Hugging Face router chat completion response format
+          const text = data.choices?.[0]?.message?.content;
+          if (!text) {
+            setBlogResult({ error: 'No response generated' })
+            setLoading(false)
+            return
+          }
           title = extractTitle(text)
           intro = extractIntro(text)
           body = extractBody(text)

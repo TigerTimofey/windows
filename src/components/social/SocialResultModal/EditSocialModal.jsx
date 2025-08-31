@@ -56,7 +56,7 @@ export function EditSocialModal({
         }}
       >
         <label className="social-form-field">
-          Posts (one per line)
+          Posts
           <textarea
             value={posts.join('\n\n')}
             onChange={e => setPosts(e.target.value.split('\n\n').map(p => p.trim()))}

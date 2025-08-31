@@ -268,6 +268,7 @@ export function DesktopRoot({ onShutdown }) {
     minesweeper.restore();
     blog.restore();
     story.restore();
+    social.restore();
     // Move all visible extra folders (new and copied) to their default positions
     const startX = 18, startY = 480, gapY = 100;
     setExtraFolders(list => {

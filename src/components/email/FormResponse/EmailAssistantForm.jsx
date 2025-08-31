@@ -1,219 +1,164 @@
 import React from 'react'
-import './EmailAssistantForm.css'
+import '../../blog/BlogAssistantForm.css'
 import { normalizeSpacing } from '../utils/normalizeSpacing'
 import { CustomDropdown } from '../../modal/CustomDropdown.jsx'
-import { maxWordsOptions, complexityOptions, presentationOptions, temperatureOptions, maxTokensOptions } from '../../social/utils/formOptions.js'
+import { maxWordsOptions, toneOptions } from '../../social/utils/formOptions.js'
+
+async function query(data) {
+	const response = await fetch(
+		"https://router.huggingface.co/v1/chat/completions",
+		{
+			headers: {
+				Authorization: `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
+				"Content-Type": "application/json",
+			},
+			method: "POST",
+			body: JSON.stringify({
+				messages: [
+					{
+						role: "user",
+						content: data.prompt,
+					},
+				],
+				model: "openai/gpt-oss-20b:together",
+				max_tokens: data.max_tokens || 1500,
+				temperature: data.temperature || 0.7,
+			}),
+		}
+	);
+	const result = await response.json();
+	return result;
+}
 
 export function EmailAssistantForm({
   form, setForm, errors, setErrors, setLoading, setEmailResult,
   buildPrompt, inferThemeFromMessage, cleanMessage, removeDuplicates,
-  loading, renderErrorTooltip, onStartGenerate
+  loading, renderErrorTooltip, onStartGenerate, setGenerating
 }) {
   React.useEffect(() => {
     setForm(f => ({
       ...f,
-      content: f.content || 'I would like to welcome you to our team and provide onboarding details.',
       sender: f.sender || 'John Doe',
       receiver: f.receiver || 'Jane Smith',
-      maxWords: f.maxWords || 120,
-      complexity: f.complexity || 'simple',
-      presentation: f.presentation || 'clear paragraphs',
-      temperature: f.temperature || 0.7,
-      maxTokens: f.maxTokens || 128
+      purpose: f.purpose || 'Welcome new team member and provide onboarding details',
+      tone: f.tone || 'professional',
+      length: f.length || 120
     }))
   }, [setForm])
+
   return (
-    <form className="email-form"
+    <form className="blog-form"
       onSubmit={e => {
         e.preventDefault();
         const newErrors = {};
-        if (!form.content || !form.content.trim()) newErrors.content = 'Please provide the email content.';
         if (!form.sender || !form.sender.trim()) newErrors.sender = 'Please provide your name.';
         if (!form.receiver || !form.receiver.trim()) newErrors.receiver = 'Please provide the receiver name.';
-        if (!form.maxWords) newErrors.maxWords = 'Please select max words.';
-        if (!form.complexity) newErrors.complexity = 'Please select complexity.';
-        if (!form.presentation) newErrors.presentation = 'Please select presentation.';
-        if (!form.temperature) newErrors.temperature = 'Please select temperature.';
-        if (!form.maxTokens) newErrors.maxTokens = 'Please select max tokens.';
+        if (!form.purpose || !form.purpose.trim()) newErrors.purpose = 'Please provide the email purpose.';
+        if (!form.tone) newErrors.tone = 'Please select tone.';
+        if (!form.length) newErrors.length = 'Please select length.';
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
         setLoading(true)
-        if (onStartGenerate) onStartGenerate() 
+        if (onStartGenerate) onStartGenerate()
         setEmailResult({ theme: '', message: '' })
 
-        const promptForm = {
-          contentType: 'Email',
-          content: form.content,
-          sender: form.sender,
-          receiver: form.receiver,
-          specifications: `Max ${form.maxWords} words. Platform: Gmail.`,
-          style: `Complexity: ${form.complexity}. Presentation: ${form.presentation}.`,
-          generation: `temperature=${form.temperature}, max_tokens=${form.maxTokens}`
-        }
-        const prompt = buildPrompt(promptForm)
-        const controller = new AbortController()
+        const prompt = buildPrompt(form)
         let theme = ''
         let message = ''
-        let streamEnded = false
-        let buffer = ''
 
-        fetch(`${import.meta.env.VITE_BACKEND_URL}:${import.meta.env.VITE_BACKEND_PORT}/generate-stream`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt }),
-          signal: controller.signal
-        }).then(res => {
-          if (!res.body) throw new Error('No response body')
-          const reader = res.body.getReader()
-          function read() {
-            reader.read().then(({ done, value }) => {
-              if (done) {
-                if (!streamEnded) {
-                  streamEnded = true
-                  if (!theme) {
-                    theme = inferThemeFromMessage(message)
-                  }
-                  // Clean up the message - remove extra spaces and normalize
-                  const cleanedMessage = message.replace(/\s+/g, ' ').trim()
-                  const final = { theme, message: cleanedMessage }
-                  setEmailResult(final)
-                  setLoading(false)
-                }
-                return
-              }
-              const chunk = new TextDecoder().decode(value)
-              buffer += chunk
-              const lines = buffer.split(/\n\n/)
-              buffer = lines.pop()
-              lines.forEach(line => {
-                if (line.startsWith('data: ')) {
-                  const data = line.replace('data: ', '')
-                  // Collect raw chunks without adding extra spaces
-                  if (data.trim()) {
-                    message += data
-                  }
-                } else if (line.startsWith('event: error')) {
-                  const errMsg = line.replace(/event: error\\ndata: /, '')
-                  setEmailResult({ error: errMsg })
-                } else if (line.startsWith('event: end')) {
-                  if (!streamEnded) {
-                    streamEnded = true
-                    if (!theme) theme = inferThemeFromMessage(message)
-                    // Apply comprehensive cleaning and normalization
-                    const final = { theme, message: normalizeSpacing(cleanMessage(removeDuplicates(message))) }
-                    setEmailResult(final)
-                  }
-                }
-              })
-              read()
-            })
+        query({ 
+          prompt,
+          max_tokens: 1500,
+          temperature: 0.7
+        }).then(data => {
+          if (data.error) {
+            setEmailResult({ error: data.error })
+            setLoading(false)
+            setGenerating(false)
+            return
           }
-          read()
+          // Handle Hugging Face router chat completion response format
+          const text = data.choices?.[0]?.message?.content;
+          if (!text) {
+            setEmailResult({ error: 'No response generated' })
+            setLoading(false)
+            setGenerating(false)
+            return
+          }
+          message = text
+          theme = inferThemeFromMessage(message)
+          const final = { theme, message: normalizeSpacing(cleanMessage(removeDuplicates(message))) }
+          setEmailResult(final)
+          setLoading(false)
+          setGenerating(false)
         }).catch(err => {
           setEmailResult({ error: err.message })
           setLoading(false)
+          setGenerating(false)
         })
       }}
     >
-      <div style={{ display: 'flex', gap: '1rem' }}>
-        <label className="email-form-field" style={{ flex: 1 }}>
-          Sender
-          <input
-            id="sender"
-            name="sender"
-            type="text"
-            value={form.sender || ''}
-            onChange={e => setForm(f => ({ ...f, sender: e.target.value }))}
-            placeholder="eg. John Doe"
-          />
-          {renderErrorTooltip('sender', errors)}
-        </label>
-        <label className="email-form-field" style={{ flex: 1 }}>
-          Receiver
-          <input
-            id="receiver"
-            name="receiver"
-            type="text"
-            value={form.receiver || ''}
-            onChange={e => setForm(f => ({ ...f, receiver: e.target.value }))}
-            placeholder="eg. Jane Smith"
-          />
-          {renderErrorTooltip('receiver', errors)}
-        </label>
-      </div>
-      <label className="email-form-field">
-        Email Content
-        <textarea
-          id="content-message"
-          name="content"
-          value={form.content || ''}
-          onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-          rows={3}
-          placeholder="Type the main message or topic of your email..."
+      <label className="blog-form-field">
+        Sender
+        <input
+          id="sender"
+          name="sender"
+          type="text"
+          value={form.sender || ''}
+          onChange={e => setForm(f => ({ ...f, sender: e.target.value }))}
+          placeholder="e.g. John Doe"
         />
-        {renderErrorTooltip('content', errors)}
+        {renderErrorTooltip('sender', errors)}
+      </label>
+      <label className="blog-form-field">
+        Receiver
+        <input
+          id="receiver"
+          name="receiver"
+          type="text"
+          value={form.receiver || ''}
+          onChange={e => setForm(f => ({ ...f, receiver: e.target.value }))}
+          placeholder="e.g. Jane Smith"
+        />
+        {renderErrorTooltip('receiver', errors)}
+      </label>
+      <label className="blog-form-field">
+        Purpose
+        <input
+          id="purpose"
+          name="purpose"
+          type="text"
+          value={form.purpose || ''}
+          onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))}
+          placeholder="e.g. Welcome new team member and provide onboarding details"
+        />
+        {renderErrorTooltip('purpose', errors)}
       </label>
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-        <label className="email-form-field" style={{ flex: 1 }}>
-          Max Words
+        <label className="blog-form-field" style={{ flex: 1 }}>
+          Tone
+          <CustomDropdown
+            options={toneOptions}
+            value={form.tone || ''}
+            onChange={(value) => setForm(f => ({ ...f, tone: value }))}
+            placeholder="Select tone"
+            closeOnSelect={false}
+          />
+          {renderErrorTooltip('tone', errors)}
+        </label>
+        <label className="blog-form-field" style={{ flex: 1 }}>
+          Length (words)
           <CustomDropdown
             options={maxWordsOptions}
-            value={form.maxWords || ''}
-            onChange={(value) => setForm(f => ({ ...f, maxWords: value }))}
-            placeholder="Select max words"
+            value={form.length || ''}
+            onChange={(value) => setForm(f => ({ ...f, length: value }))}
+            placeholder="Select length"
             closeOnSelect={false}
           />
-          {renderErrorTooltip('maxWords', errors)}
-        </label>
-                <label className="email-form-field" style={{ flex: 1 }}>
-          Temperature
-          <CustomDropdown
-            options={temperatureOptions}
-            value={form.temperature || ''}
-            onChange={(value) => setForm(f => ({ ...f, temperature: value }))}
-            placeholder="Select temperature"
-            closeOnSelect={false}
-          />
-          {renderErrorTooltip('temperature', errors)}
-        </label>
-        <label className="email-form-field" style={{ flex: 1 }}>
-          Max Tokens
-          <CustomDropdown
-            options={maxTokensOptions}
-            value={form.maxTokens || ''}
-            onChange={(value) => setForm(f => ({ ...f, maxTokens: value }))}
-            placeholder="Select max tokens"
-            closeOnSelect={false}
-          />
-          {renderErrorTooltip('maxTokens', errors)}
-        </label>
-     
-      </div>
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-   <label className="email-form-field" style={{ flex: 1 }}>
-          Complexity
-          <CustomDropdown
-            options={complexityOptions}
-            value={form.complexity || ''}
-            onChange={(value) => setForm(f => ({ ...f, complexity: value }))}
-            placeholder="Select complexity"
-            closeOnSelect={false}
-          />
-          {renderErrorTooltip('complexity', errors)}
-        </label>
-        <label className="email-form-field" style={{ flex: 1 }}>
-          Presentation
-          <CustomDropdown
-            options={presentationOptions}
-            value={form.presentation || ''}
-            onChange={(value) => setForm(f => ({ ...f, presentation: value }))}
-            placeholder="Select presentation"
-            closeOnSelect={false}
-          />
-          {renderErrorTooltip('presentation', errors)}
+          {renderErrorTooltip('length', errors)}
         </label>
       </div>
-      <div className="email-assistant-btn-row">
+      <div className="blog-assistant-btn-row">
         <button
           type="button"
           className="modal-btn-text"
@@ -222,12 +167,9 @@ export function EmailAssistantForm({
             setForm({
               sender: '',
               receiver: '',
-              content: '',
-              maxWords: '',
-              complexity: '',
-              presentation: '',
-              temperature: '',
-              maxTokens: ''
+              purpose: '',
+              tone: '',
+              length: ''
             })
           }}
         >
