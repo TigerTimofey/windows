@@ -135,6 +135,7 @@ export function StoryAssistantForm({
             value={form.length || ''}
             onChange={(value) => setForm(f => ({ ...f, length: value }))}
             placeholder="Select length"
+            closeOnSelect={false}
           />
           {renderErrorTooltip('length', errors)}
         </label>
@@ -145,6 +146,7 @@ export function StoryAssistantForm({
             value={form.style || ''}
             onChange={(value) => setForm(f => ({ ...f, style: value }))}
             placeholder="Select style"
+            closeOnSelect={false}
           />
           {renderErrorTooltip('style', errors)}
         </label>
@@ -156,6 +158,7 @@ export function StoryAssistantForm({
           value={form.mood || ''}
           onChange={(value) => setForm(f => ({ ...f, mood: value }))}
           placeholder="Select mood"
+          closeOnSelect={false}
         />
         {renderErrorTooltip('mood', errors)}
       </label>

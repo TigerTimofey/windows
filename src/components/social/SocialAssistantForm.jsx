@@ -1,6 +1,7 @@
 import React from 'react'
 import '../blog/BlogAssistantForm.css'
 import { platformOptions, toneOptions, ctaOptions } from './utils/formOptions.js'
+import { CustomDropdown } from '../modal/CustomDropdown.jsx'
 
 export function SocialAssistantForm({
   form, setForm, errors, setErrors, setLoading, setSocialResult,
@@ -89,6 +90,7 @@ export function SocialAssistantForm({
             value={form.platform || ''}
             onChange={(value) => setForm(f => ({ ...f, platform: value }))}
             placeholder="Select platform"
+            closeOnSelect={false}
           />
           {renderErrorTooltip('platform', errors)}
         </label>
@@ -99,6 +101,7 @@ export function SocialAssistantForm({
             value={form.tone || ''}
             onChange={(value) => setForm(f => ({ ...f, tone: value }))}
             placeholder="Select tone"
+            closeOnSelect={false}
           />
           {renderErrorTooltip('tone', errors)}
         </label>
@@ -122,6 +125,7 @@ export function SocialAssistantForm({
           value={form.cta || ''}
           onChange={(value) => setForm(f => ({ ...f, cta: value }))}
           placeholder="Select CTA"
+          closeOnSelect={false}
         />
         {renderErrorTooltip('cta', errors)}
       </label>

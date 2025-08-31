@@ -109,6 +109,7 @@ export function BlogAssistantForm({
             value={form.wordCount || ''}
             onChange={(value) => setForm(f => ({ ...f, wordCount: value }))}
             placeholder="Select word count"
+            closeOnSelect={false}
           />
           {renderErrorTooltip('wordCount', errors)}
         </label>
@@ -119,6 +120,7 @@ export function BlogAssistantForm({
             value={form.tone || ''}
             onChange={(value) => setForm(f => ({ ...f, tone: value }))}
             placeholder="Select tone"
+            closeOnSelect={false}
           />
           {renderErrorTooltip('tone', errors)}
         </label>
@@ -131,6 +133,7 @@ export function BlogAssistantForm({
             value={form.seoFocus || ''}
             onChange={(value) => setForm(f => ({ ...f, seoFocus: value }))}
             placeholder="Select SEO focus"
+            closeOnSelect={false}
           />
           {renderErrorTooltip('seoFocus', errors)}
         </label>
@@ -141,6 +144,7 @@ export function BlogAssistantForm({
             value={form.expertiseLevel || ''}
             onChange={(value) => setForm(f => ({ ...f, expertiseLevel: value }))}
             placeholder="Select expertise level"
+            closeOnSelect={false}
           />
           {renderErrorTooltip('expertiseLevel', errors)}
         </label>

@@ -161,6 +161,7 @@ export function EmailAssistantForm({
             value={form.maxWords || ''}
             onChange={(value) => setForm(f => ({ ...f, maxWords: value }))}
             placeholder="Select max words"
+            closeOnSelect={false}
           />
           {renderErrorTooltip('maxWords', errors)}
         </label>
@@ -171,6 +172,7 @@ export function EmailAssistantForm({
             value={form.temperature || ''}
             onChange={(value) => setForm(f => ({ ...f, temperature: value }))}
             placeholder="Select temperature"
+            closeOnSelect={false}
           />
           {renderErrorTooltip('temperature', errors)}
         </label>
@@ -181,6 +183,7 @@ export function EmailAssistantForm({
             value={form.maxTokens || ''}
             onChange={(value) => setForm(f => ({ ...f, maxTokens: value }))}
             placeholder="Select max tokens"
+            closeOnSelect={false}
           />
           {renderErrorTooltip('maxTokens', errors)}
         </label>
@@ -194,6 +197,7 @@ export function EmailAssistantForm({
             value={form.complexity || ''}
             onChange={(value) => setForm(f => ({ ...f, complexity: value }))}
             placeholder="Select complexity"
+            closeOnSelect={false}
           />
           {renderErrorTooltip('complexity', errors)}
         </label>
@@ -204,6 +208,7 @@ export function EmailAssistantForm({
             value={form.presentation || ''}
             onChange={(value) => setForm(f => ({ ...f, presentation: value }))}
             placeholder="Select presentation"
+            closeOnSelect={false}
           />
           {renderErrorTooltip('presentation', errors)}
         </label>

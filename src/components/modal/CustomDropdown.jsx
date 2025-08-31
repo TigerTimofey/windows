@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import './CustomDropdown.css'
 
-export function CustomDropdown({ options, value, onChange, placeholder, disabled = false }) {
+export function CustomDropdown({ options, value, onChange, placeholder, disabled = false, closeOnSelect = true }) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef(null)
 
@@ -18,7 +18,9 @@ export function CustomDropdown({ options, value, onChange, placeholder, disabled
 
   const handleSelect = (option) => {
     onChange(option)
-    setIsOpen(false)
+    if (closeOnSelect) {
+      setIsOpen(false)
+    }
   }
 
   const displayValue = value || placeholder

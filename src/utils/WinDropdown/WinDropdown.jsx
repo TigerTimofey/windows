@@ -1,12 +1,17 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import './WinDropdown.css'
 
-export function WinDropdown({ label, value, onChange, options, placeholder = 'Select...', required }) {
+export function WinDropdown({ label, value, onChange, options, placeholder = 'Select...', required, closeOnSelect = true }) {
   const [open, setOpen] = useState(false)
   const wrapperRef = useRef(null)
 
   const handleToggle = () => setOpen(o => !o)
-  const handleSelect = (v) => { onChange(v); setOpen(false) }
+  const handleSelect = (v) => { 
+    onChange(v); 
+    if (closeOnSelect) {
+      setOpen(false)
+    }
+  }
 
   const handleClickOutside = useCallback((e) => {
     if (!wrapperRef.current) return
