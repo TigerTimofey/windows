@@ -237,9 +237,6 @@ export function EmailAssistantForm({
           type="submit"
           className="modal-btn-text"
           disabled={loading}
-          onClick={() => {
-            console.log('[EmailAssistant] User data:', { ...form })
-          }}
         >
           {loading ? 'Generating...' : 'Generate'}
         </button>
