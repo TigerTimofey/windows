@@ -3,7 +3,7 @@ import { normalizeSpacing } from '../../utils/normalizeSpacing.js'
 import { EmailSignatureModal } from './SignatureModal/EmailSignatureModal.jsx'
 import { EditEmailModal } from './EditEmailModal/EditEmailModal.jsx'
 import './EmailResultModal.css'
-
+import { downloadFile } from '../../../../utils/exportUtils.js'
 
 function getPlainText(theme, message) {
   return `${theme}\n\n${message}`
@@ -25,18 +25,6 @@ function exportPDF(theme, message) {
   win.document.close()
   win.focus()
   win.print()
-}
-
-function downloadFile(content, filename, mime) {
-  const blob = new Blob([content], { type: mime })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
 }
 
 export function EmailResultModal({
