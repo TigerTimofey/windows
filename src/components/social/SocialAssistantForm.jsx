@@ -1,8 +1,6 @@
 import React from 'react'
 import '../blog/BlogAssistantForm.css'
-
-const platformOptions = ['X', 'LinkedIn', 'Instagram', 'Facebook', 'TikTok', 'YouTube']
-const toneOptions = ['professional', 'casual', 'formal', 'friendly', 'enthusiastic']
+import { platformOptions, toneOptions, ctaOptions } from './utils/formOptions.js'
 
 export function SocialAssistantForm({
   form, setForm, errors, setErrors, setLoading, setSocialResult,
@@ -129,14 +127,17 @@ export function SocialAssistantForm({
       </label>
       <label className="blog-form-field">
         CTA
-        <input
+        <select
           id="cta"
           name="cta"
-          type="text"
           value={form.cta || ''}
           onChange={e => setForm(f => ({ ...f, cta: e.target.value }))}
-          placeholder="e.g. Learn more"
-        />
+        >
+          <option value="">Select CTA</option>
+          {ctaOptions.map(opt => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
         {renderErrorTooltip('cta', errors)}
       </label>
       <div className="blog-assistant-btn-row">
