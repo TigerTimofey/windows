@@ -239,7 +239,6 @@ body, .windows-bg {
 .modal-btn-row { display: flex; gap: 12px; justify-content: center; }
 
 .modal-btn-text {
-
   padding: 3px 20px;
   font-family: inherit;
   font-size: 14px;

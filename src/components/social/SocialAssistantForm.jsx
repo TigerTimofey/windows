@@ -84,32 +84,22 @@ export function SocialAssistantForm({
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <label className="blog-form-field" style={{ flex: 1 }}>
           Platform
-          <select
-            id="platform"
-            name="platform"
+          <CustomDropdown
+            options={platformOptions}
             value={form.platform || ''}
-            onChange={e => setForm(f => ({ ...f, platform: e.target.value }))}
-          >
-            <option value="">Select platform</option>
-            {platformOptions.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
+            onChange={(value) => setForm(f => ({ ...f, platform: value }))}
+            placeholder="Select platform"
+          />
           {renderErrorTooltip('platform', errors)}
         </label>
         <label className="blog-form-field" style={{ flex: 1 }}>
           Tone
-          <select
-            id="tone"
-            name="tone"
+          <CustomDropdown
+            options={toneOptions}
             value={form.tone || ''}
-            onChange={e => setForm(f => ({ ...f, tone: e.target.value }))}
-          >
-            <option value="">Select tone</option>
-            {toneOptions.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
+            onChange={(value) => setForm(f => ({ ...f, tone: value }))}
+            placeholder="Select tone"
+          />
           {renderErrorTooltip('tone', errors)}
         </label>
       </div>
@@ -127,17 +117,12 @@ export function SocialAssistantForm({
       </label>
       <label className="blog-form-field">
         CTA
-        <select
-          id="cta"
-          name="cta"
+        <CustomDropdown
+          options={ctaOptions}
           value={form.cta || ''}
-          onChange={e => setForm(f => ({ ...f, cta: e.target.value }))}
-        >
-          <option value="">Select CTA</option>
-          {ctaOptions.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
+          onChange={(value) => setForm(f => ({ ...f, cta: value }))}
+          placeholder="Select CTA"
+        />
         {renderErrorTooltip('cta', errors)}
       </label>
       <div className="blog-assistant-btn-row">

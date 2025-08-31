@@ -1,10 +1,7 @@
 import React from 'react'
 import './BlogAssistantForm.css'
-
-const wordCountOptions = [500, 1000, 1500, 2000, 2500]
-const toneOptions = ['professional', 'casual', 'formal', 'friendly', 'enthusiastic']
-const seoFocusOptions = ['yes', 'no']
-const expertiseLevelOptions = ['beginner', 'intermediate', 'advanced']
+import { CustomDropdown } from '../modal/CustomDropdown.jsx'
+import { wordCountOptions, toneOptions, seoFocusOptions, expertiseLevelOptions } from '../social/utils/formOptions.js'
 
 export function BlogAssistantForm({
   form, setForm, errors, setErrors, setLoading, setBlogResult,
@@ -107,60 +104,44 @@ export function BlogAssistantForm({
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <label className="blog-form-field" style={{ flex: 1 }}>
           Word Count
-          <select
-            id="wordCount"
-            name="wordCount"
+          <CustomDropdown
+            options={wordCountOptions}
             value={form.wordCount || ''}
-            onChange={e => setForm(f => ({ ...f, wordCount: e.target.value }))}
-          >
-            <option value="">Select word count</option>
-            {wordCountOptions.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
+            onChange={(value) => setForm(f => ({ ...f, wordCount: value }))}
+            placeholder="Select word count"
+          />
           {renderErrorTooltip('wordCount', errors)}
         </label>
         <label className="blog-form-field" style={{ flex: 1 }}>
           Tone
-          <select
-            id="tone"
-            name="tone"
+          <CustomDropdown
+            options={toneOptions}
             value={form.tone || ''}
-            onChange={e => setForm(f => ({ ...f, tone: e.target.value }))}
-          >
-            <option value="">Select tone</option>
-            {toneOptions.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
+            onChange={(value) => setForm(f => ({ ...f, tone: value }))}
+            placeholder="Select tone"
+          />
           {renderErrorTooltip('tone', errors)}
         </label>
       </div>
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <label className="blog-form-field" style={{ flex: 1 }}>
           SEO Focus
-          <select
+          <CustomDropdown
+            options={seoFocusOptions}
             value={form.seoFocus || ''}
-            onChange={e => setForm(f => ({ ...f, seoFocus: e.target.value }))}
-          >
-            <option value="">Select SEO focus</option>
-            {seoFocusOptions.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
+            onChange={(value) => setForm(f => ({ ...f, seoFocus: value }))}
+            placeholder="Select SEO focus"
+          />
           {renderErrorTooltip('seoFocus', errors)}
         </label>
         <label className="blog-form-field" style={{ flex: 1 }}>
           Expertise Level
-          <select
+          <CustomDropdown
+            options={expertiseLevelOptions}
             value={form.expertiseLevel || ''}
-            onChange={e => setForm(f => ({ ...f, expertiseLevel: e.target.value }))}
-          >
-            <option value="">Select expertise level</option>
-            {expertiseLevelOptions.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
+            onChange={(value) => setForm(f => ({ ...f, expertiseLevel: value }))}
+            placeholder="Select expertise level"
+          />
           {renderErrorTooltip('expertiseLevel', errors)}
         </label>
       </div>

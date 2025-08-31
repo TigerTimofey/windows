@@ -1,9 +1,7 @@
 import React from 'react'
 import '../blog/BlogAssistantForm.css'
-
-const lengthOptions = [500, 1000, 1500, 2000, 2500]
-const styleOptions = ['narrative', 'descriptive', 'dialogue-heavy', 'action-packed', 'lyrical']
-const moodOptions = ['happy', 'sad', 'mysterious', 'tense', 'whimsical', 'dark', 'hopeful']
+import { CustomDropdown } from '../modal/CustomDropdown.jsx'
+import { lengthOptions, styleOptions, moodOptions } from '../social/utils/formOptions.js'
 
 export function StoryAssistantForm({
   form, setForm, errors, setErrors, setLoading, setStoryResult,
@@ -132,46 +130,33 @@ export function StoryAssistantForm({
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <label className="blog-form-field" style={{ flex: 1 }}>
           Length (words)
-          <select
-            id="length"
-            name="length"
+          <CustomDropdown
+            options={lengthOptions}
             value={form.length || ''}
-            onChange={e => setForm(f => ({ ...f, length: e.target.value }))}
-          >
-            <option value="">Select length</option>
-            {lengthOptions.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
+            onChange={(value) => setForm(f => ({ ...f, length: value }))}
+            placeholder="Select length"
+          />
           {renderErrorTooltip('length', errors)}
         </label>
         <label className="blog-form-field" style={{ flex: 1 }}>
           Style
-          <select
-            id="style"
-            name="style"
+          <CustomDropdown
+            options={styleOptions}
             value={form.style || ''}
-            onChange={e => setForm(f => ({ ...f, style: e.target.value }))}
-          >
-            <option value="">Select style</option>
-            {styleOptions.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
+            onChange={(value) => setForm(f => ({ ...f, style: value }))}
+            placeholder="Select style"
+          />
           {renderErrorTooltip('style', errors)}
         </label>
       </div>
       <label className="blog-form-field">
         Mood
-        <select
+        <CustomDropdown
+          options={moodOptions}
           value={form.mood || ''}
-          onChange={e => setForm(f => ({ ...f, mood: e.target.value }))}
-        >
-          <option value="">Select mood</option>
-          {moodOptions.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
+          onChange={(value) => setForm(f => ({ ...f, mood: value }))}
+          placeholder="Select mood"
+        />
         {renderErrorTooltip('mood', errors)}
       </label>
       <div className="blog-assistant-btn-row">
