@@ -19,7 +19,7 @@
 
 ## 📋 Table of Contents
 
- [🎯 Overview](#-overview)
+ [🎯 Overview](#-overview)<br/>
 [✨ Key Features](#-key-features)<br/>
 [🌿 Branch Strategy](#-branch-strategy)<br/>
 [⚡ Quick Start](#-quick-start)<br/>
