@@ -12,7 +12,7 @@
 
 </div>
 
----
+<br/>
 
 ## 📖 About
 
@@ -25,7 +25,7 @@ Ghostwriter is a nostalgic Windows 2000 desktop simulator featuring AI-powered w
 - **No Backend**: Direct frontend integration
 - **Easy Setup**: Just add your API key and run
 
----
+<br/>
 
 ## 🔑 Getting Your Hugging Face API Key
 
@@ -51,7 +51,7 @@ VITE_HF_API_KEY=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 Replace `hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` with your actual API key.
 
----
+<br/>
 
 ## 🚀 Quick Start
 
@@ -82,9 +82,9 @@ npm run dev
 ### Open Your Browser
 Navigate to: `http://localhost:5173`
 
----
+<br/>
 
-## �� How to Use
+## � How to Use
 
 1. **Login**: Enter the Windows 2000 login screen
 2. **Desktop**: Double-click AI assistant icons (Email, Blog, Social, Story)
@@ -97,35 +97,7 @@ Navigate to: `http://localhost:5173`
 - **📱 Social Media**: Platform-specific content
 - **📖 Story Assistant**: Creative writing help
 
----
-
-## 🛠️ Troubleshooting
-
-### API Key Issues
-- **403 Forbidden**: Check your API key is correct in `.env`
-- **Rate Limited**: Free tier has usage limits, consider upgrading
-- **Invalid Key**: Regenerate your token on Hugging Face
-
-### Common Errors
-- **Network Error**: Ensure internet connection
-- **Build Error**: Run `npm install` again
-- **Port Conflict**: Change port with `npm run dev -- --port 3000`
-
----
-
-## �� API Usage & Limits
-
-### Free Tier (Default)
-- **Requests**: 1,000/month
-- **Rate Limit**: 1 request/second
-- **Models**: Limited selection
-
-### Pro Tier ($9/month)
-- **Requests**: 100,000/month
-- **Rate Limit**: 10 requests/second
-- **Models**: Full access to all models
-
----
+<br/>
 
 ## 🔧 Development
 
@@ -138,22 +110,7 @@ src/
 └── assets/        # Images & sounds
 ```
 
-### Available Scripts
-```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run preview  # Preview production build
-```
-
----
-
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/TigerTimofey/windows/issues)
-- **API Docs**: [Hugging Face Docs](https://huggingface.co/docs)
-- **Community**: [Discord Server](https://discord.gg/ghostwriter)
-
----
+<br/>
 
 <div align="center">
 
