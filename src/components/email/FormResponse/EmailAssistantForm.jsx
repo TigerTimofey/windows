@@ -57,7 +57,7 @@ export function EmailAssistantForm({
         let streamEnded = false
         let buffer = ''
 
-        fetch(`${import.meta.env.VITE_BACKEND_URL}:${import.meta.env.VITE_BACKEND_PORT}/generate-stream`, {
+        fetch('/api/generate-stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt }),
