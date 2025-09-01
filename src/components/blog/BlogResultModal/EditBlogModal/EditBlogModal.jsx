@@ -54,7 +54,9 @@ export function EditBlogModal({
   setBody,
   conclusion,
   setConclusion,
-  onSave
+  onSave,
+  wordCount,
+  warning
 }) {
   const [exportMenuVisible, setShowExportMenu] = useState(false)
 
@@ -80,6 +82,8 @@ export function EditBlogModal({
           onClose && onClose()
         }}
       >
+        {wordCount && <div><b>Word Count:</b> {wordCount}</div>}
+        {warning && <div className="blog-assistant-error">{warning}</div>}
         <label className="blog-form-field">
           Title
           <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Blog Title" />

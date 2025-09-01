@@ -22,6 +22,8 @@ export function EditEmailModal({
   getMarkdown,
   getHTML,
   exportPDF,
+  wordCount,
+  warning
 }) {
   if (!open) return null
   return (
@@ -42,6 +44,8 @@ export function EditEmailModal({
           onClose && onClose()
         }}
       >
+        {wordCount && <div><b>Word Count:</b> {wordCount}</div>}
+        {warning && <div className="blog-assistant-error">{warning}</div>}
         <label className="email-form-field">
           Theme
           <input type="text" value={theme} onChange={handleThemeChange} placeholder="Email Theme" />

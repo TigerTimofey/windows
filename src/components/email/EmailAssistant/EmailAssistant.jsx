@@ -114,6 +114,8 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
           zIndex={zIndex + 10}
           onActivate={onActivate}
           sender={form.sender}
+          wordCount={emailResult.wordCount}
+          warning={emailResult.warning}
         />
       )}
       {errorModalOpen && (

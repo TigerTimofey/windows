@@ -10,7 +10,9 @@ export function SocialResultModal({
   setPosts,
   hashtags,
   setHashtags,
-  onSave
+  onSave,
+  wordCount,
+  warning
 }) {
   if (!open) return null
 
@@ -25,6 +27,8 @@ export function SocialResultModal({
       hashtags={hashtags}
       setHashtags={setHashtags}
       onSave={onSave}
+      wordCount={wordCount}
+      warning={warning}
     />
   )
 }

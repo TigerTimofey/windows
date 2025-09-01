@@ -41,7 +41,7 @@ async function query(data) {
 export function StoryAssistantForm({
   form, setForm, errors, setErrors, setLoading, setStoryResult,
   buildPrompt, extractTitle, extractIntro, extractBody, extractConclusion, cleanStoryText,
-  loading, renderErrorTooltip, onStartGenerate, storyResult
+  loading, renderErrorTooltip, onStartGenerate
 }) {
   React.useEffect(() => {
     setForm(f => ({
@@ -222,12 +222,7 @@ export function StoryAssistantForm({
         />
         {renderErrorTooltip('mood', errors)}
       </label>
-      {storyResult && !storyResult.error && (
-        <div style={{ marginBottom: '1rem' }}>
-          <div><b>Word Count:</b> {storyResult.wordCount}</div>
-          {storyResult.warning && <div className="blog-assistant-error">{storyResult.warning}</div>}
-        </div>
-      )}
+
       <div className="blog-assistant-btn-row">
         <button
           type="button"

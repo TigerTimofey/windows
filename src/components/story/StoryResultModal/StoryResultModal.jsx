@@ -14,7 +14,9 @@ export function StoryResultModal({
   setBody,
   conclusion,
   setConclusion,
-  onSave
+  onSave,
+  wordCount,
+  warning
 }) {
   if (!open) return null
 
@@ -33,6 +35,8 @@ export function StoryResultModal({
       conclusion={conclusion}
       setConclusion={setConclusion}
       onSave={onSave}
+      wordCount={wordCount}
+      warning={warning}
     />
   )
 }

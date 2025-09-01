@@ -31,7 +31,9 @@ export function EditSocialModal({
   setPosts,
   hashtags,
   setHashtags,
-  onSave
+  onSave,
+  wordCount,
+  warning
 }) {
   const [exportMenuVisible, setShowExportMenu] = useState(false)
 
@@ -55,6 +57,8 @@ export function EditSocialModal({
           onClose && onClose()
         }}
       >
+        {wordCount && <div><b>Total Word Count:</b> {wordCount}</div>}
+        {warning && <div className="blog-assistant-error">{warning}</div>}
         <label className="social-form-field">
           Posts
           <textarea

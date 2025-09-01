@@ -90,6 +90,8 @@ export function SocialModal({ open, onClose, zIndex = 130, onActivate, onMinimiz
             setSocialResult({ posts, hashtags })
             setResultModalOpen(false)
           }}
+          wordCount={socialResult.wordCount}
+          warning={socialResult.warning}
         />
       )}
       {errorModalOpen && (

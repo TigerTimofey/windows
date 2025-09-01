@@ -49,6 +49,8 @@ export function EmailResultModal({
   zIndex = 100,
   onActivate,
   sender,
+  wordCount,
+  warning
 }) {
   const [signatureModalOpen, setSignatureModalOpen] = useState(false)
   const [signatureType, setSignatureType] = useState('Best regards')
@@ -85,6 +87,8 @@ export function EmailResultModal({
         getMarkdown={getMarkdown}
         getHTML={getHTML}
         exportPDF={exportPDF}
+        wordCount={wordCount}
+        warning={warning}
       />
       {signatureModalOpen && (
         <EmailSignatureModal

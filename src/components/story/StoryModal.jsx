@@ -33,6 +33,8 @@ export function StoryModal({ open, onClose, zIndex = 130, onActivate, onMinimize
   const [editableIntro, setEditableIntro] = useState('')
   const [editableBody, setEditableBody] = useState('')
   const [editableConclusion, setEditableConclusion] = useState('')
+  const [editableWordCount, setEditableWordCount] = useState(0)
+  const [editableWarning, setEditableWarning] = useState('')
 
   useEffect(() => {
     if (open) setInstallStep(0)
@@ -44,6 +46,8 @@ export function StoryModal({ open, onClose, zIndex = 130, onActivate, onMinimize
       setEditableIntro(storyResult.intro)
       setEditableBody(storyResult.body)
       setEditableConclusion(storyResult.conclusion)
+      setEditableWordCount(storyResult.wordCount || 0)
+      setEditableWarning(storyResult.warning || '')
       setResultModalOpen(true)
       setLoading(false)
       setGenerating(false)
@@ -121,6 +125,8 @@ export function StoryModal({ open, onClose, zIndex = 130, onActivate, onMinimize
             setStoryResult({ title, intro, body, conclusion })
             setResultModalOpen(false)
           }}
+          wordCount={editableWordCount}
+          warning={editableWarning}
         />
       )}
       {errorModalOpen && (
