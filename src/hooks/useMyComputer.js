@@ -241,6 +241,7 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
   commitRename: (newName) => { if (newName) setName(newName.slice(0,32)); setRenaming(false) },
   cancelRename: () => setRenaming(false),
   renaming,
+  copyDescriptor: () => ({ id: 'mycomputer', name, icon: myComputerIcon })
   }
 }
 

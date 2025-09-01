@@ -147,5 +147,6 @@ export function useStoryIcon(binRef, addItemToBin, folderRef, onDroppedIntoFolde
     startRename: () => { setRenaming(true); closeContext() },
     commitRename: (val) => { if (val) setName(val.slice(0,32)); setRenaming(false) },
     cancelRename: () => setRenaming(false),
+    copyDescriptor: () => ({ id: 'story', name, icon: storyIcon })
   }
 }

@@ -147,5 +147,6 @@ export function useSocialIcon(binRef, addItemToBin, folderRef, onDroppedIntoFold
     startRename: () => { setRenaming(true); closeContext() },
     commitRename: (val) => { if (val) setName(val.slice(0,32)); setRenaming(false) },
     cancelRename: () => setRenaming(false),
+    copyDescriptor: () => ({ id: 'social', name, icon: socialIcon })
   }
 }
