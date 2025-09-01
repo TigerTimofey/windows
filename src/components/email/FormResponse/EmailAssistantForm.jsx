@@ -12,9 +12,10 @@ export function EmailAssistantForm({
   React.useEffect(() => {
     setForm(f => ({
       ...f,
-      content: f.content || 'I would like to welcome you to our team and provide onboarding details.',
       sender: f.sender || 'John Doe',
       receiver: f.receiver || 'Jane Smith',
+      purpose: f.purpose || 'Welcome new team member and provide onboarding details',
+      keyPoints: f.keyPoints || 'Welcome to the team\nProvide onboarding details\nSchedule an introduction meeting',
       maxWords: f.maxWords || 120,
       complexity: f.complexity || 'simple',
       presentation: f.presentation || 'clear paragraphs',
@@ -27,9 +28,10 @@ export function EmailAssistantForm({
       onSubmit={e => {
         e.preventDefault();
         const newErrors = {};
-        if (!form.content || !form.content.trim()) newErrors.content = 'Please provide the email content.';
         if (!form.sender || !form.sender.trim()) newErrors.sender = 'Please provide your name.';
         if (!form.receiver || !form.receiver.trim()) newErrors.receiver = 'Please provide the receiver name.';
+        if (!form.purpose || !form.purpose.trim()) newErrors.purpose = 'Please provide the email purpose.';
+        if (!form.keyPoints || !form.keyPoints.trim()) newErrors.keyPoints = 'Please provide key points.';
         if (!form.maxWords) newErrors.maxWords = 'Please select max words.';
         if (!form.complexity) newErrors.complexity = 'Please select complexity.';
         if (!form.presentation) newErrors.presentation = 'Please select presentation.';
@@ -43,7 +45,8 @@ export function EmailAssistantForm({
 
         const promptForm = {
           contentType: 'Email',
-          content: form.content,
+          purpose: form.purpose,
+          keyPoints: form.keyPoints,
           sender: form.sender,
           receiver: form.receiver,
           specifications: `Max ${form.maxWords} words. Platform: Gmail.`,
@@ -142,16 +145,28 @@ export function EmailAssistantForm({
         </label>
       </div>
       <label className="email-form-field">
-        Email Content
-        <textarea
-          id="content-message"
-          name="content"
-          value={form.content || ''}
-          onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-          rows={3}
-          placeholder="Type the main message or topic of your email..."
+        Purpose
+        <input
+          id="purpose"
+          name="purpose"
+          type="text"
+          value={form.purpose || ''}
+          onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))}
+          placeholder="e.g. Welcome new team member and provide onboarding details"
         />
-        {renderErrorTooltip('content', errors)}
+        {renderErrorTooltip('purpose', errors)}
+      </label>
+      <label className="email-form-field">
+        Key Points
+        <textarea
+          id="keyPoints"
+          name="keyPoints"
+          value={form.keyPoints || ''}
+          onChange={e => setForm(f => ({ ...f, keyPoints: e.target.value }))}
+          placeholder="e.g. Welcome to the team&#10;Provide onboarding details&#10;Schedule an introduction meeting"
+          rows="3"
+        />
+        {renderErrorTooltip('keyPoints', errors)}
       </label>
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <label className="email-form-field" style={{ flex: 1 }}>
@@ -222,7 +237,8 @@ export function EmailAssistantForm({
             setForm({
               sender: '',
               receiver: '',
-              content: '',
+              purpose: '',
+              keyPoints: '',
               maxWords: '',
               complexity: '',
               presentation: '',
