@@ -61,16 +61,18 @@ export function EmailAssistantForm({
         if (!form.length) newErrors.length = 'Please select length.';
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
+        const normalizedForm = normalizeForm(form);
+        setForm(normalizedForm);
         setLoading(true)
         if (onStartGenerate) onStartGenerate()
         setEmailResult({ theme: '', message: '' })
 
-        const prompt = buildPrompt(form)
+        const prompt = buildPrompt(normalizedForm)
         let theme = ''
         let message = ''
 
         let temp = 0.7;
-        switch (form.tone) {
+        switch (normalizedForm.tone) {
           case 'professional': temp = 0.5; break;
           case 'formal': temp = 0.6; break;
           case 'friendly': temp = 0.7; break;
@@ -80,7 +82,7 @@ export function EmailAssistantForm({
 
         query({ 
           prompt,
-          max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizeForm.wordCount) * 2)),
+          max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizedForm.length) * 2)),
           temperature: temp
         }).then(data => {
           if (data.error) {
