@@ -63,6 +63,10 @@ export function BlogAssistantForm({
         if (!form.topic || !form.topic.trim()) newErrors.topic = 'Please provide the blog topic.';
         if (!form.targetAudience || !form.targetAudience.trim()) newErrors.targetAudience = 'Please provide the target audience.';
         if (!form.wordCount || isNaN(parseInt(form.wordCount, 10))) newErrors.wordCount = 'Please provide a valid word count.';
+        if (form.wordCount && !isNaN(parseInt(form.wordCount, 10))) {
+          const num = parseInt(form.wordCount, 10);
+          if (num <= 0) newErrors.wordCount = 'Word count must be a positive number.';
+        }
         if (!form.tone) newErrors.tone = 'Please select tone.';
         if (!form.seoFocus) newErrors.seoFocus = 'Please select SEO focus.';
         if (!form.expertiseLevel) newErrors.expertiseLevel = 'Please select expertise level.';

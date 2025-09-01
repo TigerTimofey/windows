@@ -79,9 +79,9 @@ export function EmailAssistantForm({
         if (!form.keyPoints || !form.keyPoints.trim()) newErrors.keyPoints = 'Please provide key points.';
         if (!form.tone) newErrors.tone = 'Please select tone.';
         if (!form.length || !/^\d+$|^\d+-\d+$/.test(form.length.trim())) newErrors.length = 'Please provide a valid length (e.g. 100 or 100-150).';
-        if (form.length && /^\d+-\d+$/.test(form.length.trim())) {
-          const [min, max] = form.length.trim().split('-').map(Number);
-          if (min >= max || min <= 0 || max <= 0) newErrors.length = 'Invalid range: min must be less than max and both positive.';
+        if (form.length && /^\d+$/.test(form.length.trim())) {
+          const num = parseInt(form.length.trim(), 10);
+          if (num <= 0) newErrors.length = 'Length must be a positive number.';
         }
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;

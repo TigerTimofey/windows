@@ -65,6 +65,10 @@ export function StoryAssistantForm({
         if (!form.characters || !form.characters.trim()) newErrors.characters = 'Please provide the characters.';
         if (!form.setting || !form.setting.trim()) newErrors.setting = 'Please provide the setting.';
         if (!form.length || isNaN(parseInt(form.length, 10))) newErrors.length = 'Please provide a valid length.';
+        if (form.length && !isNaN(parseInt(form.length, 10))) {
+          const num = parseInt(form.length, 10);
+          if (num <= 0) newErrors.length = 'Length must be a positive number.';
+        }
         if (!form.style) newErrors.style = 'Please select style.';
         if (!form.targetAudience || !form.targetAudience.trim()) newErrors.targetAudience = 'Please provide the target audience.';
         if (!form.mood) newErrors.mood = 'Please select mood.';
