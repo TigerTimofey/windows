@@ -28,7 +28,7 @@ async function query(data) {
 		}
 	);
 	if (!response.ok) {
-		throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    throw new Error(`HTTP ${response.status}: The requested AI service endpoint was not found. Please try again later.`);
 	}
 	const contentType = response.headers.get('content-type');
 	if (!contentType || !contentType.includes('application/json')) {
