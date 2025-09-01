@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { getClampedBinPosition, isIconDroppedOnTarget } from '../hooks/useDesktop.js'
 import myComputerIcon from '../assets/win7/icons/mycomputer.svg'
+import { useTouchDrag } from './useTouchDrag.js'
 
 export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, getExtraFolderTargets, onDroppedIntoExtraFolder) {
   const [pos, setPos] = useState({ x: null, y: null })
@@ -19,6 +20,8 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
     (navigator && navigator.maxTouchPoints > 0) ||
     (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
   )
+
+  const { handleTouchStart, createTouchHandlers } = useTouchDrag(ref, dragOffset, movedRef, setDragging)
 
   const handleMouseDown = useCallback((e) => {
     if (e.button !== 0) return
@@ -109,15 +112,20 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
         }
       }
     }
+    const touchHandlers = createTouchHandlers(onMove, onUp)
     if (dragging) {
       document.addEventListener('mousemove', onMove)
       document.addEventListener('mouseup', onUp)
+      document.addEventListener('touchmove', touchHandlers.onTouchMove, { passive: false })
+      document.addEventListener('touchend', touchHandlers.onTouchEnd, { passive: false })
     }
     return () => {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
+      document.removeEventListener('touchmove', touchHandlers.onTouchMove, { passive: false })
+      document.removeEventListener('touchend', touchHandlers.onTouchEnd, { passive: false })
     }
-  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, name, getExtraFolderTargets, onDroppedIntoExtraFolder])
+  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, name, getExtraFolderTargets, onDroppedIntoExtraFolder, createTouchHandlers])
 
   const handleClick = useCallback(() => {
     if (!isTouchOrCoarse) return
@@ -205,6 +213,7 @@ export function useMyComputer(binRef, folderRef, onDroppedIntoBin, onDroppedInto
     modalOpen,
     setModalOpen,
     handleMouseDown,
+    handleTouchStart,
     handleClick,
     handleDoubleClick,
     style,

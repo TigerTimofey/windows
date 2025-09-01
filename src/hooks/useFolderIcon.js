@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import folderIcon from '../assets/win7/icons/folder.ico'
 import { getClampedBinPosition, isIconDroppedOnTarget } from './useDesktop.js'
+import { useTouchDrag } from './useTouchDrag.js'
 
 export function useFolderIcon(binRef, onDroppedIntoBin, getExtraFolderTargets, onDroppedIntoExtraFolder) {
   const [pos, setPos] = useState({ x: null, y: null })
@@ -19,6 +20,8 @@ export function useFolderIcon(binRef, onDroppedIntoBin, getExtraFolderTargets, o
     (navigator && navigator.maxTouchPoints > 0) ||
     (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
   )
+
+  const { handleTouchStart, createTouchHandlers } = useTouchDrag(ref, dragOffset, movedRef, setDragging)
 
   const handleMouseDown = useCallback((e) => {
     if (e.button !== 0) return
@@ -56,15 +59,20 @@ export function useFolderIcon(binRef, onDroppedIntoBin, getExtraFolderTargets, o
         }
       }
     }
+    const touchHandlers = createTouchHandlers(onMove, onUp)
     if (dragging) {
       document.addEventListener('mousemove', onMove)
       document.addEventListener('mouseup', onUp)
+      document.addEventListener('touchmove', touchHandlers.onTouchMove, { passive: false })
+      document.addEventListener('touchend', touchHandlers.onTouchEnd, { passive: false })
     }
     return () => {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
+      document.removeEventListener('touchmove', touchHandlers.onTouchMove, { passive: false })
+      document.removeEventListener('touchend', touchHandlers.onTouchEnd, { passive: false })
     }
-  }, [dragging, binRef, onDroppedIntoBin, name, getExtraFolderTargets, onDroppedIntoExtraFolder])
+  }, [dragging, binRef, onDroppedIntoBin, name, getExtraFolderTargets, onDroppedIntoExtraFolder, createTouchHandlers])
 
   const clampMenu = useCallback((x, y) => {
     const vw = window.innerWidth
@@ -115,6 +123,7 @@ export function useFolderIcon(binRef, onDroppedIntoBin, getExtraFolderTargets, o
     visible,
     style,
     handleMouseDown,
+    handleTouchStart,
     handleClick,
     handleDoubleClick,
     handleContextMenu,

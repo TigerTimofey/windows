@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import emailIcon from '../assets/win7/icons/email.ico'
-import { getClampedBinPosition, isIconDroppedOnTarget } from '../hooks/useDesktop.js'
+import { getClampedBinPosition, isIconDroppedOnTarget } from './useDesktop.js'
+import { useTouchDrag } from './useTouchDrag.js'
 
 export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, getExtraFolderTargets, onDroppedIntoExtraFolder) {
   const [pos, setPos] = useState({ x: null, y: null })
@@ -18,6 +19,8 @@ export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoF
     (navigator && navigator.maxTouchPoints > 0) ||
     (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
   )
+
+  const { handleTouchStart, createTouchHandlers } = useTouchDrag(ref, dragOffset, movedRef, setDragging)
 
   const handleMouseDown = useCallback((e) => {
     if (e.button !== 0) return
@@ -60,15 +63,20 @@ export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoF
         }
       }
     }
+    const touchHandlers = createTouchHandlers(onMove, onUp)
     if (dragging) {
       document.addEventListener('mousemove', onMove)
       document.addEventListener('mouseup', onUp)
+      document.addEventListener('touchmove', touchHandlers.onTouchMove, { passive: false })
+      document.addEventListener('touchend', touchHandlers.onTouchEnd, { passive: false })
     }
     return () => {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
+      document.removeEventListener('touchmove', touchHandlers.onTouchMove, { passive: false })
+      document.removeEventListener('touchend', touchHandlers.onTouchEnd, { passive: false })
     }
-  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, name, getExtraFolderTargets, onDroppedIntoExtraFolder])
+  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, name, getExtraFolderTargets, onDroppedIntoExtraFolder, createTouchHandlers])
 
   const clampMenu = useCallback((x, y) => {
     const vw = window.innerWidth
@@ -121,6 +129,7 @@ export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoF
     visible,
     style,
     handleMouseDown,
+    handleTouchStart,
     handleClick,
     handleDoubleClick,
     handleContextMenu,

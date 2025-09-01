@@ -5,6 +5,7 @@ export function BlogIcon({
   iconRef,
   style,
   onMouseDown,
+  onTouchStart,
   onContextMenu,
   name = 'Blog',
   renaming = false,
@@ -27,6 +28,7 @@ export function BlogIcon({
       ref={iconRef}
       style={style}
       onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
       onContextMenu={onContextMenu}
       onClick={onClick}
       onDoubleClick={onDoubleClick}

@@ -5,6 +5,7 @@ export function SocialIcon({
   iconRef,
   style,
   onMouseDown,
+  onTouchStart,
   onContextMenu,
   name = 'Social',
   renaming = false,
@@ -27,6 +28,7 @@ export function SocialIcon({
       ref={iconRef}
       style={style}
       onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
       onContextMenu={onContextMenu}
       onClick={onClick}
       onDoubleClick={onDoubleClick}

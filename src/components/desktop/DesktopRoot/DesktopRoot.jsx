@@ -88,7 +88,7 @@ export function DesktopRoot({ onShutdown }) {
   const cloned = useClonedIcons({ zCounterRef, recycleBinRef: recycle.binRef, addItemToBin, openHandlers: { email: () => { email.setModalOpen(true); bring('email') }, mycomputer: () => { setCompModalOpen(true); bring('comp') }, ghost: () => { folder.setModalOpen(true); bring('folder') }, story: () => { story.setModalOpen(true); bring('story') }, social: () => { social.setModalOpen(true); bring('social') } }, baseFolder: folder, getExtraFolderTargets, addItemToExtraFolder })
   const {
     ref: compRef, visible: compVisible, modalOpen: compModalOpen, setModalOpen: setCompModalOpen,
-    handleMouseDown: handleCompMouseDown, handleClick: handleCompClick, handleDoubleClick: handleCompDoubleClick,
+    handleMouseDown: handleCompMouseDown, handleTouchStart: handleCompTouchStart, handleClick: handleCompClick, handleDoubleClick: handleCompDoubleClick,
     style: compStyle, systemInfo: computerInfo, extra: compExtra, restore: restoreComputer, context: compContext,
     handleContextMenu: handleCompContextMenu, closeContext: closeCompContext, deleteSelf: deleteComputer,
     name: compName, renaming: compRenaming, startRename: compStartRename, commitRename: compCommitRename, cancelRename: compCancelRename
@@ -496,9 +496,9 @@ export function DesktopRoot({ onShutdown }) {
         minimizedModals={minimizedModals}
         onRestoreModal={restoreModal}
       />
-      {compVisible && <MyComputerIcon iconRef={compRef} style={compStyle} onMouseDown={(e)=>{ bring('comp'); handleCompMouseDown(e) }} onClick={handleCompClick} onDoubleClick={handleCompDoubleClick} onContextMenu={handleCompContextMenu} name={compName} renaming={compRenaming} onRenameCommit={compCommitRename} onRenameCancel={compCancelRename} />}
-      {email.visible && <EmailIcon iconRef={email.ref} style={email.style} onMouseDown={(e)=>{ bring('email'); email.handleMouseDown(e) }} onContextMenu={email.handleContextMenu} onClick={email.handleClick} onDoubleClick={email.handleDoubleClick} name={email.name} renaming={email.renaming} onRenameCommit={email.commitRename} onRenameCancel={email.cancelRename} />}
-      {folder.visible && <FolderIcon iconRef={folder.ref} style={folder.style} onMouseDown={(e)=>{ bring('folder'); folder.handleMouseDown(e) }} onContextMenu={folder.handleContextMenu} onClick={folder.handleClick} onDoubleClick={folder.handleDoubleClick} name={folder.name} renaming={folder.renaming} onRenameCommit={folder.commitRename} onRenameCancel={folder.cancelRename} />}
+      {compVisible && <MyComputerIcon iconRef={compRef} style={compStyle} onMouseDown={(e)=>{ bring('comp'); handleCompMouseDown(e) }} onTouchStart={(e)=>{ bring('comp'); handleCompTouchStart(e) }} onClick={handleCompClick} onDoubleClick={handleCompDoubleClick} onContextMenu={handleCompContextMenu} name={compName} renaming={compRenaming} onRenameCommit={compCommitRename} onRenameCancel={compCancelRename} />}
+      {email.visible && <EmailIcon iconRef={email.ref} style={email.style} onMouseDown={(e)=>{ bring('email'); email.handleMouseDown(e) }} onTouchStart={(e)=>{ bring('email'); email.handleTouchStart(e) }} onContextMenu={email.handleContextMenu} onClick={email.handleClick} onDoubleClick={email.handleDoubleClick} name={email.name} renaming={email.renaming} onRenameCommit={email.commitRename} onRenameCancel={email.cancelRename} />}
+      {folder.visible && <FolderIcon iconRef={folder.ref} style={folder.style} onMouseDown={(e)=>{ bring('folder'); folder.handleMouseDown(e) }} onTouchStart={(e)=>{ bring('folder'); folder.handleTouchStart(e) }} onContextMenu={folder.handleContextMenu} onClick={folder.handleClick} onDoubleClick={folder.handleDoubleClick} name={folder.name} renaming={folder.renaming} onRenameCommit={folder.commitRename} onRenameCancel={folder.cancelRename} />}
       {/* Render extra folders with zIndex 55 */}
       {extraFolders.filter(f=>f.visible).map(f=> (
         <div
@@ -882,6 +882,7 @@ export function DesktopRoot({ onShutdown }) {
             iconRef={internet.ref}
             style={internet.style}
             onMouseDown={internet.handleMouseDown}
+            onTouchStart={internet.handleTouchStart}
             onContextMenu={internet.handleContextMenu}
             name={internet.name}
             renaming={internet.renaming}
@@ -905,6 +906,7 @@ export function DesktopRoot({ onShutdown }) {
             iconRef={minesweeper.ref}
             style={minesweeper.style}
             onMouseDown={minesweeper.handleMouseDown}
+            onTouchStart={minesweeper.handleTouchStart}
             onContextMenu={minesweeper.handleContextMenu}
             name={minesweeper.name}
             renaming={minesweeper.renaming}
@@ -930,6 +932,7 @@ export function DesktopRoot({ onShutdown }) {
             iconRef={blog.ref}
             style={blog.style}
             onMouseDown={blog.handleMouseDown}
+            onTouchStart={blog.handleTouchStart}
             onContextMenu={blog.handleContextMenu}
             name={blog.name}
             renaming={blog.renaming}
@@ -955,6 +958,7 @@ export function DesktopRoot({ onShutdown }) {
             iconRef={story.ref}
             style={story.style}
             onMouseDown={story.handleMouseDown}
+            onTouchStart={story.handleTouchStart}
             onContextMenu={story.handleContextMenu}
             name={story.name}
             renaming={story.renaming}
@@ -980,6 +984,7 @@ export function DesktopRoot({ onShutdown }) {
             iconRef={social.ref}
             style={social.style}
             onMouseDown={social.handleMouseDown}
+            onTouchStart={social.handleTouchStart}
             onContextMenu={social.handleContextMenu}
             name={social.name}
             renaming={social.renaming}

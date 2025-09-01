@@ -5,6 +5,7 @@ export function MinesweeperIcon({
   iconRef,
   style,
   onMouseDown,
+  onTouchStart,
   onContextMenu,
   name = 'Minesweeper',
   renaming = false,
@@ -27,6 +28,7 @@ export function MinesweeperIcon({
       ref={iconRef}
       style={style}
       onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
       onContextMenu={onContextMenu}
       onClick={onClick}
       onDoubleClick={onDoubleClick}

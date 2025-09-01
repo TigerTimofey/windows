@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import internetIcon from '../../assets/win7/icons/gitgub.png'
 
 
-export function InternetIcon({ iconRef, style, onMouseDown, onContextMenu, name = 'GitHub', renaming = false, onRenameCommit, onRenameCancel }) {
+export function InternetIcon({ iconRef, style, onMouseDown, onTouchStart, onContextMenu, name = 'GitHub', renaming = false, onRenameCommit, onRenameCancel }) {
   const inputRef = useRef(null)
   useEffect(() => { if (renaming && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [renaming])
 
@@ -23,6 +23,7 @@ export function InternetIcon({ iconRef, style, onMouseDown, onContextMenu, name 
       ref={iconRef}
       style={style}
       onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
       onContextMenu={onContextMenu}
       onClick={isTouchOrCoarse ? openGitHub : undefined}
       onDoubleClick={!isTouchOrCoarse ? openGitHub : undefined}

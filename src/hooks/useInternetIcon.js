@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import internetIcon from '../assets/win7/icons/gitgub.png'
 import { getClampedBinPosition, isIconDroppedOnTarget } from './useDesktop.js'
+import { useTouchDrag } from './useTouchDrag.js'
 
 export function useInternetIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIntoFolder, getExtraFolderTargets, onDroppedIntoExtraFolder) {
   const [pos, setPos] = useState({ x: 18, y: 300 })
@@ -25,6 +26,8 @@ export function useInternetIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIn
     const rect = ref.current.getBoundingClientRect()
     dragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
   }, [])
+
+  const { handleTouchStart, createTouchHandlers } = useTouchDrag(ref, dragOffset, movedRef, setDragging)
 
   useEffect(() => {
     function onMove(e) {
@@ -59,15 +62,20 @@ export function useInternetIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIn
         }
       }
     }
+    const touchHandlers = createTouchHandlers(onMove, onUp)
     if (dragging) {
       document.addEventListener('mousemove', onMove)
       document.addEventListener('mouseup', onUp)
+      document.addEventListener('touchmove', touchHandlers.onTouchMove, { passive: false })
+      document.addEventListener('touchend', touchHandlers.onTouchEnd, { passive: false })
     }
     return () => {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
+      document.removeEventListener('touchmove', touchHandlers.onTouchMove, { passive: false })
+      document.removeEventListener('touchend', touchHandlers.onTouchEnd, { passive: false })
     }
-  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, name, getExtraFolderTargets, onDroppedIntoExtraFolder])
+  }, [dragging, binRef, folderRef, onDroppedIntoBin, onDroppedIntoFolder, name, getExtraFolderTargets, onDroppedIntoExtraFolder, createTouchHandlers])
 
   const clampMenu = useCallback((x, y) => {
     const vw = window.innerWidth
@@ -120,6 +128,7 @@ export function useInternetIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIn
     visible,
     style,
     handleMouseDown,
+    handleTouchStart,
     handleClick,
     handleDoubleClick,
     handleContextMenu,

@@ -5,6 +5,7 @@ export function StoryIcon({
   iconRef,
   style,
   onMouseDown,
+  onTouchStart,
   onContextMenu,
   name = 'Our Story',
   renaming = false,
@@ -27,6 +28,7 @@ export function StoryIcon({
       ref={iconRef}
       style={style}
       onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
       onContextMenu={onContextMenu}
       onClick={onClick}
       onDoubleClick={onDoubleClick}

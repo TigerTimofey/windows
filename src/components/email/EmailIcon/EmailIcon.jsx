@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import emailIcon from '../../../assets/win7/icons/email.ico'
 import './EmailIcon.css'
 
-export function EmailIcon({ iconRef, style, onMouseDown, onContextMenu, onClick, onDoubleClick, name='Email', renaming=false, onRenameCommit, onRenameCancel }) {
+export function EmailIcon({ iconRef, style, onMouseDown, onTouchStart, onContextMenu, onClick, onDoubleClick, name='Email', renaming=false, onRenameCommit, onRenameCancel }) {
   const inputRef = useRef(null)
   useEffect(() => { if (renaming && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [renaming])
   return (
@@ -11,6 +11,7 @@ export function EmailIcon({ iconRef, style, onMouseDown, onContextMenu, onClick,
       ref={iconRef}
       style={style}
       onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
       onContextMenu={onContextMenu}
   onClick={onClick}
   onDoubleClick={onDoubleClick}

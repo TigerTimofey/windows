@@ -24,14 +24,26 @@ export function useRecycleBin() {
       if (!dragging) return
       setBinPos(getClampedBinPosition(e, dragOffset, binRef, 10))
     }
+    function onTouchMove(e) {
+      if (!dragging) return
+      const touch = e.touches[0]
+      const fakeEvent = { clientX: touch.clientX, clientY: touch.clientY }
+      setBinPos(getClampedBinPosition(fakeEvent, dragOffset, binRef, 10))
+      e.preventDefault()
+    }
     function onMouseUp() { setDragging(false) }
+    function onTouchEnd() { setDragging(false) }
     if (dragging) {
       document.addEventListener('mousemove', onMouseMove)
       document.addEventListener('mouseup', onMouseUp)
+      document.addEventListener('touchmove', onTouchMove)
+      document.addEventListener('touchend', onTouchEnd)
     }
     return () => {
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', onTouchEnd)
     }
   }, [dragging])
 
@@ -60,6 +72,9 @@ export function useRecycleBin() {
   function handleTouchStart(e) {
     if (e.touches.length !== 1) return
     const t = e.touches[0]
+    setDragging(true)
+    const rect = binRef.current.getBoundingClientRect()
+    dragOffset.current = { x: t.clientX - rect.left, y: t.clientY - rect.top }
     longPressTimer.current = setTimeout(() => openContextAt(t.clientX, t.clientY), 600)
   }
   function cancelLongPress() {

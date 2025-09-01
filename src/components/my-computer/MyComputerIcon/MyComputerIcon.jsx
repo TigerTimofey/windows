@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import myComputerIcon from '../../../assets/win7/icons/mycomputer.svg'
 
-export function MyComputerIcon({ iconRef, style, onMouseDown, onClick, onDoubleClick, onContextMenu, name = 'My Computer', renaming = false, onRenameCommit, onRenameCancel }) {
+export function MyComputerIcon({ iconRef, style, onMouseDown, onTouchStart, onClick, onDoubleClick, onContextMenu, name = 'My Computer', renaming = false, onRenameCommit, onRenameCancel }) {
   const inputRef = useRef(null)
   useEffect(() => { if (renaming && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [renaming])
   return (
@@ -10,6 +10,7 @@ export function MyComputerIcon({ iconRef, style, onMouseDown, onClick, onDoubleC
       ref={iconRef}
       style={style}
       onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
   onContextMenu={onContextMenu}

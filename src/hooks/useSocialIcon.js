@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import socialIcon from '../assets/win7/icons/social.ico'
 import { getClampedBinPosition, isIconDroppedOnTarget } from './useDesktop.js'
+import { useTouchDrag } from './useTouchDrag.js'
 
 export function useSocialIcon(binRef, addItemToBin, folderRef, onDroppedIntoFolder, getExtraFolderTargets, onDroppedIntoExtraFolder) {
   const [pos, setPos] = useState({ x: 110, y: 210 })
@@ -26,6 +27,8 @@ export function useSocialIcon(binRef, addItemToBin, folderRef, onDroppedIntoFold
     const rect = ref.current.getBoundingClientRect()
     dragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
   }, [])
+
+  const { handleTouchStart, createTouchHandlers } = useTouchDrag(ref, dragOffset, movedRef, setDragging)
 
   useEffect(() => {
     function onMove(e) {
@@ -60,15 +63,20 @@ export function useSocialIcon(binRef, addItemToBin, folderRef, onDroppedIntoFold
         }
       }
     }
+    const touchHandlers = createTouchHandlers(onMove, onUp)
     if (dragging) {
       document.addEventListener('mousemove', onMove)
       document.addEventListener('mouseup', onUp)
+      document.addEventListener('touchmove', touchHandlers.onTouchMove, { passive: false })
+      document.addEventListener('touchend', touchHandlers.onTouchEnd, { passive: false })
     }
     return () => {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
+      document.removeEventListener('touchmove', touchHandlers.onTouchMove, { passive: false })
+      document.removeEventListener('touchend', touchHandlers.onTouchEnd, { passive: false })
     }
-  }, [dragging, binRef, folderRef, addItemToBin, onDroppedIntoFolder, name, getExtraFolderTargets, onDroppedIntoExtraFolder])
+  }, [dragging, binRef, folderRef, addItemToBin, onDroppedIntoFolder, name, getExtraFolderTargets, onDroppedIntoExtraFolder, createTouchHandlers])
 
   const clampMenu = useCallback((x, y) => {
     const vw = window.innerWidth
@@ -119,6 +127,7 @@ export function useSocialIcon(binRef, addItemToBin, folderRef, onDroppedIntoFold
     visible,
     style,
     handleMouseDown,
+    handleTouchStart,
     handleClick,
     handleDoubleClick,
     handleContextMenu,
