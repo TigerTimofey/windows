@@ -184,7 +184,10 @@ async function query(data) {
           name="sender"
           type="text"
           value={form.sender || ''}
-          onChange={e => setForm(f => ({ ...f, sender: e.target.value }))}
+          onChange={e => {
+            setForm(f => ({ ...f, sender: e.target.value }));
+            setErrors(err => ({ ...err, sender: undefined }));
+          }}
           placeholder="e.g. John Doe"
         />
         {renderErrorTooltip('sender', errors)}
@@ -194,9 +197,12 @@ async function query(data) {
         <input
           id="receiver"
           name="receiver"
-          type="text"
+          type="texxt"
           value={form.receiver || ''}
-          onChange={e => setForm(f => ({ ...f, receiver: e.target.value }))}
+          onChange={e => {
+            setForm(f => ({ ...f, receiver: e.target.value }));
+            setErrors(err => ({ ...err, receiver: undefined }));
+          }}
           placeholder="e.g. Jane Smith"
         />
         {renderErrorTooltip('receiver', errors)}
@@ -208,7 +214,10 @@ async function query(data) {
           name="recipientContext"
           type="text"
           value={form.recipientContext || ''}
-          onChange={e => setForm(f => ({ ...f, recipientContext: e.target.value }))}
+          onChange={e => {
+            setForm(f => ({ ...f, recipientContext: e.target.value }));
+            setErrors(err => ({ ...err, recipientContext: undefined }));
+          }}
           placeholder="e.g. A new team member joining the marketing department"
         />
         {renderErrorTooltip('recipientContext', errors)}
@@ -220,7 +229,10 @@ async function query(data) {
           name="purpose"
           type="text"
           value={form.purpose || ''}
-          onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))}
+          onChange={e => {
+            setForm(f => ({ ...f, purpose: e.target.value }));
+            setErrors(err => ({ ...err, purpose: undefined }));
+          }}
           placeholder="e.g. Welcome new team member and provide onboarding details"
         />
         {renderErrorTooltip('purpose', errors)}
@@ -231,7 +243,10 @@ async function query(data) {
           id="keyPoints"
           name="keyPoints"
           value={form.keyPoints || ''}
-          onChange={e => setForm(f => ({ ...f, keyPoints: e.target.value }))}
+          onChange={e => {
+            setForm(f => ({ ...f, keyPoints: e.target.value }));
+            setErrors(err => ({ ...err, keyPoints: undefined }));
+          }}
           placeholder="e.g. Welcome to the team&#10;Provide onboarding details&#10;Schedule an introduction meeting"
           rows="3"
         />
@@ -243,7 +258,10 @@ async function query(data) {
           <CustomDropdown
             options={toneOptions}
             value={form.tone || ''}
-            onChange={(value) => setForm(f => ({ ...f, tone: value }))}
+            onChange={(value) => {
+              setForm(f => ({ ...f, tone: value }));
+              setErrors(err => ({ ...err, tone: undefined }));
+            }}
             placeholder="Select tone"
             closeOnSelect={false}
           />
@@ -254,7 +272,10 @@ async function query(data) {
           <input
             type="text"
             value={form.length || ''}
-            onChange={(e) => setForm(f => ({ ...f, length: e.target.value }))}
+            onChange={(e) => {
+              setForm(f => ({ ...f, length: e.target.value }));
+              setErrors(err => ({ ...err, length: undefined }));
+            }}
             placeholder="e.g. 100 or 100-150"
           />
           {renderErrorTooltip('length', errors)}

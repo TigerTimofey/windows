@@ -17,6 +17,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
     receiver: '',
     recipientContext: '',
     purpose: '',
+    keyPoints: '',
     tone: '',
     length: ''
   })
