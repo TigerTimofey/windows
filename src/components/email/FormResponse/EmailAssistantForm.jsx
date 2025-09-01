@@ -178,7 +178,8 @@ async function query(data) {
         })
       }}
     >
-      <label className="blog-form-field">
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+      <label className="blog-form-field" style={{ flex: 1 }}>
         Sender
         <input
           id="sender"
@@ -193,7 +194,7 @@ async function query(data) {
         />
         {renderErrorTooltip('sender', errors)}
       </label>
-      <label className="blog-form-field">
+      <label className="blog-form-field" style={{ flex: 1 }}>
         Receiver
         <input
           id="receiver"
@@ -208,6 +209,8 @@ async function query(data) {
         />
         {renderErrorTooltip('receiver', errors)}
       </label>
+      </div>
+
       <label className="blog-form-field">
         Recipient Context
         <input

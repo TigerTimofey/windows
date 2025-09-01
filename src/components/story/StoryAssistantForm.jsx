@@ -203,7 +203,8 @@ async function query(data) {
         />
         {renderErrorTooltip('setting', errors)}
       </label>
-      <label className="blog-form-field">
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+      <label className="blog-form-field" style={{ flex: 1 }}>
         Target Audience
         <input
           id="targetAudience"
@@ -215,8 +216,7 @@ async function query(data) {
         />
         {renderErrorTooltip('targetAudience', errors)}
       </label>
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-        <label className="blog-form-field" style={{ flex: 1 }}>
+            <label className="blog-form-field" style={{ flex: 1 }}>
           Length (words)
           <input
             type="text"
@@ -226,6 +226,9 @@ async function query(data) {
           />
           {renderErrorTooltip('length', errors)}
         </label>
+      </div>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+  
         <label className="blog-form-field" style={{ flex: 1 }}>
           Style
           <CustomDropdown
@@ -236,9 +239,8 @@ async function query(data) {
             closeOnSelect={false}
           />
           {renderErrorTooltip('style', errors)}
-        </label>
-      </div>
-      <label className="blog-form-field">
+        </label>  
+        <label className="blog-form-field" style={{ flex: 1 }}>
         Mood
         <CustomDropdown
           options={moodOptions}
@@ -249,6 +251,8 @@ async function query(data) {
         />
         {renderErrorTooltip('mood', errors)}
       </label>
+      </div>
+    
 
       <div className="blog-assistant-btn-row">
         <button
