@@ -301,7 +301,7 @@ export function DesktopRoot({ onShutdown }) {
     if (id === 'email') { email.setModalOpen(true); bring('email'); return }
     if (id === 'mycomputer') { setCompModalOpen(true); bring('comp'); return }
     if (id === 'ghost-folder') { folder.setModalOpen(true); bring('folder'); return }
-    if (id === 'internet') { internet.setModalOpen(true); bring('internet'); return }
+    if (id === 'internet') { window.open('https://github.com/TigerTimofey/windows', '_blank', 'noopener,noreferrer'); return }
     if (id === 'minesweeper') { minesweeper.setModalOpen(true); bring('minesweeper'); return }
     if (id === 'blog') { blog.setModalOpen(true); bring('blog'); return }
     if (id === 'story') { story.setModalOpen(true); bring('story'); return }
@@ -893,7 +893,7 @@ export function DesktopRoot({ onShutdown }) {
             x={internet.context.x}
             y={internet.context.y}
             open={internet.context.open}
-            onOpen={() =>{ internet.closeContext()}}
+            onOpen={() => { window.open('https://github.com/TigerTimofey/windows', '_blank', 'noopener,noreferrer'); internet.closeContext(); }}
             onDelete={internet.deleteSelf}
             onRename={internet.startRename}
             onCopy={() => { copyHandlers.copyInternet(); internet.closeContext(); }}
