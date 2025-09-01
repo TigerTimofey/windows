@@ -10,7 +10,7 @@
 [![Ollama](https://img.shields.io/badge/Ollama-Local-orange.svg)](https://ollama.ai/)
 [![License](https://img.shields.io/badge/License-Private-red.svg)]()
 
-[🚀 Live Demo](https://windows-mu-plum.vercel.app/) • [🐛 Report Issues](https://github.com/TigerTimofey/windows/issues)
+[🚀 Live Demo](https://windows-lilac.vercel.app/) • [🐛 Report Issues](https://github.com/TigerTimofey/windows/issues)
 
 
 </div>
