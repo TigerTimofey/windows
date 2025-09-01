@@ -69,11 +69,19 @@ export function BlogAssistantForm({
         let intro = ''
         let body = ''
         let conclusion = ''
+    let temp = 0.7;
+        switch (form.tone) {
+          case 'professional': temp = 0.5; break;
+          case 'formal': temp = 0.6; break;
+          case 'friendly': temp = 0.7; break;
+          case 'casual': temp = 0.8; break;
+          case 'enthusiastic': temp = 0.9; break;
+        }
 
         query({ 
           prompt,
           max_tokens: 2000,
-          temperature: 0.7
+          temperature: temp
         }).then(data => {
           if (data.error) {
             setBlogResult({ error: data.error })
