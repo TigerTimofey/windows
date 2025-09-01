@@ -73,7 +73,7 @@ export function EmailAssistantForm({
 
         query({ 
           prompt,
-          max_tokens: 1500,
+          max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizedForm.length) * 2)),
           temperature: 0.7
         }).then(data => {
           if (data.error) {

@@ -74,7 +74,7 @@ export function BlogAssistantForm({
 
         query({ 
           prompt,
-          max_tokens: 2000,
+          max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizedForm.wordCount) * 2)),
           temperature: 0.7
         }).then(data => {
           if (data.error) {
