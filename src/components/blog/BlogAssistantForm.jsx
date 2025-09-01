@@ -1,7 +1,8 @@
 import React from 'react'
 import './BlogAssistantForm.css'
 import { CustomDropdown } from '../modal/CustomDropdown.jsx'
-import { wordCountOptions, toneOptions, seoFocusOptions, expertiseLevelOptions } from '../social/utils/formOptions.js'
+import { toneOptions, seoFocusOptions, expertiseLevelOptions } from '../social/utils/formOptions.js'
+import { normalizeForm } from '../../utils/normalizeInput.js'
 
 async function query(data) {
 	const response = await fetch(
@@ -39,7 +40,7 @@ export function BlogAssistantForm({
       ...f,
       topic: f.topic || 'The Future of AI in Business',
       targetAudience: f.targetAudience || 'Business professionals and entrepreneurs',
-      wordCount: f.wordCount || 1000,
+      wordCount: f.wordCount || '1000',
       tone: f.tone || 'professional',
       seoFocus: f.seoFocus || 'yes',
       expertiseLevel: f.expertiseLevel || 'intermediate'
@@ -53,17 +54,19 @@ export function BlogAssistantForm({
         const newErrors = {};
         if (!form.topic || !form.topic.trim()) newErrors.topic = 'Please provide the blog topic.';
         if (!form.targetAudience || !form.targetAudience.trim()) newErrors.targetAudience = 'Please provide the target audience.';
-        if (!form.wordCount) newErrors.wordCount = 'Please select word count.';
+        if (!form.wordCount || isNaN(parseInt(form.wordCount, 10))) newErrors.wordCount = 'Please provide a valid word count.';
         if (!form.tone) newErrors.tone = 'Please select tone.';
         if (!form.seoFocus) newErrors.seoFocus = 'Please select SEO focus.';
         if (!form.expertiseLevel) newErrors.expertiseLevel = 'Please select expertise level.';
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
+        const normalizedForm = normalizeForm(form);
+        setForm(normalizedForm);
         setLoading(true)
         if (onStartGenerate) onStartGenerate()
         setBlogResult({ title: '', intro: '', body: '', conclusion: '' })
 
-        const prompt = buildPrompt(form)
+        const prompt = buildPrompt(normalizedForm)
         let title = ''
         let intro = ''
         let body = ''
@@ -131,12 +134,11 @@ export function BlogAssistantForm({
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <label className="blog-form-field" style={{ flex: 1 }}>
           Word Count
-          <CustomDropdown
-            options={wordCountOptions}
+          <input
+            type="text"
             value={form.wordCount || ''}
-            onChange={(value) => setForm(f => ({ ...f, wordCount: value }))}
-            placeholder="Select word count"
-            closeOnSelect={false}
+            onChange={(e) => setForm(f => ({ ...f, wordCount: e.target.value }))}
+            placeholder="e.g. 1000 or 800-1200"
           />
           {renderErrorTooltip('wordCount', errors)}
         </label>

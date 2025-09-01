@@ -2,6 +2,7 @@ import React from 'react'
 import '../blog/BlogAssistantForm.css'
 import { platformOptions, toneOptions, ctaOptions } from './utils/formOptions.js'
 import { CustomDropdown } from '../modal/CustomDropdown.jsx'
+import { normalizeForm } from '../../utils/normalizeInput.js'
 
 async function query(data) {
 	const response = await fetch(
@@ -57,11 +58,13 @@ export function SocialAssistantForm({
         if (!form.cta || !form.cta.trim()) newErrors.cta = 'Please provide the CTA.';
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
+        const normalizedForm = normalizeForm(form);
+        setForm(normalizedForm);
         setLoading(true)
         if (onStartGenerate) onStartGenerate()
         setSocialResult({ posts: [], hashtags: [] })
 
-        const prompt = buildPrompt(form)
+        const prompt = buildPrompt(normalizedForm)
 
         query({ 
           prompt,

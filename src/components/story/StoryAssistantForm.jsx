@@ -1,7 +1,8 @@
 import React from 'react'
 import '../blog/BlogAssistantForm.css'
 import { CustomDropdown } from '../modal/CustomDropdown.jsx'
-import { lengthOptions, styleOptions, moodOptions } from '../social/utils/formOptions.js'
+import { styleOptions, moodOptions } from '../social/utils/formOptions.js'
+import { normalizeForm } from '../../utils/normalizeInput.js'
 
 async function query(data) {
 	const response = await fetch(
@@ -40,7 +41,7 @@ export function StoryAssistantForm({
       genre: f.genre || 'Fantasy',
       characters: f.characters || 'A young hero, a wise mentor, a cunning villain',
       setting: f.setting || 'A magical forest in medieval times',
-      length: f.length || 1000,
+      length: f.length || '1000',
       style: f.style || 'narrative',
       targetAudience: f.targetAudience || 'Young adults',
       mood: f.mood || 'hopeful'
@@ -55,17 +56,19 @@ export function StoryAssistantForm({
         if (!form.genre || !form.genre.trim()) newErrors.genre = 'Please provide the story genre.';
         if (!form.characters || !form.characters.trim()) newErrors.characters = 'Please provide the characters.';
         if (!form.setting || !form.setting.trim()) newErrors.setting = 'Please provide the setting.';
-        if (!form.length) newErrors.length = 'Please select length.';
+        if (!form.length || isNaN(parseInt(form.length, 10))) newErrors.length = 'Please provide a valid length.';
         if (!form.style) newErrors.style = 'Please select style.';
         if (!form.targetAudience || !form.targetAudience.trim()) newErrors.targetAudience = 'Please provide the target audience.';
         if (!form.mood) newErrors.mood = 'Please select mood.';
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
+        const normalizedForm = normalizeForm(form);
+        setForm(normalizedForm);
         setLoading(true)
         if (onStartGenerate) onStartGenerate()
         setStoryResult({ title: '', intro: '', body: '', conclusion: '' })
 
-        const prompt = buildPrompt(form)
+        const prompt = buildPrompt(normalizedForm)
         let title = ''
         let intro = ''
         let body = ''
@@ -157,12 +160,11 @@ export function StoryAssistantForm({
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <label className="blog-form-field" style={{ flex: 1 }}>
           Length (words)
-          <CustomDropdown
-            options={lengthOptions}
+          <input
+            type="text"
             value={form.length || ''}
-            onChange={(value) => setForm(f => ({ ...f, length: value }))}
-            placeholder="Select length"
-            closeOnSelect={false}
+            onChange={(e) => setForm(f => ({ ...f, length: e.target.value }))}
+            placeholder="e.g. 1000 or 800-1200"
           />
           {renderErrorTooltip('length', errors)}
         </label>

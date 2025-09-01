@@ -1,8 +1,9 @@
 import React from 'react'
 import '../../blog/BlogAssistantForm.css'
-import { normalizeSpacing } from '../utils/normalizeSpacing'
+import { normalizeSpacing } from '../utils/normalizeSpacing.js'
 import { CustomDropdown } from '../../modal/CustomDropdown.jsx'
-import { maxWordsOptions, toneOptions } from '../../social/utils/formOptions.js'
+import { toneOptions } from '../../social/utils/formOptions.js'
+import { normalizeForm } from '../../../utils/normalizeInput.js'
 
 async function query(data) {
 	const response = await fetch(
@@ -43,7 +44,7 @@ export function EmailAssistantForm({
       purpose: f.purpose || 'Welcome new team member and provide onboarding details',
       keyPoints: f.keyPoints || 'Welcome to the team\nProvide onboarding details\nSchedule an introduction meeting',
       tone: f.tone || 'professional',
-      length: f.length || 120
+      length: f.length || '120'
     }))
   }, [setForm])
 
@@ -57,14 +58,16 @@ export function EmailAssistantForm({
         if (!form.purpose || !form.purpose.trim()) newErrors.purpose = 'Please provide the email purpose.';
         if (!form.keyPoints || !form.keyPoints.trim()) newErrors.keyPoints = 'Please provide key points.';
         if (!form.tone) newErrors.tone = 'Please select tone.';
-        if (!form.length) newErrors.length = 'Please select length.';
+        if (!form.length || isNaN(parseInt(form.length, 10))) newErrors.length = 'Please provide a valid length.';
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
+        const normalizedForm = normalizeForm(form);
+        setForm(normalizedForm);
         setLoading(true)
         if (onStartGenerate) onStartGenerate()
         setEmailResult({ theme: '', message: '' })
 
-        const prompt = buildPrompt(form)
+        const prompt = buildPrompt(normalizedForm)
         let theme = ''
         let message = ''
 
@@ -162,12 +165,11 @@ export function EmailAssistantForm({
         </label>
         <label className="blog-form-field" style={{ flex: 1 }}>
           Length (words)
-          <CustomDropdown
-            options={maxWordsOptions}
+          <input
+            type="text"
             value={form.length || ''}
-            onChange={(value) => setForm(f => ({ ...f, length: value }))}
-            placeholder="Select length"
-            closeOnSelect={false}
+            onChange={(e) => setForm(f => ({ ...f, length: e.target.value }))}
+            placeholder="e.g. 120 or 100-150"
           />
           {renderErrorTooltip('length', errors)}
         </label>
