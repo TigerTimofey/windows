@@ -3,6 +3,7 @@ import '../blog/BlogAssistantForm.css'
 import { platformOptions, toneOptions, ctaOptions } from './utils/formOptions.js'
 import { CustomDropdown } from '../modal/CustomDropdown.jsx'
 import { normalizeForm } from '../../utils/normalizeInput.js'
+import { getUserFriendlyError } from '../../utils/errorUtils.js'
 
 async function query(data) {
   const response = await fetch(`${import.meta.env.VITE_BACKEND_ORIGIN}/generate-social`, {
@@ -10,6 +11,14 @@ async function query(data) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prompt: data.prompt })
   });
+    if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: The requested AI service endpoint was not found. Please try again later.`);
+  }
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    throw new Error('Invalid response format from server');
+  }
+
   const result = await response.json();
   return result;
 }
@@ -64,7 +73,7 @@ export function SocialAssistantForm({
           temperature: temp
         }).then(data => {
           if (data.error) {
-            setSocialResult({ error: data.error })
+            setSocialResult({ error: getUserFriendlyError(data.error) })
             setLoading(false)
             setGenerating(false)
             return
@@ -72,7 +81,7 @@ export function SocialAssistantForm({
           // Handle Ollama response format
           const text = data.text;
           if (!text) {
-            setSocialResult({ error: 'No response generated' })
+            setSocialResult({ error: getUserFriendlyError('No response generated') })
             setLoading(false)
             setGenerating(false)
             return
