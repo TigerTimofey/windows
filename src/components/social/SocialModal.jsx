@@ -11,6 +11,7 @@ import '../blog/BlogAssistantForm.css'
 export function SocialModal({ open, onClose, zIndex = 130, onActivate, onMinimize }) {
   const { renderErrorTooltip } = useErrorMail()
   const [errors, setErrors] = useState({})
+  const [installStep, setInstallStep] = useState(0)
   const [form, setForm] = useState({
     productService: '',
     platform: '',
@@ -27,6 +28,10 @@ export function SocialModal({ open, onClose, zIndex = 130, onActivate, onMinimiz
   const [resultModalOpen, setResultModalOpen] = useState(false)
   const [editablePosts, setEditablePosts] = useState([])
   const [editableHashtags, setEditableHashtags] = useState([])
+
+  useEffect(() => {
+    if (open) setInstallStep(0)
+  }, [open])
 
   useEffect(() => {
     if (socialResult && !socialResult.error && socialResult.posts && socialResult.posts.length >= 1) {
@@ -47,34 +52,50 @@ export function SocialModal({ open, onClose, zIndex = 130, onActivate, onMinimiz
     }
   }, [socialResult])
 
+  useEffect(() => {
+    if (open) setInstallStep(0)
+  }, [open])
+
   if (!open) return null
 
   return (
     <>
       <ModalWindow
-        title="Social Media Post Generator"
+        title={installStep === 0 ? 'Installing Social Assistant...' : 'Social Media Post Generator'}
         onClose={onClose}
         zIndex={zIndex}
         onActivate={onActivate}
         onMinimize={onMinimize}
       >
-        <SocialAssistantForm
-          form={form}
-          setForm={setForm}
-          errors={errors}
-          setErrors={setErrors}
-          setLoading={setLoading}
-          setSocialResult={setSocialResult}
-          buildPrompt={buildPrompt}
-          extractPosts={extractPosts}
-          extractHashtags={extractHashtags}
-          cleanSocialText={cleanSocialText}
-          loading={generating}
-          renderErrorTooltip={renderErrorTooltip}
-          onStartGenerate={() => setGenerating(true)}
-          setGenerating={setGenerating}
-          socialResult={socialResult}
-        />
+        {installStep === 0 ? (
+          <div className="blog-assistant-install">
+            <p className="blog-assistant-install-text">Preparing components...</p>
+            <div className="blog-assistant-progress-bar">
+              <div
+                className="blog-assistant-progress"
+                onAnimationEnd={() => setInstallStep(1)}
+              />
+            </div>
+          </div>
+        ) : (
+          <SocialAssistantForm
+            form={form}
+            setForm={setForm}
+            errors={errors}
+            setErrors={setErrors}
+            setLoading={setLoading}
+            setSocialResult={setSocialResult}
+            buildPrompt={buildPrompt}
+            extractPosts={extractPosts}
+            extractHashtags={extractHashtags}
+            cleanSocialText={cleanSocialText}
+            loading={generating}
+            renderErrorTooltip={renderErrorTooltip}
+            onStartGenerate={() => setGenerating(true)}
+            setGenerating={setGenerating}
+            socialResult={socialResult}
+          />
+        )}
       </ModalWindow>
       {resultModalOpen && (
         <SocialResultModal
