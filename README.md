@@ -50,9 +50,10 @@ Create a `.env` file in the project root:
 
 ```env
 VITE_HF_API_KEY=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+VITE_HF_API_URL=https://router.huggingface.co/v1/chat/completions
 ```
 
-Replace `hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` with your actual API key.
+Replace `hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` with your actual API key. The API URL is already set to the default Hugging Face endpoint.
 
 <br/>
 

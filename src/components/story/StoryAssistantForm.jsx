@@ -11,7 +11,7 @@ async function query(data) {
 
 	try {
 		const response = await fetch(
-			"https://router.huggingface.co/v1/chat/completions",
+			import.meta.env.VITE_HF_API_URL,
 			{
 				headers: {
 					Authorization: `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
