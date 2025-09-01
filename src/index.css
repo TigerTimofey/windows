@@ -5,6 +5,7 @@
   -webkit-font-smoothing: none;
   color: #222222;
   user-select: none;
+  cursor: url('./assets/win7/icons/CursorsXP.cur'), default;
 }
 
 u {
@@ -12,12 +13,16 @@ u {
   border-bottom: 1px solid #222222;
 }
 
-button:active {
-  box-shadow:
-    -0.5px -0.5px 0 0.5px #808080,
-    0 0 0 1px #c0c0c0,
-    -0.5px -0.5px 0 1.5px #0a0a0a,
-    0 0 0 2px #ffffff;
+button {
+  cursor: url('./assets/win7/icons/CursorsXP.cur'), pointer;
+}
+
+input, textarea, select {
+  cursor: url('./assets/win7/icons/CursorsXP.cur'), text;
+}
+
+a {
+  cursor: url('./assets/win7/icons/CursorsXP.cur'), pointer;
 }
 
 button:disabled {
