@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { buildPrompt } from '../utils/buildPrompt.js'
-import { inferThemeFromMessage, cleanMessage, removeDuplicates } from '../utils/messageUtils.js'
+import { inferThemeFromMessage, cleanMessage, removeDuplicates, parseEmailStructure } from '../utils/messageUtils.js'
 import { useErrorMail } from '../../../utils/ErrorHandler/useErrorMail.jsx'
 import ModalWindow from '../../modal/ModalWindow.jsx'
 import { EmailAssistantForm } from '../FormResponse/EmailAssistantForm.jsx'
@@ -15,6 +15,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
   const [form, setForm] = useState({
     sender: '',
     receiver: '',
+    recipientContext: '',
     purpose: '',
     tone: '',
     length: ''
@@ -90,6 +91,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
               inferThemeFromMessage={inferThemeFromMessage}
               cleanMessage={cleanMessage}
               removeDuplicates={removeDuplicates}
+              parseEmailStructure={parseEmailStructure}
               loading={generating} 
               renderErrorTooltip={renderErrorTooltip}
               onStartGenerate={() => setGenerating(true)}

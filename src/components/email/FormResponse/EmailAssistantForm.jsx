@@ -41,7 +41,7 @@ async function query(data) {
 
 export function EmailAssistantForm({
   form, setForm, errors, setErrors, setLoading, setEmailResult,
-  buildPrompt, inferThemeFromMessage, cleanMessage, removeDuplicates,
+  buildPrompt, inferThemeFromMessage, cleanMessage, removeDuplicates, parseEmailStructure,
   loading, renderErrorTooltip, onStartGenerate, setGenerating
 }) {
   const parseLength = (lengthStr) => {
@@ -59,6 +59,7 @@ export function EmailAssistantForm({
       ...f,
       sender: f.sender || 'John Doe',
       receiver: f.receiver || 'Jane Smith',
+      recipientContext: f.recipientContext || 'A new team member joining the marketing department',
       purpose: f.purpose || 'Welcome new team member and provide onboarding details',
       keyPoints: f.keyPoints || 'Welcome to the team\nProvide onboarding details\nSchedule an introduction meeting',
       tone: f.tone || 'professional',
@@ -73,6 +74,7 @@ export function EmailAssistantForm({
         const newErrors = {};
         if (!form.sender || !form.sender.trim()) newErrors.sender = 'Please provide your name.';
         if (!form.receiver || !form.receiver.trim()) newErrors.receiver = 'Please provide the receiver name.';
+        if (!form.recipientContext || !form.recipientContext.trim()) newErrors.recipientContext = 'Please provide recipient context.';
         if (!form.purpose || !form.purpose.trim()) newErrors.purpose = 'Please provide the email purpose.';
         if (!form.keyPoints || !form.keyPoints.trim()) newErrors.keyPoints = 'Please provide key points.';
         if (!form.tone) newErrors.tone = 'Please select tone.';
@@ -121,7 +123,7 @@ export function EmailAssistantForm({
             setGenerating(false)
             return
           }
-          message = text
+          message = parseEmailStructure(text)
           theme = inferThemeFromMessage(message)
           const final = { theme, message: normalizeSpacing(cleanMessage(removeDuplicates(message))) }
           const wordCount = final.message.split(/\s+/).filter(word => word.length > 0).length;
@@ -182,6 +184,18 @@ export function EmailAssistantForm({
         {renderErrorTooltip('receiver', errors)}
       </label>
       <label className="blog-form-field">
+        Recipient Context
+        <input
+          id="recipientContext"
+          name="recipientContext"
+          type="text"
+          value={form.recipientContext || ''}
+          onChange={e => setForm(f => ({ ...f, recipientContext: e.target.value }))}
+          placeholder="e.g. A new team member joining the marketing department"
+        />
+        {renderErrorTooltip('recipientContext', errors)}
+      </label>
+      <label className="blog-form-field">
         Purpose
         <input
           id="purpose"
@@ -237,6 +251,7 @@ export function EmailAssistantForm({
             setForm({
               sender: '',
               receiver: '',
+              recipientContext: '',
               purpose: '',
               keyPoints: '',
               tone: '',

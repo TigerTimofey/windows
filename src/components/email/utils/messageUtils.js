@@ -33,6 +33,24 @@ export function cleanMessage(msg) {
   return cleaned
 }
 
+export function parseEmailStructure(text) {
+  if (!text) return ''
+
+  // Extract sections
+  const greetingMatch = text.match(/GREETING:\s*(.+?)(?=\n\n|\nINTRODUCTION|$)/i)
+  const introMatch = text.match(/INTRODUCTION:\s*(.+?)(?=\n\n|\nBODY|$)/i)
+  const bodyMatch = text.match(/BODY:\s*(.+?)(?=\n\n|\nCLOSING|$)/i)
+  const closingMatch = text.match(/CLOSING:\s*(.+?)(?=\n\n|$)/i)
+
+  let result = ''
+  if (greetingMatch) result += greetingMatch[1].trim() + '\n\n'
+  if (introMatch) result += introMatch[1].trim() + '\n\n'
+  if (bodyMatch) result += bodyMatch[1].trim() + '\n\n'
+  if (closingMatch) result += closingMatch[1].trim()
+
+  return result.trim()
+}
+
 export function removeDuplicates(text) {
   if (!text) return ''
   const lines = text.split('\n').map(line => line.trim()).filter(Boolean)
