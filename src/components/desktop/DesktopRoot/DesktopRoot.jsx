@@ -62,7 +62,10 @@ export function DesktopRoot({ onShutdown }) {
   const clock = useClock()
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
   const recycle = useRecycleBin()
-  const { playClick, playTrash } = useSounds()
+  const { playClick: originalPlayClick, playTrash: originalPlayTrash } = useSounds()
+
+  const playClick = () => { originalPlayClick() }
+  const playTrash = () => { originalPlayTrash() }
 
   function addItemToBin(item) {
     let added = false
@@ -179,6 +182,10 @@ export function DesktopRoot({ onShutdown }) {
   // Minimized modals state
   const [minimizedModals, setMinimizedModals] = useState([])
 
+  // Start menu modals
+  const [programsModal, setProgramsModal] = useState(false)
+  const [gamesModal, setGamesModal] = useState(false)
+
   // Helper to add/remove minimized modal
   function minimizeModal(id, title, icon) {
     setMinimizedModals(list => [...list, { id, title, icon }])
@@ -201,6 +208,10 @@ export function DesktopRoot({ onShutdown }) {
       cloned.openClone({ id })
     }
   }
+
+  // Start menu handlers
+  const handlePrograms = () => setProgramsModal(true)
+  const handleGames = () => setGamesModal(true)
 
   // Bring effects
   useEffect(() => { if (folder.modalOpen) bring('folder') }, [folder.modalOpen, bring])
@@ -860,7 +871,7 @@ export function DesktopRoot({ onShutdown }) {
           {/* ...cloned modal content... */}
         </ModalWindow>
       ))}
-      {menuOpen && <StartMenu menuRef={menuRef} onShutdown={onShutdown} />}
+      {menuOpen && <StartMenu menuRef={menuRef} onShutdown={onShutdown} onPrograms={handlePrograms} onGames={handleGames} />}
       <span style={{ display:'none' }}>{refreshTick}</span>
       <DesktopContextMenu x={deskMenu.x} y={deskMenu.y} open={deskMenu.open} onNewFolder={handleNewFolder} onRefresh={handleRefresh} onCleanUp={handleCleanUp} onPaste={handlePaste} canPaste={!!copiedItem} />
       {internet.visible && (
@@ -996,6 +1007,54 @@ export function DesktopRoot({ onShutdown }) {
       <BlogModal open={blog.modalOpen && !minimizedModals.some(m => m.id === 'blog')} onClose={() => blog.setModalOpen(false)} zIndex={blogZ} onActivate={() => bring('blog')} onMinimize={() => { blog.setModalOpen(false); minimizeModal('blog', blog.name, blogIcon) }} />
       <StoryModal open={story.modalOpen && !minimizedModals.some(m => m.id === 'story')} onClose={() => story.setModalOpen(false)} zIndex={storyZ} onActivate={() => bring('story')} onMinimize={() => { story.setModalOpen(false); minimizeModal('story', story.name, storyIcon) }} />
       <SocialModal open={social.modalOpen && !minimizedModals.some(m => m.id === 'social')} onClose={() => social.setModalOpen(false)} zIndex={socialZ} onActivate={() => bring('social')} onMinimize={() => { social.setModalOpen(false); minimizeModal('social', social.name, socialIcon) }} />
+
+      {/* Start Menu Modals */}
+      {programsModal && (
+        <ModalWindow
+          title="Programs"
+          onClose={() => setProgramsModal(false)}
+          zIndex={200}
+        >
+          <div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '5px' }} onClick={() => { setProgramsModal(false); email.setModalOpen(true) }}>
+                <img src={emailIcon} alt="Email" style={{ width: '32px', height: '32px', marginRight: '10px' }} />
+                <span>Email Assistant</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '5px' }} onClick={() => { setProgramsModal(false); blog.setModalOpen(true) }}>
+                <img src={blogIcon} alt="Blog" style={{ width: '32px', height: '32px', marginRight: '10px' }} />
+                <span>Blog Assistant</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '5px' }} onClick={() => { setProgramsModal(false); story.setModalOpen(true) }}>
+                <img src={storyIcon} alt="Story" style={{ width: '32px', height: '32px', marginRight: '10px' }} />
+                <span>Story Assistant</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '5px' }} onClick={() => { setProgramsModal(false); social.setModalOpen(true) }}>
+                <img src={socialIcon} alt="Social" style={{ width: '32px', height: '32px', marginRight: '10px' }} />
+                <span>Social Media Assistant</span>
+              </div>
+            </div>
+          </div>
+        </ModalWindow>
+      )}
+
+      {gamesModal && (
+        <ModalWindow
+          title="Games"
+          onClose={() => setGamesModal(false)}
+          zIndex={200}
+        >
+          <div>
+            <div style={{ marginTop: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '5px' }} onClick={() => { setGamesModal(false); minesweeper.setModalOpen(true) }}>
+                <img src={minesweeperIcon} alt="Minesweeper" style={{ width: '32px', height: '32px', marginRight: '10px' }} />
+                <span>Minesweeper</span>
+              </div>
+            </div>
+          </div>
+        </ModalWindow>
+      )}
+
     </div>
   )
 }
