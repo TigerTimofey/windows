@@ -4,6 +4,7 @@ import { normalizeSpacing } from '../utils/normalizeSpacing'
 import { CustomDropdown } from '../../modal/CustomDropdown.jsx'
 import { maxWordsOptions, toneOptions } from '../../social/utils/formOptions.js'
 import {normalizeForm} from '../../../utils/normalizeInput.js'
+import { getUserFriendlyError } from '../../../utils/errorUtils.js'
 
 async function query(data) {
 	const response = await fetch(
@@ -27,6 +28,13 @@ async function query(data) {
 			}),
 		}
 	);
+	if (!response.ok) {
+		throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+	}
+	const contentType = response.headers.get('content-type');
+	if (!contentType || !contentType.includes('application/json')) {
+		throw new Error('Invalid response format from server');
+	}
 	const result = await response.json();
 	return result;
 }
@@ -86,7 +94,7 @@ export function EmailAssistantForm({
           temperature: temp
         }).then(data => {
           if (data.error) {
-            setEmailResult({ error: data.error })
+            setEmailResult({ error: getUserFriendlyError(data.error) })
             setLoading(false)
             setGenerating(false)
             return
@@ -106,7 +114,7 @@ export function EmailAssistantForm({
           setLoading(false)
           setGenerating(false)
         }).catch(err => {
-          setEmailResult({ error: err.message })
+          setEmailResult({ error: getUserFriendlyError(err.message) })
           setLoading(false)
           setGenerating(false)
         })

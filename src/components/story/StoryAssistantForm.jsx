@@ -3,6 +3,7 @@ import '../blog/BlogAssistantForm.css'
 import { CustomDropdown } from '../modal/CustomDropdown.jsx'
 import { styleOptions, moodOptions } from '../social/utils/formOptions.js'
 import { normalizeForm } from '../../utils/normalizeInput.js'
+import { getUserFriendlyError } from '../../utils/errorUtils.js'
 
 async function query(data) {
 	const response = await fetch(
@@ -26,6 +27,13 @@ async function query(data) {
 			}),
 		}
 	);
+	if (!response.ok) {
+		throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+	}
+	const contentType = response.headers.get('content-type');
+	if (!contentType || !contentType.includes('application/json')) {
+		throw new Error('Invalid response format from server');
+	}
 	const result = await response.json();
 	return result;
 }
@@ -91,7 +99,7 @@ export function StoryAssistantForm({
           temperature: temp
         }).then(data => {
           if (data.error) {
-            setStoryResult({ error: data.error })
+            setStoryResult({ error: getUserFriendlyError(data.error) })
             setLoading(false)
             return
           }
@@ -115,7 +123,7 @@ export function StoryAssistantForm({
           setStoryResult(final)
           setLoading(false)
         }).catch(err => {
-          setStoryResult({ error: err.message })
+          setStoryResult({ error: getUserFriendlyError(err.message) })
           setLoading(false)
         })
       }}
