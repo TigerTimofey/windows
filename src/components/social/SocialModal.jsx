@@ -8,7 +8,7 @@ import { useErrorMail } from '../../utils/ErrorHandler/useErrorMail.jsx'
 import ErrorModal from '../modal/ErrorModal.jsx'
 import '../blog/BlogAssistantForm.css'
 
-export function SocialModal({ open, onClose, zIndex = 130, onActivate, onMinimize }) {
+export function SocialModal({ open, onClose, zIndex = 130, onActivate, onMinimize, playError }) {
   const { renderErrorTooltip } = useErrorMail()
   const [errors, setErrors] = useState({})
   const [installStep, setInstallStep] = useState(0)
@@ -94,6 +94,7 @@ export function SocialModal({ open, onClose, zIndex = 130, onActivate, onMinimiz
             onStartGenerate={() => setGenerating(true)}
             setGenerating={setGenerating}
             socialResult={socialResult}
+            playError={playError}
           />
         )}
       </ModalWindow>

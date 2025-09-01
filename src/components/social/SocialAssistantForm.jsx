@@ -52,7 +52,7 @@ async function query(data) {
 }export function SocialAssistantForm({
   form, setForm, errors, setErrors, setLoading, setSocialResult,
   buildPrompt, extractPosts, extractHashtags, cleanSocialText,
-  loading, renderErrorTooltip, onStartGenerate, setGenerating
+  loading, renderErrorTooltip, onStartGenerate, setGenerating, playError
 }) {
   React.useEffect(() => {
     setForm(f => ({
@@ -157,6 +157,7 @@ async function query(data) {
           setSocialResult({ error: getUserFriendlyError(err.message) })
           setLoading(false)
           setGenerating(false)
+          playError()
         })
       }}
     >

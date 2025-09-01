@@ -62,10 +62,11 @@ export function DesktopRoot({ onShutdown }) {
   const clock = useClock()
   const { open: menuOpen, setOpen: setMenuOpen, menuRef, buttonRef } = useStartMenu()
   const recycle = useRecycleBin()
-  const { playClick: originalPlayClick, playTrash: originalPlayTrash } = useSounds()
+  const { playClick: originalPlayClick, playTrash: originalPlayTrash, playError: originalPlayError } = useSounds()
 
   const playClick = () => { originalPlayClick() }
   const playTrash = () => { originalPlayTrash() }
+  const playError = () => { originalPlayError() }
 
   function addItemToBin(item) {
     let added = false
@@ -747,6 +748,7 @@ export function DesktopRoot({ onShutdown }) {
         onActivate={() => bring('email')}
         appName={email.name}
         onMinimize={() => { email.setModalOpen(false); minimizeModal('email', email.name, emailIcon) }}
+        playError={playError}
       />
       {folder.modalOpen && !minimizedModals.some(m => m.id === 'folder') && (
         <ModalWindow
@@ -1004,9 +1006,9 @@ export function DesktopRoot({ onShutdown }) {
         onActivate={() => bring('minesweeper')}
         onMinimize={() => { minesweeper.setModalOpen(false); minimizeModal('minesweeper', minesweeper.name, minesweeperIcon) }}
       />
-      <BlogModal open={blog.modalOpen && !minimizedModals.some(m => m.id === 'blog')} onClose={() => blog.setModalOpen(false)} zIndex={blogZ} onActivate={() => bring('blog')} onMinimize={() => { blog.setModalOpen(false); minimizeModal('blog', blog.name, blogIcon) }} />
-      <StoryModal open={story.modalOpen && !minimizedModals.some(m => m.id === 'story')} onClose={() => story.setModalOpen(false)} zIndex={storyZ} onActivate={() => bring('story')} onMinimize={() => { story.setModalOpen(false); minimizeModal('story', story.name, storyIcon) }} />
-      <SocialModal open={social.modalOpen && !minimizedModals.some(m => m.id === 'social')} onClose={() => social.setModalOpen(false)} zIndex={socialZ} onActivate={() => bring('social')} onMinimize={() => { social.setModalOpen(false); minimizeModal('social', social.name, socialIcon) }} />
+      <BlogModal open={blog.modalOpen && !minimizedModals.some(m => m.id === 'blog')} onClose={() => blog.setModalOpen(false)} zIndex={blogZ} onActivate={() => bring('blog')} onMinimize={() => { blog.setModalOpen(false); minimizeModal('blog', blog.name, blogIcon) }} playError={playError} />
+      <StoryModal open={story.modalOpen && !minimizedModals.some(m => m.id === 'story')} onClose={() => story.setModalOpen(false)} zIndex={storyZ} onActivate={() => bring('story')} onMinimize={() => { story.setModalOpen(false); minimizeModal('story', story.name, storyIcon) }} playError={playError} />
+      <SocialModal open={social.modalOpen && !minimizedModals.some(m => m.id === 'social')} onClose={() => social.setModalOpen(false)} zIndex={socialZ} onActivate={() => bring('social')} onMinimize={() => { social.setModalOpen(false); minimizeModal('social', social.name, socialIcon) }} playError={playError} />
 
       {/* Start Menu Modals */}
       {programsModal && (

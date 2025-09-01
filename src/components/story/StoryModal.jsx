@@ -10,7 +10,7 @@ import ErrorModal from '../modal/ErrorModal.jsx'
 import '../blog/BlogAssistantForm.css'
 import './StoryResultModal/EditStoryModal/EditStoryModal.css'
 
-export function StoryModal({ open, onClose, zIndex = 130, onActivate, onMinimize }) {
+export function StoryModal({ open, onClose, zIndex = 130, onActivate, onMinimize, playError }) {
   const { renderErrorTooltip } = useErrorMail()
   const [errors, setErrors] = useState({})
   const [installStep, setInstallStep] = useState(0)
@@ -103,6 +103,7 @@ export function StoryModal({ open, onClose, zIndex = 130, onActivate, onMinimize
               onStartGenerate={() => setGenerating(true)}
               setGenerating={setGenerating}
               storyResult={storyResult}
+              playError={playError}
             />
             <StoryAssistantResult storyResult={storyResult} />
           </>

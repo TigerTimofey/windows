@@ -9,7 +9,7 @@ import ErrorModal from '../modal/ErrorModal.jsx'
 import './BlogAssistantForm.css'
 import './BlogResultModal/EditBlogModal/EditBlogModal.css'
 
-export function BlogModal({ open, onClose, zIndex = 130, onActivate, onMinimize }) {
+export function BlogModal({ open, onClose, zIndex = 130, onActivate, onMinimize, playError }) {
   const { renderErrorTooltip } = useErrorMail()
   const [errors, setErrors] = useState({})
   const [installStep, setInstallStep] = useState(0)
@@ -101,6 +101,7 @@ export function BlogModal({ open, onClose, zIndex = 130, onActivate, onMinimize 
               onStartGenerate={() => setGenerating(true)}
               setGenerating={setGenerating}
               blogResult={blogResult}
+              playError={playError}
             />
           </>
         )}

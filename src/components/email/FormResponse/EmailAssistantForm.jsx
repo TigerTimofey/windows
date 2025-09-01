@@ -54,7 +54,7 @@ async function query(data) {
 }export function EmailAssistantForm({
   form, setForm, errors, setErrors, setLoading, setEmailResult,
   buildPrompt, inferThemeFromMessage, cleanMessage, removeDuplicates, parseEmailStructure,
-  loading, renderErrorTooltip, onStartGenerate, setGenerating
+  loading, renderErrorTooltip, onStartGenerate, setGenerating, playError
 }) {
   const [errorModalOpen, setErrorModalOpen] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState('')
@@ -174,6 +174,7 @@ async function query(data) {
           setErrorModalOpen(true)
           setLoading(false)
           setGenerating(false)
+          playError()
         })
       }}
     >

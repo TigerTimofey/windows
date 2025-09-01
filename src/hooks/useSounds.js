@@ -1,6 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react'
 import clickSound from '../assets/win7/sounds/click.mp3'
 import trashSound from '../assets/win7/sounds/trash.mp3'
+import errorSound from '../assets/win7/sounds/error.mp3'
 
 export function useSounds() {
   const clickRef = useRef(null)
@@ -22,11 +23,19 @@ export function useSounds() {
   } catch { /* ignore trash sound errors */ }
   }, [])
 
+  const playError = useCallback(() => {
+    try {
+      const a = new Audio(errorSound)
+      a.currentTime = 0
+      a.play().catch(()=>{})
+  } catch { /* ignore error sound errors */ }
+  }, [])
+
   useEffect(() => {
     function global(e){ if (e.button === 0 || e.button === 2) playClick() }
     document.addEventListener('mousedown', global)
     return () => document.removeEventListener('mousedown', global)
   }, [playClick])
 
-  return { playClick, playTrash }
+  return { playClick, playTrash, playError }
 }

@@ -53,7 +53,7 @@ async function query(data) {
 }export function StoryAssistantForm({
   form, setForm, errors, setErrors, setLoading, setStoryResult,
   buildPrompt, extractTitle, extractIntro, extractBody, extractConclusion, cleanStoryText,
-  loading, renderErrorTooltip, onStartGenerate, setGenerating
+  loading, renderErrorTooltip, onStartGenerate, setGenerating, playError
 }) {
   const [errorModalOpen, setErrorModalOpen] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState('')
@@ -163,6 +163,7 @@ async function query(data) {
           setErrorModalOpen(true)
           setLoading(false)
           setGenerating(false)
+          playError()
         })
       }}
     >
