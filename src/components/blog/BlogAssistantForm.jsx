@@ -2,6 +2,7 @@ import React from 'react'
 import './BlogAssistantForm.css'
 import { CustomDropdown } from '../modal/CustomDropdown.jsx'
 import { wordCountOptions, toneOptions, seoFocusOptions, expertiseLevelOptions } from '../social/utils/formOptions.js'
+import normalizeForm from '../../utils/normalizeInput.js'
 
 async function query(data) {
 	const response = await fetch(
@@ -20,7 +21,7 @@ async function query(data) {
 					},
 				],
 				model: "openai/gpt-oss-20b:together",
-				max_tokens: data.max_tokens || 2000,
+          max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizeForm.wordCount) * 2)),
 				temperature: data.temperature || 0.7,
 			}),
 		}

@@ -2,6 +2,8 @@ import React from 'react'
 import '../blog/BlogAssistantForm.css'
 import { platformOptions, toneOptions, ctaOptions } from './utils/formOptions.js'
 import { CustomDropdown } from '../modal/CustomDropdown.jsx'
+import normalizeForm from '../../utils/normalizeInput.js'
+
 
 async function query(data) {
 	const response = await fetch(
@@ -65,7 +67,7 @@ export function SocialAssistantForm({
 
         query({ 
           prompt,
-          max_tokens: 1500,
+          max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizeForm.wordCount) * 2)),
           temperature: 0.7
         }).then(data => {
           if (data.error) {
