@@ -4,6 +4,7 @@ import { CustomDropdown } from '../modal/CustomDropdown.jsx'
 import { toneOptions, seoFocusOptions, expertiseLevelOptions } from '../social/utils/formOptions.js'
 import { normalizeForm } from '../../utils/normalizeInput.js'
 import { getUserFriendlyError } from '../../utils/errorUtils.js'
+import ErrorModal from '../modal/ErrorModal.jsx'
 
 async function query(data) {
 	const controller = new AbortController();
@@ -52,8 +53,10 @@ async function query(data) {
 }export function BlogAssistantForm({
   form, setForm, errors, setErrors, setLoading, setBlogResult,
   buildPrompt, extractTitle, extractIntro, extractBody, extractConclusion, cleanBlogText,
-  loading, renderErrorTooltip, onStartGenerate,
+  loading, renderErrorTooltip, onStartGenerate, setGenerating
 }) {
+  const [errorModalOpen, setErrorModalOpen] = React.useState(false)
+  const [errorMessage, setErrorMessage] = React.useState('')
   React.useEffect(() => {
     setForm(f => ({
       ...f,
@@ -67,7 +70,8 @@ async function query(data) {
   }, [setForm])
 
   return (
-    <form className="blog-form"
+    <>
+      <form className="blog-form"
       onSubmit={e => {
         e.preventDefault();
         const newErrors = {};
@@ -110,15 +114,19 @@ async function query(data) {
           temperature: temp
         }).then(data => {
           if (data.error) {
-            setBlogResult({ error: getUserFriendlyError(data.error) })
+            setErrorMessage(getUserFriendlyError(data.error))
+            setErrorModalOpen(true)
             setLoading(false)
+            setGenerating(false)
             return
           }
           // Handle Hugging Face router chat completion response format
           const text = data.choices?.[0]?.message?.content;
           if (!text) {
-            setBlogResult({ error: 'No response generated' })
+            setErrorMessage('No response generated')
+            setErrorModalOpen(true)
             setLoading(false)
+            setGenerating(false)
             return
           }
           title = extractTitle(text)
@@ -145,9 +153,12 @@ async function query(data) {
           }
           setBlogResult({ ...final, wordCount, warning })
           setLoading(false)
+          setGenerating(false)
         }).catch(err => {
-          setBlogResult({ error: getUserFriendlyError(err.message) })
+          setErrorMessage(getUserFriendlyError(err.message))
+          setErrorModalOpen(true)
           setLoading(false)
+          setGenerating(false)
         })
       }}
     >
@@ -249,5 +260,12 @@ async function query(data) {
         </button>
       </div>
     </form>
+    <ErrorModal
+      open={errorModalOpen}
+      message={errorMessage}
+      onClose={() => setErrorModalOpen(false)}
+      zIndex={200}
+    />
+    </>
   )
 }

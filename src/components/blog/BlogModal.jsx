@@ -99,6 +99,7 @@ export function BlogModal({ open, onClose, zIndex = 130, onActivate, onMinimize 
               loading={generating}
               renderErrorTooltip={renderErrorTooltip}
               onStartGenerate={() => setGenerating(true)}
+              setGenerating={setGenerating}
               blogResult={blogResult}
             />
           </>
