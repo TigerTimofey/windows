@@ -145,6 +145,7 @@ export function useEmailIcon(binRef, folderRef, onDroppedIntoBin, onDroppedIntoF
     startRename: () => { setRenaming(true); closeContext() },
     commitRename: (val) => { if (val) setName(val.slice(0,32)); setRenaming(false) },
     cancelRename: () => setRenaming(false),
+    copyDescriptor: () => ({ id: 'email', name, icon: emailIcon })
   }
 }
 

@@ -150,6 +150,7 @@ export function useMinesweeperIcon(binRef, onDroppedIntoBin, folderRef, onDroppe
     commitRename: (val) => { if (val) setName(val.slice(0,32)); setRenaming(false) },
     cancelRename: () => setRenaming(false),
     modalOpen,
-    setModalOpen
+    setModalOpen,
+    copyDescriptor: () => ({ id: 'minesweeper', name, icon: minesweeperIcon })
   }
 }

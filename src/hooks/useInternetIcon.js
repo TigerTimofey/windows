@@ -146,5 +146,6 @@ export function useInternetIcon(binRef, onDroppedIntoBin, folderRef, onDroppedIn
     startRename: () => { setRenaming(true); closeContext() },
     commitRename: (val) => { if (val) setName(val.slice(0,32)); setRenaming(false) },
     cancelRename: () => setRenaming(false),
+    copyDescriptor: () => ({ id: 'internet', name, icon: internetIcon })
   }
 }
