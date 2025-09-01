@@ -6,6 +6,7 @@ WRITE A PROFESSIONAL EMAIL with these specifications:
 From: ${form.sender}
 To: ${form.receiver}
 Purpose: ${form.purpose}
+Key Points: ${form.keyPoints}
 Tone: ${form.tone}
 Length: Approximately ${form.length} words
 
