@@ -41,6 +41,7 @@ export function EmailAssistantForm({
       sender: f.sender || 'John Doe',
       receiver: f.receiver || 'Jane Smith',
       purpose: f.purpose || 'Welcome new team member and provide onboarding details',
+      keyPoints: f.keyPoints || 'Welcome to the team\nProvide onboarding details\nSchedule an introduction meeting',
       tone: f.tone || 'professional',
       length: f.length || 120
     }))
@@ -54,6 +55,7 @@ export function EmailAssistantForm({
         if (!form.sender || !form.sender.trim()) newErrors.sender = 'Please provide your name.';
         if (!form.receiver || !form.receiver.trim()) newErrors.receiver = 'Please provide the receiver name.';
         if (!form.purpose || !form.purpose.trim()) newErrors.purpose = 'Please provide the email purpose.';
+        if (!form.keyPoints || !form.keyPoints.trim()) newErrors.keyPoints = 'Please provide key points.';
         if (!form.tone) newErrors.tone = 'Please select tone.';
         if (!form.length) newErrors.length = 'Please select length.';
         setErrors(newErrors);
@@ -134,6 +136,18 @@ export function EmailAssistantForm({
         />
         {renderErrorTooltip('purpose', errors)}
       </label>
+      <label className="blog-form-field">
+        Key Points
+        <textarea
+          id="keyPoints"
+          name="keyPoints"
+          value={form.keyPoints || ''}
+          onChange={e => setForm(f => ({ ...f, keyPoints: e.target.value }))}
+          placeholder="e.g. Welcome to the team&#10;Provide onboarding details&#10;Schedule an introduction meeting"
+          rows="3"
+        />
+        {renderErrorTooltip('keyPoints', errors)}
+      </label>
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <label className="blog-form-field" style={{ flex: 1 }}>
           Tone
@@ -168,6 +182,7 @@ export function EmailAssistantForm({
               sender: '',
               receiver: '',
               purpose: '',
+              keyPoints: '',
               tone: '',
               length: ''
             })

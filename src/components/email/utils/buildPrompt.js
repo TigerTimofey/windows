@@ -6,6 +6,7 @@ WRITE A PROFESSIONAL EMAIL with these specifications:
 From: ${form.sender}
 To: ${form.receiver}
 Purpose: ${form.purpose}
+Key Points: ${form.keyPoints}
 Tone: ${form.tone}
 Length: Approximately ${form.length} words
 
@@ -23,3 +24,4 @@ CLOSING:
 
 Write only the email content in the format above. Do not include subject lines, signatures, explanations, or additional text outside the specified structure.`.trim();
 }
+
