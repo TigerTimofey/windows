@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import ModalWindow from '../modal/ModalWindow.jsx'
 import { BlogAssistantForm } from './BlogAssistantForm.jsx'
-import { BlogAssistantResult } from './BlogAssistantResult.jsx'
 import { BlogResultModal } from './BlogResultModal/BlogResultModal.jsx'
 import { buildPrompt } from './utils/buildPrompt.js'
 import { extractTitle, extractIntro, extractBody, extractConclusion, cleanBlogText } from './utils/blogUtils.js'
@@ -96,6 +95,7 @@ export function BlogModal({ open, onClose, zIndex = 130, onActivate, onMinimize 
               loading={generating}
               renderErrorTooltip={renderErrorTooltip}
               onStartGenerate={() => setGenerating(true)}
+              blogResult={blogResult}
             />
           </>
         )}

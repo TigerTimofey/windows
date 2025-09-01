@@ -110,7 +110,18 @@ export function EmailAssistantForm({
           message = text
           theme = inferThemeFromMessage(message)
           const final = { theme, message: normalizeSpacing(cleanMessage(removeDuplicates(message))) }
-          setEmailResult(final)
+          const wordCount = final.message.split(/\s+/).filter(word => word.length > 0).length;
+          const target = parseInt(normalizedForm.length);
+          const tolerance = 0.1;
+          const lower = target * (1 - tolerance);
+          const upper = target * (1 + tolerance);
+          let warning = null;
+          if (wordCount < lower) {
+            warning = `Word count (${wordCount}) is below target (${target}) by more than 10%.`;
+          } else if (wordCount > upper) {
+            warning = `Word count (${wordCount}) is above target (${target}) by more than 10%.`;
+          }
+          setEmailResult({ ...final, wordCount, warning })
           setLoading(false)
           setGenerating(false)
         }).catch(err => {

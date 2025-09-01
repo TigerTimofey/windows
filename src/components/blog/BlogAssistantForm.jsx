@@ -41,7 +41,7 @@ async function query(data) {
 export function BlogAssistantForm({
   form, setForm, errors, setErrors, setLoading, setBlogResult,
   buildPrompt, extractTitle, extractIntro, extractBody, extractConclusion, cleanBlogText,
-  loading, renderErrorTooltip, onStartGenerate
+  loading, renderErrorTooltip, onStartGenerate,
 }) {
   React.useEffect(() => {
     setForm(f => ({
@@ -116,7 +116,19 @@ export function BlogAssistantForm({
             body: cleanBlogText(body),
             conclusion: cleanBlogText(conclusion)
           }
-          setBlogResult(final)
+          const combinedText = [final.title, final.intro, final.body, final.conclusion].join(' ');
+          const wordCount = combinedText.split(/\s+/).filter(word => word.length > 0).length;
+          const target = parseInt(normalizedForm.wordCount);
+          const tolerance = 0.1;
+          const lower = target * (1 - tolerance);
+          const upper = target * (1 + tolerance);
+          let warning = null;
+          if (wordCount < lower) {
+            warning = `Word count (${wordCount}) is below target (${target}) by more than 10%.`;
+          } else if (wordCount > upper) {
+            warning = `Word count (${wordCount}) is above target (${target}) by more than 10%.`;
+          }
+          setBlogResult({ ...final, wordCount, warning })
           setLoading(false)
         }).catch(err => {
           setBlogResult({ error: getUserFriendlyError(err.message) })

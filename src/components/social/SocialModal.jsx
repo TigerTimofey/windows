@@ -16,7 +16,8 @@ export function SocialModal({ open, onClose, zIndex = 130, onActivate, onMinimiz
     platform: '',
     goal: '',
     tone: '',
-    cta: ''
+    cta: '',
+    length: ''
   })
   const [socialResult, setSocialResult] = useState(null)
   const [, setLoading] = useState(false)
@@ -72,6 +73,7 @@ export function SocialModal({ open, onClose, zIndex = 130, onActivate, onMinimiz
           renderErrorTooltip={renderErrorTooltip}
           onStartGenerate={() => setGenerating(true)}
           setGenerating={setGenerating}
+          socialResult={socialResult}
         />
       </ModalWindow>
       {resultModalOpen && (

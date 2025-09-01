@@ -94,6 +94,7 @@ export function EmailAssistant({ open, onClose, zIndex, onActivate, appName = 'E
               renderErrorTooltip={renderErrorTooltip}
               onStartGenerate={() => setGenerating(true)}
               setGenerating={setGenerating}
+              emailResult={emailResult}
             />
           </>
         )}

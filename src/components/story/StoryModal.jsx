@@ -97,6 +97,7 @@ export function StoryModal({ open, onClose, zIndex = 130, onActivate, onMinimize
               loading={generating}
               renderErrorTooltip={renderErrorTooltip}
               onStartGenerate={() => setGenerating(true)}
+              storyResult={storyResult}
             />
             <StoryAssistantResult storyResult={storyResult} />
           </>

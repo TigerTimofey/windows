@@ -128,7 +128,18 @@ export function SocialAssistantForm({
             posts: posts.map(cleanSocialText).filter(post => post && post !== '(none)' && post.trim().length > 0),
             hashtags: hashtags.map(cleanSocialText).filter(tag => tag && tag !== '(none)' && tag.trim().length > 0)
           }
-          setSocialResult(final)
+          const wordCount = final.posts.join(' ').split(/\s+/).filter(word => word.length > 0).length;
+          const target = parseInt(normalizedForm.length);
+          const tolerance = 0.1;
+          const lower = target * (1 - tolerance);
+          const upper = target * (1 + tolerance);
+          let warning = null;
+          if (wordCount < lower) {
+            warning = `Total word count (${wordCount}) is below target (${target}) by more than 10%.`;
+          } else if (wordCount > upper) {
+            warning = `Total word count (${wordCount}) is above target (${target}) by more than 10%.`;
+          }
+          setSocialResult({ ...final, wordCount, warning })
           setLoading(false)
           setGenerating(false)
         }).catch(err => {

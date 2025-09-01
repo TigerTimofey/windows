@@ -41,7 +41,7 @@ async function query(data) {
 export function StoryAssistantForm({
   form, setForm, errors, setErrors, setLoading, setStoryResult,
   buildPrompt, extractTitle, extractIntro, extractBody, extractConclusion, cleanStoryText,
-  loading, renderErrorTooltip, onStartGenerate
+  loading, renderErrorTooltip, onStartGenerate, storyResult
 }) {
   React.useEffect(() => {
     setForm(f => ({
@@ -120,7 +120,19 @@ export function StoryAssistantForm({
             body: cleanStoryText(body),
             conclusion: cleanStoryText(conclusion)
           }
-          setStoryResult(final)
+          const combinedText = [final.title, final.intro, final.body, final.conclusion].join(' ');
+          const wordCount = combinedText.split(/\s+/).filter(word => word.length > 0).length;
+          const target = parseInt(normalizedForm.length);
+          const tolerance = 0.1;
+          const lower = target * (1 - tolerance);
+          const upper = target * (1 + tolerance);
+          let warning = null;
+          if (wordCount < lower) {
+            warning = `Word count (${wordCount}) is below target (${target}) by more than 10%.`;
+          } else if (wordCount > upper) {
+            warning = `Word count (${wordCount}) is above target (${target}) by more than 10%.`;
+          }
+          setStoryResult({ ...final, wordCount, warning })
           setLoading(false)
         }).catch(err => {
           setStoryResult({ error: getUserFriendlyError(err.message) })
@@ -210,6 +222,12 @@ export function StoryAssistantForm({
         />
         {renderErrorTooltip('mood', errors)}
       </label>
+      {storyResult && !storyResult.error && (
+        <div style={{ marginBottom: '1rem' }}>
+          <div><b>Word Count:</b> {storyResult.wordCount}</div>
+          {storyResult.warning && <div className="blog-assistant-error">{storyResult.warning}</div>}
+        </div>
+      )}
       <div className="blog-assistant-btn-row">
         <button
           type="button"
