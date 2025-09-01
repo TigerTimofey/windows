@@ -74,10 +74,21 @@ export function StoryAssistantForm({
         let body = ''
         let conclusion = ''
 
+        let temp = 0.7;
+        switch (form.mood) {
+          case 'happy': temp = 0.7; break;
+          case 'sad': temp = 0.6; break;
+          case 'mysterious': temp = 0.8; break;
+          case 'tense': temp = 0.9; break;
+          case 'whimsical': temp = 0.9; break;
+          case 'dark': temp = 0.8; break;
+          case 'hopeful': temp = 0.7; break;
+        }
+
         query({ 
           prompt,
           max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizedForm.length) * 2)),
-          temperature: 0.7
+          temperature: temp
         }).then(data => {
           if (data.error) {
             setStoryResult({ error: data.error })
