@@ -2,6 +2,17 @@ import React from 'react'
 import '../blog/BlogAssistantForm.css'
 import { platformOptions, toneOptions, ctaOptions } from './utils/formOptions.js'
 import { CustomDropdown } from '../modal/CustomDropdown.jsx'
+import { normalizeForm } from '../../utils/normalizeInput.js'
+
+async function query(data) {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_ORIGIN}/generate-social`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: data.prompt })
+  });
+  const result = await response.json();
+  return result;
+}
 
 export function SocialAssistantForm({
   form, setForm, errors, setErrors, setLoading, setSocialResult,
@@ -31,29 +42,33 @@ export function SocialAssistantForm({
         if (!form.cta || !form.cta.trim()) newErrors.cta = 'Please provide the CTA.';
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
+        const normalizedForm = normalizeForm(form);
+        setForm(normalizedForm);
         setLoading(true)
         if (onStartGenerate) onStartGenerate()
         setSocialResult({ posts: [], hashtags: [] })
 
-        const prompt = buildPrompt(form)
-        const controller = new AbortController()
+        const prompt = buildPrompt(normalizedForm)
 
-        fetch(`${import.meta.env.VITE_BACKEND_URL}:${import.meta.env.VITE_BACKEND_PORT}/generate-social`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt }),
-          signal: controller.signal
-        }).then(res => {
-          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
-          return res.json()
-        }).then(async data => {
+        query({ 
+          prompt,
+          max_tokens: 1500,
+          temperature: 0.7
+        }).then(data => {
           if (data.error) {
             setSocialResult({ error: data.error })
             setLoading(false)
             setGenerating(false)
             return
           }
-          const text = data.text
+          // Handle Ollama response format
+          const text = data.text;
+          if (!text) {
+            setSocialResult({ error: 'No response generated' })
+            setLoading(false)
+            setGenerating(false)
+            return
+          }
           let posts = extractPosts(text)
           let hashtags = extractHashtags(text)
 
@@ -67,42 +82,9 @@ export function SocialAssistantForm({
             ]
           }
 
-          // Fallback: If no hashtags extracted, generate from Ollama (try once)
+          // Fallback: If no hashtags extracted, use basic fallback
           if (!hashtags || hashtags.length === 0) {
-            console.log('No hashtags extracted, attempting to generate from Ollama...')
-            const hashtagPrompt = `Generate exactly 3-5 relevant hashtags for "${form.productService}" on ${form.platform} related to "${form.goal}". Output ONLY in this format with no additional text:
-HASHTAGS: #Hashtag`
-            try {
-              const hashtagRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}:${import.meta.env.VITE_BACKEND_PORT}/generate-social`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: hashtagPrompt }),
-                signal: controller.signal
-              })
-              if (hashtagRes.ok) {
-                const hashtagData = await hashtagRes.json()
-                if (hashtagData.text) {
-                  const extractedFromFallback = extractHashtags(hashtagData.text)
-                  if (extractedFromFallback && extractedFromFallback.length > 0) {
-                    hashtags = extractedFromFallback
-                    console.log('Successfully generated hashtags from Ollama:', hashtags)
-                  } else {
-                    console.log('Ollama hashtag generation failed, using fallback hashtags')
-                    hashtags = ['#NoHashtagsFound']
-                  }
-                } else {
-                  console.log('No text received from hashtag generation, using fallback')
-                  hashtags = ['#NoHashtagsFound']
-                }
-              } else {
-                console.log('Hashtag generation request failed, using fallback hashtags')
-                hashtags = ['#NoHashtagsFound']
-              }
-            } catch (err) {
-              console.error('Error generating hashtags from Ollama:', err)
-              console.log('Using fallback hashtags due to error')
-              hashtags = ['#NoHashtagsFound']
-            }
+            hashtags = ['#NoHashtagsFound']
           }
 
           // Ensure we have arrays
