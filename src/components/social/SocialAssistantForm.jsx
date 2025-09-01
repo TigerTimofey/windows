@@ -7,7 +7,7 @@ import { getUserFriendlyError } from '../../utils/errorUtils.js'
 
 async function query(data) {
 	const controller = new AbortController();
-	const timeoutId = setTimeout(() => controller.abort(), 2000); 
+	const timeoutId = setTimeout(() => controller.abort(), 60000); 
 
 	try {
 		const response = await fetch(
