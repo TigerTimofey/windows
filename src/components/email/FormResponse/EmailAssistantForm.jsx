@@ -5,45 +5,59 @@ import { CustomDropdown } from '../../modal/CustomDropdown.jsx'
 import { toneOptions } from '../../social/utils/formOptions.js'
 import {normalizeForm} from '../../../utils/normalizeInput.js'
 import { getUserFriendlyError } from '../../../utils/errorUtils.js'
+import ErrorModal from '../../modal/ErrorModal.jsx'
 
 async function query(data) {
-	const response = await fetch(
-		"https://router.huggingface.co/v1/chat/completions",
-		{
-			headers: {
-				Authorization: `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
-				"Content-Type": "application/json",
-			},
-			method: "POST",
-			body: JSON.stringify({
-				messages: [
-					{
-						role: "user",
-						content: data.prompt,
-					},
-				],
-				model: "openai/gpt-oss-20b:together",
-				max_tokens: data.max_tokens || 1500,
-				temperature: data.temperature || 0.7,
-			}),
-		}
-	);
-	if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: The requested AI service endpoint was not found. Please try again later.`);
-	}
-	const contentType = response.headers.get('content-type');
-	if (!contentType || !contentType.includes('application/json')) {
-		throw new Error('Invalid response format from server');
-	}
-	const result = await response.json();
-	return result;
-}
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), 60000);
 
-export function EmailAssistantForm({
+	try {
+		const response = await fetch(
+			"https://router.huggingface.co/v1/chat/completions",
+			{
+				headers: {
+					Authorization: `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
+					"Content-Type": "application/json",
+				},
+				method: "POST",
+				body: JSON.stringify({
+					messages: [
+						{
+							role: "user",
+							content: data.prompt,
+						},
+					],
+					model: "openai/gpt-oss-20b:together",
+					max_tokens: data.max_tokens || 1500,
+					temperature: data.temperature || 0.7,
+				}),
+				signal: controller.signal,
+			}
+		);
+		clearTimeout(timeoutId);
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status}: The requested AI service endpoint was not found. Please try again later.`);
+		}
+		const contentType = response.headers.get('content-type');
+		if (!contentType || !contentType.includes('application/json')) {
+			throw new Error('Invalid response format from server');
+		}
+		const result = await response.json();
+		return result;
+	} catch (error) {
+		clearTimeout(timeoutId);
+		if (error.name === 'AbortError') {
+			throw new Error('Request timed out after 60 seconds. Please try again.');
+		}
+		throw error;
+	}
+}export function EmailAssistantForm({
   form, setForm, errors, setErrors, setLoading, setEmailResult,
   buildPrompt, inferThemeFromMessage, cleanMessage, removeDuplicates, parseEmailStructure,
   loading, renderErrorTooltip, onStartGenerate, setGenerating
 }) {
+  const [errorModalOpen, setErrorModalOpen] = React.useState(false)
+  const [errorMessage, setErrorMessage] = React.useState('')
   const parseLength = (lengthStr) => {
     if (/^\d+$/.test(lengthStr)) {
       return parseInt(lengthStr, 10);
@@ -68,7 +82,8 @@ export function EmailAssistantForm({
   }, [setForm])
 
   return (
-    <form className="blog-form"
+    <>
+      <form className="blog-form"
       onSubmit={e => {
         e.preventDefault();
         const newErrors = {};
@@ -110,7 +125,8 @@ export function EmailAssistantForm({
           temperature: temp
         }).then(data => {
           if (data.error) {
-            setEmailResult({ error: getUserFriendlyError(data.error) })
+            setErrorMessage(getUserFriendlyError(data.error))
+            setErrorModalOpen(true)
             setLoading(false)
             setGenerating(false)
             return
@@ -118,7 +134,8 @@ export function EmailAssistantForm({
           // Handle Hugging Face router chat completion response format
           const text = data.choices?.[0]?.message?.content;
           if (!text) {
-            setEmailResult({ error: 'No response generated' })
+            setErrorMessage('No response generated')
+            setErrorModalOpen(true)
             setLoading(false)
             setGenerating(false)
             return
@@ -153,7 +170,8 @@ export function EmailAssistantForm({
           setLoading(false)
           setGenerating(false)
         }).catch(err => {
-          setEmailResult({ error: getUserFriendlyError(err.message) })
+          setErrorMessage(getUserFriendlyError(err.message))
+          setErrorModalOpen(true)
           setLoading(false)
           setGenerating(false)
         })
@@ -270,5 +288,12 @@ export function EmailAssistantForm({
         </button>
       </div>
     </form>
+    <ErrorModal
+      open={errorModalOpen}
+      message={errorMessage}
+      onClose={() => setErrorModalOpen(false)}
+      zIndex={200}
+    />
+    </>
   )
 }

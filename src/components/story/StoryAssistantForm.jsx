@@ -6,39 +6,50 @@ import { normalizeForm } from '../../utils/normalizeInput.js'
 import { getUserFriendlyError } from '../../utils/errorUtils.js'
 
 async function query(data) {
-	const response = await fetch(
-		"https://router.huggingface.co/v1/chat/completions",
-		{
-			headers: {
-				Authorization: `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
-				"Content-Type": "application/json",
-			},
-			method: "POST",
-			body: JSON.stringify({
-				messages: [
-					{
-						role: "user",
-						content: data.prompt,
-					},
-				],
-				model: "openai/gpt-oss-20b:together",
-				max_tokens: data.max_tokens || 2000,
-				temperature: data.temperature || 0.7,
-			}),
-		}
-	);
-	if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: The requested AI service endpoint was not found. Please try again later.`);
-	}
-	const contentType = response.headers.get('content-type');
-	if (!contentType || !contentType.includes('application/json')) {
-		throw new Error('Invalid response format from server');
-	}
-	const result = await response.json();
-	return result;
-}
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), 60000); 
 
-export function StoryAssistantForm({
+	try {
+		const response = await fetch(
+			"https://router.huggingface.co/v1/chat/completions",
+			{
+				headers: {
+					Authorization: `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
+					"Content-Type": "application/json",
+				},
+				method: "POST",
+				body: JSON.stringify({
+					messages: [
+						{
+							role: "user",
+							content: data.prompt,
+						},
+					],
+					model: "openai/gpt-oss-20b:together",
+					max_tokens: data.max_tokens || 2000,
+					temperature: data.temperature || 0.7,
+				}),
+				signal: controller.signal,
+			}
+		);
+		clearTimeout(timeoutId);
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status}: The requested AI service endpoint was not found. Please try again later.`);
+		}
+		const contentType = response.headers.get('content-type');
+		if (!contentType || !contentType.includes('application/json')) {
+			throw new Error('Invalid response format from server');
+		}
+		const result = await response.json();
+		return result;
+	} catch (error) {
+		clearTimeout(timeoutId);
+		if (error.name === 'AbortError') {
+			throw new Error('Request timed out after 60 seconds. Please try again.');
+		}
+		throw error;
+	}
+}export function StoryAssistantForm({
   form, setForm, errors, setErrors, setLoading, setStoryResult,
   buildPrompt, extractTitle, extractIntro, extractBody, extractConclusion, cleanStoryText,
   loading, renderErrorTooltip, onStartGenerate
