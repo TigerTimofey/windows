@@ -3,6 +3,7 @@ import './BlogAssistantForm.css'
 import { CustomDropdown } from '../modal/CustomDropdown.jsx'
 import { wordCountOptions, toneOptions, seoFocusOptions, expertiseLevelOptions } from '../social/utils/formOptions.js'
 import normalizeForm from '../../utils/normalizeInput.js'
+import { getUserFriendlyError } from '../../utils/errorUtils.js'
 
 async function query(data) {
 	const response = await fetch(
@@ -21,11 +22,18 @@ async function query(data) {
 					},
 				],
 				model: "openai/gpt-oss-20b:together",
-          max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizeForm.wordCount) * 2)),
+				max_tokens: data.max_tokens || 2000,
 				temperature: data.temperature || 0.7,
 			}),
 		}
 	);
+  	if (!response.ok) {
+		throw new Error(`HTTP ${response.status}: The requested AI service endpoint was not found. Please try again later.`);
+	}
+	const contentType = response.headers.get('content-type');
+	if (!contentType || !contentType.includes('application/json')) {
+		throw new Error('Invalid response format from server');
+	}
 	const result = await response.json();
 	return result;
 }
@@ -60,17 +68,19 @@ export function BlogAssistantForm({
         if (!form.expertiseLevel) newErrors.expertiseLevel = 'Please select expertise level.';
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
+        const normalizedForm = normalizeForm(form);
+        setForm(normalizedForm);
         setLoading(true)
         if (onStartGenerate) onStartGenerate()
         setBlogResult({ title: '', intro: '', body: '', conclusion: '' })
 
-        const prompt = buildPrompt(form)
+        const prompt = buildPrompt(normalizedForm)
         let title = ''
         let intro = ''
         let body = ''
         let conclusion = ''
-    let temp = 0.7;
-        switch (form.tone) {
+        let temp = 0.7;
+        switch (normalizedForm.tone) {
           case 'professional': temp = 0.5; break;
           case 'formal': temp = 0.6; break;
           case 'friendly': temp = 0.7; break;
@@ -80,18 +90,18 @@ export function BlogAssistantForm({
 
         query({ 
           prompt,
-          max_tokens: 2000,
+          max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizedForm.wordCount) * 2)),
           temperature: temp
         }).then(data => {
           if (data.error) {
-            setBlogResult({ error: data.error })
+            setBlogResult({ error: getUserFriendlyError(data.error) })
             setLoading(false)
             return
           }
           // Handle Hugging Face router chat completion response format
           const text = data.choices?.[0]?.message?.content;
           if (!text) {
-            setBlogResult({ error: 'No response generated' })
+            setBlogResult({ error: getUserFriendlyError('No response generated') })
             setLoading(false)
             return
           }

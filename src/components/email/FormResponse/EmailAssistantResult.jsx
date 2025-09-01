@@ -7,7 +7,7 @@ export function EmailAssistantResult({ emailResult }) {
     <div className="blog-assistant-result">
       <div className="blog-assistant-result-title">Generated Email:</div>
       {emailResult.error ? (
-        <div className="blog-assistant-error">{emailResult.error}</div>
+<></>
       ) : (
         <>
           <div className="blog-assistant-theme"><b>Theme:</b> {emailResult.theme || '(none)'}</div>

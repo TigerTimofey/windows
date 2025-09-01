@@ -3,6 +3,7 @@ import '../blog/BlogAssistantForm.css'
 import { platformOptions, toneOptions, ctaOptions } from './utils/formOptions.js'
 import { CustomDropdown } from '../modal/CustomDropdown.jsx'
 import normalizeForm from '../../utils/normalizeInput.js'
+import { getUserFriendlyError } from '../../utils/errorUtils.js'
 
 
 async function query(data) {
@@ -27,6 +28,13 @@ async function query(data) {
 			}),
 		}
 	);
+  	if (!response.ok) {
+		throw new Error(`HTTP ${response.status}: The requested AI service endpoint was not found. Please try again later.`);
+	}
+	const contentType = response.headers.get('content-type');
+	if (!contentType || !contentType.includes('application/json')) {
+		throw new Error('Invalid response format from server');
+	}
 	const result = await response.json();
 	return result;
 }
@@ -59,13 +67,15 @@ export function SocialAssistantForm({
         if (!form.cta || !form.cta.trim()) newErrors.cta = 'Please provide the CTA.';
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
+        const normalizedForm = normalizeForm(form);
+        setForm(normalizedForm);
         setLoading(true)
         if (onStartGenerate) onStartGenerate()
         setSocialResult({ posts: [], hashtags: [] })
 
-        const prompt = buildPrompt(form)
-              let temp = 0.7;
-        switch (form.tone) {
+        const prompt = buildPrompt(normalizedForm)
+        let temp = 0.7;
+        switch (normalizedForm.tone) {
           case 'professional': temp = 0.5; break;
           case 'formal': temp = 0.6; break;
           case 'friendly': temp = 0.7; break;
@@ -75,11 +85,11 @@ export function SocialAssistantForm({
 
         query({ 
           prompt,
-          max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizeForm.wordCount) * 2)),
+          max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizedForm.length) * 2)),
           temperature: temp
         }).then(data => {
           if (data.error) {
-            setSocialResult({ error: data.error })
+            setSocialResult({ error: getUserFriendlyError(data.error) })
             setLoading(false)
             setGenerating(false)
             return
@@ -87,7 +97,7 @@ export function SocialAssistantForm({
           // Handle Hugging Face router chat completion response format
           const text = data.choices?.[0]?.message?.content;
           if (!text) {
-            setSocialResult({ error: 'No response generated' })
+            setSocialResult({ error: getUserFriendlyError('No response generated') })
             setLoading(false)
             setGenerating(false)
             return

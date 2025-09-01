@@ -3,11 +3,12 @@ import '../../blog/BlogAssistantForm.css'
 import { normalizeSpacing } from '../utils/normalizeSpacing'
 import { CustomDropdown } from '../../modal/CustomDropdown.jsx'
 import { maxWordsOptions, toneOptions } from '../../social/utils/formOptions.js'
-import {normalizeForm} from '../../../utils/normalizeInput.js'
+import normalizeForm from '../../../utils/normalizeInput.js'
+import { getUserFriendlyError } from '../../../utils/errorUtils.js'
 
 async function query(data) {
 	const response = await fetch(
-		"https://router.huggingface.co/v1/chat/completions",
+		"https://router.huggingface.co/v1/chat/completions2",
 		{
 			headers: {
 				Authorization: `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
@@ -27,6 +28,13 @@ async function query(data) {
 			}),
 		}
 	);
+  	if (!response.ok) {
+		throw new Error(`HTTP ${response.status}: The requested AI service endpoint was not found. Please try again later.`);
+	}
+	const contentType = response.headers.get('content-type');
+	if (!contentType || !contentType.includes('application/json')) {
+		throw new Error('Invalid response format from server');
+	}
 	const result = await response.json();
 	return result;
 }
@@ -86,7 +94,7 @@ export function EmailAssistantForm({
           temperature: temp
         }).then(data => {
           if (data.error) {
-            setEmailResult({ error: data.error })
+            setEmailResult({ error: getUserFriendlyError(data.error) })
             setLoading(false)
             setGenerating(false)
             return
@@ -94,7 +102,7 @@ export function EmailAssistantForm({
           // Handle Hugging Face router chat completion response format
           const text = data.choices?.[0]?.message?.content;
           if (!text) {
-            setEmailResult({ error: 'No response generated' })
+            setEmailResult({ error: getUserFriendlyError('No response generated')})
             setLoading(false)
             setGenerating(false)
             return

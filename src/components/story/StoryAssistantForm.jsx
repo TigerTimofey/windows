@@ -3,6 +3,7 @@ import '../blog/BlogAssistantForm.css'
 import { CustomDropdown } from '../modal/CustomDropdown.jsx'
 import { lengthOptions, styleOptions, moodOptions } from '../social/utils/formOptions.js'
 import normalizeForm from '../../utils/normalizeInput.js'
+import { getUserFriendlyError } from '../../utils/errorUtils.js'
 
 async function query(data) {
 	const response = await fetch(
@@ -26,6 +27,14 @@ async function query(data) {
 			}),
 		}
 	);
+  	if (!response.ok) {
+		throw new Error(`HTTP ${response.status}: The requested AI service endpoint was not found. Please try again later.`);
+
+	}
+	const contentType = response.headers.get('content-type');
+	if (!contentType || !contentType.includes('application/json')) {
+		throw new Error('Invalid response format from server');
+	}
 	const result = await response.json();
 	return result;
 }
@@ -62,17 +71,19 @@ export function StoryAssistantForm({
         if (!form.mood) newErrors.mood = 'Please select mood.';
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
+        const normalizedForm = normalizeForm(form);
+        setForm(normalizedForm);
         setLoading(true)
         if (onStartGenerate) onStartGenerate()
         setStoryResult({ title: '', intro: '', body: '', conclusion: '' })
 
-        const prompt = buildPrompt(form)
+        const prompt = buildPrompt(normalizedForm)
         let title = ''
         let intro = ''
         let body = ''
         let conclusion = ''
             let temp = 0.7;
-        switch (form.mood) {
+        switch (normalizedForm.mood) {
           case 'happy': temp = 0.7; break;
           case 'sad': temp = 0.6; break;
           case 'mysterious': temp = 0.8; break;
@@ -85,18 +96,18 @@ export function StoryAssistantForm({
 
         query({ 
           prompt,
-          max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizeForm.wordCount) * 2)),
+          max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizedForm.length) * 2)),
           temperature: temp
         }).then(data => {
           if (data.error) {
-            setStoryResult({ error: data.error })
+            setStoryResult({ error: getUserFriendlyError(data.error) })
             setLoading(false)
             return
           }
           // Handle Hugging Face router chat completion response format
           const text = data.choices?.[0]?.message?.content;
           if (!text) {
-            setStoryResult({ error: 'No response generated' })
+            setStoryResult({ error: getUserFriendlyError('No response generated') })
             setLoading(false)
             return
           }
