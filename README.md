@@ -10,7 +10,7 @@
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-API-yellow.svg)](https://huggingface.co/)
 [![License](https://img.shields.io/badge/License-Private-red.svg)]()
 
-[🚀 Live Demo](https://windows-mu-plum.vercel.app/) • [🐛 Report Issues](https://github.com/TigerTimofey/windows/issues)
+[🚀 Live Demo](https://windows-lilac.vercel.app/) • [🐛 Report Issues](https://github.com/TigerTimofey/windows/issues)
 
 </div>
 
