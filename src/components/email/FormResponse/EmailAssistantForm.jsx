@@ -2,7 +2,7 @@ import React from 'react'
 import '../../blog/BlogAssistantForm.css'
 import { normalizeSpacing } from '../utils/normalizeSpacing'
 import { CustomDropdown } from '../../modal/CustomDropdown.jsx'
-import { maxWordsOptions, toneOptions } from '../../social/utils/formOptions.js'
+import { toneOptions } from '../../social/utils/formOptions.js'
 import {normalizeForm} from '../../../utils/normalizeInput.js'
 import { getUserFriendlyError } from '../../../utils/errorUtils.js'
 
@@ -44,6 +44,16 @@ export function EmailAssistantForm({
   buildPrompt, inferThemeFromMessage, cleanMessage, removeDuplicates,
   loading, renderErrorTooltip, onStartGenerate, setGenerating
 }) {
+  const parseLength = (lengthStr) => {
+    if (/^\d+$/.test(lengthStr)) {
+      return parseInt(lengthStr, 10);
+    } else if (/^\d+-\d+$/.test(lengthStr)) {
+      const [, max] = lengthStr.split('-').map(Number);
+      return max;
+    }
+    return 120; // default
+  };
+
   React.useEffect(() => {
     setForm(f => ({
       ...f,
@@ -52,7 +62,7 @@ export function EmailAssistantForm({
       purpose: f.purpose || 'Welcome new team member and provide onboarding details',
       keyPoints: f.keyPoints || 'Welcome to the team\nProvide onboarding details\nSchedule an introduction meeting',
       tone: f.tone || 'professional',
-      length: f.length || 120
+      length: f.length || '120'
     }))
   }, [setForm])
 
@@ -66,7 +76,11 @@ export function EmailAssistantForm({
         if (!form.purpose || !form.purpose.trim()) newErrors.purpose = 'Please provide the email purpose.';
         if (!form.keyPoints || !form.keyPoints.trim()) newErrors.keyPoints = 'Please provide key points.';
         if (!form.tone) newErrors.tone = 'Please select tone.';
-        if (!form.length) newErrors.length = 'Please select length.';
+        if (!form.length || !/^\d+$|^\d+-\d+$/.test(form.length.trim())) newErrors.length = 'Please provide a valid length (e.g. 100 or 100-150).';
+        if (form.length && /^\d+-\d+$/.test(form.length.trim())) {
+          const [min, max] = form.length.trim().split('-').map(Number);
+          if (min >= max || min <= 0 || max <= 0) newErrors.length = 'Invalid range: min must be less than max and both positive.';
+        }
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
         const normalizedForm = normalizeForm(form);
@@ -90,7 +104,7 @@ export function EmailAssistantForm({
 
         query({ 
           prompt,
-          max_tokens: Math.min(4000, Math.max(1000, parseInt(normalizedForm.length) * 2)),
+          max_tokens: Math.min(4000, Math.max(1000, parseLength(normalizedForm.length) * 2)),
           temperature: temp
         }).then(data => {
           if (data.error) {
@@ -111,15 +125,27 @@ export function EmailAssistantForm({
           theme = inferThemeFromMessage(message)
           const final = { theme, message: normalizeSpacing(cleanMessage(removeDuplicates(message))) }
           const wordCount = final.message.split(/\s+/).filter(word => word.length > 0).length;
-          const target = parseInt(normalizedForm.length);
-          const tolerance = 0.1;
-          const lower = target * (1 - tolerance);
-          const upper = target * (1 + tolerance);
-          let warning = null;
-          if (wordCount < lower) {
-            warning = `Word count (${wordCount}) is below target (${target}) by more than 10%.`;
-          } else if (wordCount > upper) {
-            warning = `Word count (${wordCount}) is above target (${target}) by more than 10%.`;
+          let target, lower, upper, warning = null;
+          if (/^\d+-\d+$/.test(normalizedForm.length)) {
+            const [min, max] = normalizedForm.length.split('-').map(Number);
+            target = `${min}-${max}`;
+            lower = min;
+            upper = max;
+            if (wordCount < lower) {
+              warning = `Word count (${wordCount}) is below the minimum target (${min}).`;
+            } else if (wordCount > upper) {
+              warning = `Word count (${wordCount}) is above the maximum target (${max}).`;
+            }
+          } else {
+            target = parseInt(normalizedForm.length);
+            const tolerance = 0.1;
+            lower = target * (1 - tolerance);
+            upper = target * (1 + tolerance);
+            if (wordCount < lower) {
+              warning = `Word count (${wordCount}) is below target (${target}) by more than 10%.`;
+            } else if (wordCount > upper) {
+              warning = `Word count (${wordCount}) is above target (${target}) by more than 10%.`;
+            }
           }
           setEmailResult({ ...final, wordCount, warning })
           setLoading(false)
@@ -193,12 +219,11 @@ export function EmailAssistantForm({
         </label>
         <label className="blog-form-field" style={{ flex: 1 }}>
           Length (words)
-          <CustomDropdown
-            options={maxWordsOptions}
+          <input
+            type="text"
             value={form.length || ''}
-            onChange={(value) => setForm(f => ({ ...f, length: value }))}
-            placeholder="Select length"
-            closeOnSelect={false}
+            onChange={(e) => setForm(f => ({ ...f, length: e.target.value }))}
+            placeholder="e.g. 100 or 100-150"
           />
           {renderErrorTooltip('length', errors)}
         </label>
