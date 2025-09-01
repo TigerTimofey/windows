@@ -474,6 +474,7 @@ export function DesktopRoot({ onShutdown }) {
   return (
     <div
       className="windows-bg"
+      style={{ overscrollBehavior: 'none' }}
       onContextMenu={handleDesktopContextMenu}
       onClick={() => {
         // Close all context menus for all icons (including clones, folders, etc.)
