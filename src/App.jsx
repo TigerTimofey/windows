@@ -17,6 +17,7 @@ function App() {
         <Win2kLogin onLogin={() => setLoggedIn(true)} />
       ) : (
         <DesktopRoot onShutdown={handleShutdown} />
+        
       )}
     </PreventPullToRefresh>
   )
