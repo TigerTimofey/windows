@@ -102,7 +102,6 @@ export function EditStoryModal({
         </label>
         <div className="blog-assistant-btn-row">
           <button type="button" className="modal-btn-text" onClick={onClose}>Cancel</button>
-          <button type="submit" className="modal-btn-text">Save</button>
           <div
             className="export-menu-trigger"
             onMouseEnter={() => setShowExportMenu(true)}
